@@ -1,0 +1,554 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2C09CE841E76227D00993BEA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C09CE831E76227D00993BEA /* AppDelegate.swift */; };
+		2C09CE861E76227D00993BEA /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C09CE851E76227D00993BEA /* ViewController.swift */; };
+		2C09CE891E76227D00993BEA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C09CE871E76227D00993BEA /* Main.storyboard */; };
+		2C09CE8C1E76227D00993BEA /* wherewego.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 2C09CE8A1E76227D00993BEA /* wherewego.xcdatamodeld */; };
+		2C09CE8E1E76227D00993BEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2C09CE8D1E76227D00993BEA /* Assets.xcassets */; };
+		2C09CE911E76227D00993BEA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 2C09CE8F1E76227D00993BEA /* LaunchScreen.storyboard */; };
+		2C09CE9C1E76227E00993BEA /* wherewegoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C09CE9B1E76227E00993BEA /* wherewegoTests.swift */; };
+		2C09CEA71E76227E00993BEA /* wherewegoUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C09CEA61E76227E00993BEA /* wherewegoUITests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2C09CE981E76227E00993BEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C09CE781E76227D00993BEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2C09CE7F1E76227D00993BEA;
+			remoteInfo = wherewego;
+		};
+		2C09CEA31E76227E00993BEA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C09CE781E76227D00993BEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2C09CE7F1E76227D00993BEA;
+			remoteInfo = wherewego;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2C09CE801E76227D00993BEA /* wherewego.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = wherewego.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C09CE831E76227D00993BEA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		2C09CE851E76227D00993BEA /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		2C09CE881E76227D00993BEA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		2C09CE8B1E76227D00993BEA /* wherewego.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = wherewego.xcdatamodel; sourceTree = "<group>"; };
+		2C09CE8D1E76227D00993BEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2C09CE901E76227D00993BEA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		2C09CE921E76227D00993BEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2C09CE971E76227E00993BEA /* wherewegoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wherewegoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C09CE9B1E76227E00993BEA /* wherewegoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wherewegoTests.swift; sourceTree = "<group>"; };
+		2C09CE9D1E76227E00993BEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2C09CEA21E76227E00993BEA /* wherewegoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = wherewegoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C09CEA61E76227E00993BEA /* wherewegoUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = wherewegoUITests.swift; sourceTree = "<group>"; };
+		2C09CEA81E76227E00993BEA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2C09CE7D1E76227D00993BEA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CE941E76227E00993BEA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CE9F1E76227E00993BEA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2C09CE771E76227D00993BEA = {
+			isa = PBXGroup;
+			children = (
+				2C09CE821E76227D00993BEA /* wherewego */,
+				2C09CE9A1E76227E00993BEA /* wherewegoTests */,
+				2C09CEA51E76227E00993BEA /* wherewegoUITests */,
+				2C09CE811E76227D00993BEA /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2C09CE811E76227D00993BEA /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2C09CE801E76227D00993BEA /* wherewego.app */,
+				2C09CE971E76227E00993BEA /* wherewegoTests.xctest */,
+				2C09CEA21E76227E00993BEA /* wherewegoUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2C09CE821E76227D00993BEA /* wherewego */ = {
+			isa = PBXGroup;
+			children = (
+				2C09CE831E76227D00993BEA /* AppDelegate.swift */,
+				2C09CE851E76227D00993BEA /* ViewController.swift */,
+				2C09CE871E76227D00993BEA /* Main.storyboard */,
+				2C09CE8D1E76227D00993BEA /* Assets.xcassets */,
+				2C09CE8F1E76227D00993BEA /* LaunchScreen.storyboard */,
+				2C09CE921E76227D00993BEA /* Info.plist */,
+				2C09CE8A1E76227D00993BEA /* wherewego.xcdatamodeld */,
+			);
+			path = wherewego;
+			sourceTree = "<group>";
+		};
+		2C09CE9A1E76227E00993BEA /* wherewegoTests */ = {
+			isa = PBXGroup;
+			children = (
+				2C09CE9B1E76227E00993BEA /* wherewegoTests.swift */,
+				2C09CE9D1E76227E00993BEA /* Info.plist */,
+			);
+			path = wherewegoTests;
+			sourceTree = "<group>";
+		};
+		2C09CEA51E76227E00993BEA /* wherewegoUITests */ = {
+			isa = PBXGroup;
+			children = (
+				2C09CEA61E76227E00993BEA /* wherewegoUITests.swift */,
+				2C09CEA81E76227E00993BEA /* Info.plist */,
+			);
+			path = wherewegoUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2C09CE7F1E76227D00993BEA /* wherewego */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C09CEAB1E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewego" */;
+			buildPhases = (
+				2C09CE7C1E76227D00993BEA /* Sources */,
+				2C09CE7D1E76227D00993BEA /* Frameworks */,
+				2C09CE7E1E76227D00993BEA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = wherewego;
+			productName = wherewego;
+			productReference = 2C09CE801E76227D00993BEA /* wherewego.app */;
+			productType = "com.apple.product-type.application";
+		};
+		2C09CE961E76227E00993BEA /* wherewegoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C09CEAE1E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewegoTests" */;
+			buildPhases = (
+				2C09CE931E76227E00993BEA /* Sources */,
+				2C09CE941E76227E00993BEA /* Frameworks */,
+				2C09CE951E76227E00993BEA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2C09CE991E76227E00993BEA /* PBXTargetDependency */,
+			);
+			name = wherewegoTests;
+			productName = wherewegoTests;
+			productReference = 2C09CE971E76227E00993BEA /* wherewegoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		2C09CEA11E76227E00993BEA /* wherewegoUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C09CEB11E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewegoUITests" */;
+			buildPhases = (
+				2C09CE9E1E76227E00993BEA /* Sources */,
+				2C09CE9F1E76227E00993BEA /* Frameworks */,
+				2C09CEA01E76227E00993BEA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2C09CEA41E76227E00993BEA /* PBXTargetDependency */,
+			);
+			name = wherewegoUITests;
+			productName = wherewegoUITests;
+			productReference = 2C09CEA21E76227E00993BEA /* wherewegoUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2C09CE781E76227D00993BEA /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0820;
+				LastUpgradeCheck = 0820;
+				ORGANIZATIONNAME = leesam;
+				TargetAttributes = {
+					2C09CE7F1E76227D00993BEA = {
+						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = XRWEC2S728;
+						ProvisioningStyle = Automatic;
+					};
+					2C09CE961E76227E00993BEA = {
+						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = XRWEC2S728;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2C09CE7F1E76227D00993BEA;
+					};
+					2C09CEA11E76227E00993BEA = {
+						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = XRWEC2S728;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 2C09CE7F1E76227D00993BEA;
+					};
+				};
+			};
+			buildConfigurationList = 2C09CE7B1E76227D00993BEA /* Build configuration list for PBXProject "wherewego" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 2C09CE771E76227D00993BEA;
+			productRefGroup = 2C09CE811E76227D00993BEA /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2C09CE7F1E76227D00993BEA /* wherewego */,
+				2C09CE961E76227E00993BEA /* wherewegoTests */,
+				2C09CEA11E76227E00993BEA /* wherewegoUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2C09CE7E1E76227D00993BEA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C09CE911E76227D00993BEA /* LaunchScreen.storyboard in Resources */,
+				2C09CE8E1E76227D00993BEA /* Assets.xcassets in Resources */,
+				2C09CE891E76227D00993BEA /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CE951E76227E00993BEA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CEA01E76227E00993BEA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2C09CE7C1E76227D00993BEA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C09CE8C1E76227D00993BEA /* wherewego.xcdatamodeld in Sources */,
+				2C09CE861E76227D00993BEA /* ViewController.swift in Sources */,
+				2C09CE841E76227D00993BEA /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CE931E76227E00993BEA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C09CE9C1E76227E00993BEA /* wherewegoTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2C09CE9E1E76227E00993BEA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C09CEA71E76227E00993BEA /* wherewegoUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2C09CE991E76227E00993BEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2C09CE7F1E76227D00993BEA /* wherewego */;
+			targetProxy = 2C09CE981E76227E00993BEA /* PBXContainerItemProxy */;
+		};
+		2C09CEA41E76227E00993BEA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2C09CE7F1E76227D00993BEA /* wherewego */;
+			targetProxy = 2C09CEA31E76227E00993BEA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2C09CE871E76227D00993BEA /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2C09CE881E76227D00993BEA /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		2C09CE8F1E76227D00993BEA /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				2C09CE901E76227D00993BEA /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		2C09CEA91E76227E00993BEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2C09CEAA1E76227E00993BEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.2;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2C09CEAC1E76227E00993BEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewego/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewego;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Debug;
+		};
+		2C09CEAD1E76227E00993BEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewego/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewego;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+			};
+			name = Release;
+		};
+		2C09CEAF1E76227E00993BEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewegoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewegoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wherewego.app/wherewego";
+			};
+			name = Debug;
+		};
+		2C09CEB01E76227E00993BEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewegoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewegoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/wherewego.app/wherewego";
+			};
+			name = Release;
+		};
+		2C09CEB21E76227E00993BEA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewegoUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewegoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = wherewego;
+			};
+			name = Debug;
+		};
+		2C09CEB31E76227E00993BEA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				DEVELOPMENT_TEAM = XRWEC2S728;
+				INFOPLIST_FILE = wherewegoUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.credif.wherewegoUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
+				TEST_TARGET_NAME = wherewego;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2C09CE7B1E76227D00993BEA /* Build configuration list for PBXProject "wherewego" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C09CEA91E76227E00993BEA /* Debug */,
+				2C09CEAA1E76227E00993BEA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2C09CEAB1E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewego" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C09CEAC1E76227E00993BEA /* Debug */,
+				2C09CEAD1E76227E00993BEA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		2C09CEAE1E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewegoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C09CEAF1E76227E00993BEA /* Debug */,
+				2C09CEB01E76227E00993BEA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		2C09CEB11E76227E00993BEA /* Build configuration list for PBXNativeTarget "wherewegoUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C09CEB21E76227E00993BEA /* Debug */,
+				2C09CEB31E76227E00993BEA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		2C09CE8A1E76227D00993BEA /* wherewego.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				2C09CE8B1E76227D00993BEA /* wherewego.xcdatamodel */,
+			);
+			currentVersion = 2C09CE8B1E76227D00993BEA /* wherewego.xcdatamodel */;
+			path = wherewego.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 2C09CE781E76227D00993BEA /* Project object */;
+}
