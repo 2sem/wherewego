@@ -17,7 +17,7 @@ class KGDTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+        
         self.backgroundImageView.layer.backgroundColor = UIColor.black.cgColor;
         self.backgroundImageView.layer.opacity = 0.7;
     }
@@ -25,8 +25,6 @@ class KGDTableViewCell: UITableViewCell {
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
-        // Configure the view for the selected state
-        //self.darkCoverView.isHidden = false;
         self.backgroundImageView.layer.opacity = selected ? 1.0 : 0.7;
     }
 }

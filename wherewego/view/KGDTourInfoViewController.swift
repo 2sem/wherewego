@@ -14,7 +14,7 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
 
     var infoId : Int = 0;
     var info : KGDataTourInfo!;
-    var location : CLLocationCoordinate2D?;
+    var currentLocation : CLLocationCoordinate2D?;
     
     //@IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var imageButton: UIButton!
@@ -30,14 +30,6 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        //self.reviewManager?.delegate = self;
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -45,26 +37,30 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
             self.infoId = self.info.id ?? 0;
         }
         
-        let handle = {
+        let handle = {[unowned self] in
+            // MARK: Shows property of this tour informations
+            //loads image of this tour infomation
             self.imageButton.imageView?.contentMode = .scaleAspectFill;
             self.loadImage();
             self.navigationItem.title = self.info?.title;
-            //self.phoneLabel.text = (self.info.tel?.isEmpty ?? true) ? " - " : self.info.tel;
             self.addrLabel.text = (self.info.primaryAddr ?? "") + " " +  (self.info.detailAddr ?? "");
             
-            self.mapView.camera = GMSCameraPosition.camera(withLatitude: self.location!.latitude, longitude: self.location!.longitude, zoom: 10);
+            //Shows current location and this destination's location on Google Map
+            self.mapView.camera = GMSCameraPosition.camera(withLatitude: self.currentLocation!.latitude, longitude: self.currentLocation!.longitude, zoom: 10);
             
-            let mapBounds = GMSCoordinateBounds(coordinate: self.location!, coordinate: self.info.location!);
+            let mapBounds = GMSCoordinateBounds(coordinate: self.currentLocation!, coordinate: self.info.location!);
             let cameraUpdate = GMSCameraUpdate.fit(mapBounds, with: UIEdgeInsets.init(top: 44, left: 44, bottom: 10, right: 44));
             self.mapView.animate(with: cameraUpdate);
             
-            if self.location != nil{
-                self.hereMarker = GMSMarker(position: self.location!)
+            //Sets marker for current location
+            if self.currentLocation != nil{
+                self.hereMarker = GMSMarker(position: self.currentLocation!)
                 self.hereMarker.title = "Here";
                 self.hereMarker.map = self.mapView;
                 self.hereMarker.icon = GMSMarker.markerImage(with: UIColor.blue);
             }
             
+            //Sets marker for this tour location
             self.targetMarker = GMSMarker(position: self.info.location!)
             self.targetMarker.title = self.info.title;
             self.targetMarker.map = self.mapView;
@@ -74,19 +70,16 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
             handle();
         }
         
-        KGDataTourManager.shared.requestDetail(contentId: self.infoId, needDefault: self.info == nil) { (detailInfo, error) in
+        KGDataTourManager.shared.requestDetail(contentId: self.infoId, needDefault: self.info == nil) { [unowned self](detailInfo, error) in
             DispatchQueue.main.async {
                 if self.info == nil{
                     self.info = detailInfo;
                 }
                 self.info.overview = detailInfo?.overview;
                 handle();
-                //self.overviewLabel.text = self.info.overview;
-                //self.overviewLabel.sizeToFit();
-                //self.tableView.reloadRows(at: [IndexPath(row: 4, section: 0)], with: .automatic);
                 self.tableView.reloadData();
                 
-                let mapBounds = GMSCoordinateBounds(coordinate: self.location!, coordinate: self.info.location!);
+                let mapBounds = GMSCoordinateBounds(coordinate: self.currentLocation!, coordinate: self.info.location!);
                 let cameraUpdate = GMSCameraUpdate.fit(mapBounds, with: UIEdgeInsets.init(top: 44, left: 44, bottom: 10, right: 44));
                 self.mapView.animate(with: cameraUpdate);
             }
@@ -102,17 +95,18 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
         // Dispose of any resources that can be recreated.
     }
     
-    @IBAction func onShare(_ sender: UIBarButtonItem) {
+    @IBAction func onShare(_ button: UIBarButtonItem) {
         if Locale.current.isKorean {
-            self.info.shareByKakao(self.location ?? self.info.location!);
+            self.info.shareByKakao(self.currentLocation ?? self.info.location!);
         }else{
+            //Share google map site if user isn't korean
             self.share([self.imageButton.image(for: .normal) ?? UIImage(),
                         "[\(self.info.title ?? "")] \(self.info.tel ?? "")",
-                self.location?.urlForGoogleRoute(startName: "Current Location".localized(), end: self.info.location!, endName: self.info.title ?? "Destination".localized()) ?? ""]);
+                self.currentLocation?.urlForGoogleRoute(startName: "Current Location".localized(), end: self.info.location!, endName: self.info.title ?? "Destination".localized()) ?? ""]);
         }
     }
     
-    @IBAction func onPhoneCall(_ sender: UIButton) {
+    @IBAction func onPhoneCall(_ button: UIButton) {
         guard self.info.tel != nil else{
             return;
         }
@@ -138,9 +132,10 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
 //12632.09061058575
 //8801.892062560384
         
-        //if use korea?
+        //if user is korean?
         print("locale \(Locale.current.identifier)")
-        if Locale.current.identifier.hasPrefix("ko") {
+        if Locale.current.isKorean {
+            //Opens daum map
             //korea?
             /*urlComponents?.queryItems = [URLQueryItem(name: "sX", value: "\(self.location!.latitude * 12632.09061058575)"),
                 URLQueryItem(name: "sY", value: "\(self.location!.longitude * 8801.892062560384)"),
@@ -148,20 +143,22 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
                 URLQueryItem(name: "eX", value: "\(self.info.location!.latitude * 12632.09061058575)"),
                 URLQueryItem(name: "eY", value: "\(self.info.location!.longitude * 8801.892062560384)"),
                 URLQueryItem(name: "eName", value: self.info.title ?? "")];*/
-            print("loc \(self.location!.latitude),\(self.location!.longitude) - \(self.info.location!.latitude),\(self.info.location!.longitude)")
+            print("loc \(self.currentLocation!.latitude),\(self.currentLocation!.longitude) - \(self.info.location!.latitude),\(self.info.location!.longitude)")
             url = url.appendingPathComponent("link")
                 .appendingPathComponent("to")
                 .appendingPathComponent("\(self.info.title ?? ""),\(self.info.location!.latitude),\(self.info.location!.longitude)");
             //url = urlComponents!.url!;
         }else{
+            //Opens google map if user is foreigner
             url = URL(string:"comgooglemaps://")!;
             //var urlComponents = URLComponents.init(url: url, resolvingAgainstBaseURL: true);
             
+            //if google map is not installed on this device
             if !UIApplication.shared.canOpenURL(url){
-                
-                url = URL(string: "https://www.google.co.kr/maps/dir/\(self.location!.latitude),\(self.location!.longitude)/\(self.info.location!.latitude),\(self.info.location!.longitude)/@\(self.mapView.camera.target.latitude),\(self.mapView.camera.target.longitude),14z")!;
+                //Opens google map site
+                url = URL(string: "https://www.google.co.kr/maps/dir/\(self.currentLocation!.latitude),\(self.currentLocation!.longitude)/\(self.info.location!.latitude),\(self.info.location!.longitude)/@\(self.mapView.camera.target.latitude),\(self.mapView.camera.target.longitude),14z")!;
             }else{
-                url = URL(string: "comgooglemap://?saddr=\(self.location!.latitude),\(self.location!.longitude)&daddr=\(self.info.location!.latitude),\(self.info.location!.longitude)")!;
+                url = URL(string: "comgooglemap://?saddr=\(self.currentLocation!.latitude),\(self.currentLocation!.longitude)&daddr=\(self.info.location!.latitude),\(self.info.location!.longitude)")!;
             }
         }
         
@@ -170,8 +167,8 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
         UIApplication.shared.open(url, options: [:], completionHandler: nil);
     }
     
-    @IBAction func onSearch(_ sender: UIButton) {
-        if Locale.current.identifier.hasPrefix("ko"){
+    @IBAction func onSearch(_ button: UIButton) {
+        if Locale.current.isKorean{
             UIApplication.shared.searchByDaum(self.info.title ?? "");
         }else{
             UIApplication.shared.searchByGoogle(self.info.title ?? "");
@@ -179,24 +176,16 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     }
 
     func loadImage(){
-        /*guard self.imageButton.image(for: .normal) == nil else{
-            return;
-        }*/
-        
         var image : UIImage? = UIImage();
-        do{
-            if info?.image != nil{
-                image = try UIImage(data: Data(contentsOf: info.image!));
-            }
-        }catch{
-            
+        if info?.image != nil{
+            image = try! UIImage(data: Data(contentsOf: info.image!));
         }
         
         guard !self.isMovingFromParentViewController else{
             return;
         }
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async {[unowned self] in
             if image?.size.height == 0 || image?.size.width == 0{
                 self.imageButton.setImage(image, for: .normal);
                 image = WWGImages.noImage;

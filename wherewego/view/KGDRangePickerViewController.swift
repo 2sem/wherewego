@@ -42,13 +42,17 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //Shows button to show current location
         self.mapView.isMyLocationEnabled = true;
         self.mapView.settings.myLocationButton = true;
         
+        //Sets default location?
         //self.mapView.delegate = self;
         if self.location == nil{
             self.location = CLLocationCoordinate2D.init(latitude: CLLocationDegrees(37.5866076), longitude: CLLocationDegrees(126.974811));
         }
+        
+        //create maker
         self.hereMarker = GMSMarker(position: self.location!)
         self.hereMarker?.title = "Here";
         self.hereMarker?.map = self.mapView;
@@ -58,6 +62,7 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
         
         self.radius = self._radius;
 
+        //create circle to indicate search range
         self.rangeCircle = GMSCircle(position: self.hereMarker.position, radius: CLLocationDistance(self.radius));
         self.rangeCircle.map = self.mapView;
         self.rangeCircle.fillColor = UIColor.blue.withAlphaComponent(0.3);

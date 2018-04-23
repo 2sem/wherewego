@@ -38,7 +38,6 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
 
     var lastKGDRequest : KGDataTourListRequest?;
     var typePicker : UIDownPicker!;
-    //var typePickerView : UIPickerView!;
     var currentType : KGDataTourInfo.ContentType?{
         get{
             let typeIndex = self.typePicker.downPicker.selectedIndex;
@@ -57,11 +56,6 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     
     static var startingQuery : URL?{
         didSet{
-            /*var nav = UIApplication.shared.keyWindow?.rootViewController as? MainViewController;
-            guard nav != nil else{
-                return;
-            }*/
-            
             guard startingQuery != nil else{
                 return;
             }
@@ -72,14 +66,9 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                 return;
             }
             
-            //if nav?.topViewController is KGDTableViewController{
             if KGDTableViewController.shared?.shouldPerformSegue(withIdentifier: "tourInfo", sender: KGDTableViewController.shared) ?? false{
                 KGDTableViewController.shared?.performSegue(withIdentifier: "tourInfo", sender: KGDTableViewController.shared);
             }
-            //}else{
-                /*nav?.popViewController(animated: false);
-                KGDTableViewController.shared?.performSegue(withIdentifier: "tourInfo", sender: KGDTableViewController.shared);
-            }*/
         }
     }
     
@@ -112,7 +101,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
          */
         var types = ["All Tour Informations".localized()];
         
-        if Locale.current.identifier.hasPrefix("ko"){
+        if Locale.current.isKorean{
             for type in KGDataTourInfo.ContentType.values{
                 types.append(type.stringValue.localized());
             }
@@ -129,6 +118,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         self.typePicker.downPicker.addTarget(self, action: #selector(onTypeSelected(_:)), for: .valueChanged);
         self.view.addSubview(self.typePicker);
         
+        //set range to query from tour api 3.0
         self.radius = WWGDefaults.Range;
         self.rangeButton.setTitle(self.radius.stringForDistance(), for: .normal);
         print("range button - \(self.rangeButton.title)");
@@ -144,15 +134,10 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         
         self.locManager.distanceFilter = 500;
         self.locManager.requestWhenInUseAuthorization();
-        //        self.locManager.startUpdatingLocation();
-        //self.requestLocation();
-        self.refreshControl?.addTarget(self, action: #selector(refresh(control:)), for: .valueChanged);
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
         
+        self.refreshControl?.addTarget(self, action: #selector(refresh(control:)), for: .valueChanged);
+        
+        //set background view for the empty result
         self.emptyView = UILabel();
         self.emptyView?.text = "No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized();
         self.tableView.backgroundView = self.emptyView;
@@ -182,6 +167,9 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         self.refreshInfos();
     }
     
+    /**
+         Requests current location and show activity indicator
+     */
     func requestLocation(){
         print("request current location");
         let hub = MBProgressHUD.showAdded(to: self.view, animated: true);
@@ -195,7 +183,8 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     }
     
     func refreshInfos(){
-        //        self.location = CLLocationCoordinate2D(latitude: CLLocationDegrees(35.7845967), longitude: CLLocationDegrees(129.3240082));
+        /*CLLocationCoordinate2D(latitude: CLLocationDegrees(35.7845967),
+            longitude: CLLocationDegrees(129.3240082));*/
         guard self.location != nil else{
             self.requestLocation();
             return;
@@ -204,6 +193,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         self.infos.removeAll();
         self.imageLoadingQueue.cancelAllOperations();
         //page: Int, count: Int, total: Int
+        //request tour infos in radius
         self.lastKGDRequest = KGDataTourManager.shared.requestList(type: currentType, location: self.location!, radius: UInt(self.radius)) { (page, infos, total, error) in
             
             for (i, info) in infos.enumerated(){
@@ -219,8 +209,9 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     }
     
     @objc func onTypeSelected(_ picker: DownPicker){
-        guard self.currentType != nil else{
+        guard let currentType = self.currentType else{
             self.typeButton.setTitle("\(picker.text.localized()) ▼", for: .normal);
+            //there is no image for all tour informations
             self.typeButton.setImage(nil, for: .normal);
             self.typeButton.sizeToFit();
             self.refreshInfos();
@@ -228,14 +219,13 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         }
         
         print("selected \(picker)");
-        self.typeButton.setImage(self.currentType?.image, for: .normal);
-        self.typeButton.setTitle("\(self.currentType!.stringValue.localized()) ▼", for: .normal);
+        self.typeButton.setImage(currentType.image, for: .normal);
+        self.typeButton.setTitle("\(currentType.stringValue.localized()) ▼", for: .normal);
         self.typeButton.sizeToFit();
         self.refreshInfos();
     }
     
     @IBAction func onSelectType(_ sender: UIButton) {
-        //self.typePicker.show(self.typePicker);
         self.typePicker.becomeFirstResponder();
     }
     
@@ -255,12 +245,10 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
-        // #warning Incomplete implementation, return the number of sections
         return 1;
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return self.infos.count;
     }
 
@@ -276,19 +264,15 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         // Configure the cell...
         cell?.backgroundImageView.image = nil;
         
-        
+        //One by one, Download Image and set to row
         self.imageLoadingQueue.addOperation {
-        //imageQueue.async {
             var image : UIImage? = UIImage();
-            do{
-                if info.thumbnail != nil{
-                    image = try UIImage(data: Data(contentsOf: info.thumbnail!));
-                }
-            }catch{
-                
+            if info.thumbnail != nil{
+                image = try! UIImage(data: Data(contentsOf: info.thumbnail!));
             }
             
             DispatchQueue.main.async {
+                //stop image setting if the target row is invisible
                 guard tableView.indexPathsForVisibleRows?.contains(indexPath) ?? false else{
                     return;
                 }
@@ -305,6 +289,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
 
         //check reach 2 rows before end
         if indexPath.row == self.infos.count - 2{
+            //get url request to get next page
             self.lastKGDRequest = self.lastKGDRequest?.next;
             KGDataTourManager.shared.requestList(request: self.lastKGDRequest!) { (page, infos, total, error) in
                 guard error == nil else{
@@ -312,13 +297,15 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                     return;
                 }
                 
+                //add new informations of next page into information list
                 self.infos.append(contentsOf: infos);
                 var newIndexes : [IndexPath] = [];
+                
+                //make new IndexPath of the inserted rows
                 for (i, _) in infos.enumerated(){
                     let newIndex = IndexPath(row: indexPath.row + i + 1,
                                               section: indexPath.section);
                     newIndexes.append(newIndex);
-                    
                 }
                 
                 print("request more page[\(page)] total[\(total)]");
@@ -389,13 +376,14 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         self.refreshInfos();
         manager.stopUpdatingLocation();
         
-        guard locations.first != nil else{
+        //get country of current location
+        /*guard locations.first != nil else{
             return;
         }
         let geoCoder = CLGeocoder();
         geoCoder.reverseGeocodeLocation(locations.first!) { (marks, error) in
             print("here is \(marks?.first?.isoCountryCode.debugDescription ?? "")");
-        }
+        }*/
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
@@ -413,6 +401,8 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     }
     
     // MARK: KGDRangePickerViewDelegate
+    
+    //did finishing change range
     func rangePickerView(picker: KGDRangePickerViewController, location: CLLocationCoordinate2D, radius: Int) {
         guard self.location?.latitude != location.latitude || self.location?.longitude != location.longitude || self.radius != radius else{
             return;
@@ -430,6 +420,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
         if let view = segue.destination as? KGDTourInfoViewController{
+            // MARK: Extracts properties of tour info from kakao-link
             if KGDTableViewController.startingQuery != nil{
                 var urlComponent = URLComponents(url: KGDTableViewController.startingQuery!, resolvingAgainstBaseURL: true);
                 let srcLat = urlComponent?.queryItems?.first(where: { (query) -> Bool in
@@ -443,24 +434,24 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                 })?.value ?? "";
                 
                 if !srcLat.isEmpty && !srcLong.isEmpty{
-                    view.location = CLLocationCoordinate2D(latitude: CLLocationDegrees(srcLat)!, longitude: CLLocationDegrees(srcLong)!);
+                    view.currentLocation = CLLocationCoordinate2D(latitude: CLLocationDegrees(srcLat)!, longitude: CLLocationDegrees(srcLong)!);
                 }
                 view.infoId = Int(contentId)!;
                 KGDTableViewController.startingQuery = nil;
             }else if let cell = sender as? KGDTableViewCell{
+                //if open from cell
                  if cell.backgroundImageView.image != nil{
-                    //view.imageButton?.setImage(cell.backgroundImageView?.image, for: .normal);
-                    var indexPath = self.tableView.indexPath(for: cell);
-                    guard indexPath != nil  else {
+                    guard let indexPath = self.tableView.indexPath(for: cell)  else {
                         return;
                     }
-                    let info = self.infos[indexPath!.row];
+                    let info = self.infos[indexPath.row];
                     view.info = info;
-                    view.location = self.location;
+                    view.currentLocation = self.location;
                     //self.tableView.deselectRow(at: self.tableView.indexPathForSelectedRow!, animated: false);
                 }
             }
         }else if let view = segue.destination as? KGDRangePickerViewController{
+            // MARK: Sets info for range picker
             view.location = self.location;
             view.delegate = self;
             view.radius = self.radius;
@@ -473,6 +464,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         if let cell = sender as? KGDTableViewCell{
             value = cell.backgroundImageView.image != nil;
         }else if let view = self.navigationController?.topViewController as? KGDTourInfoViewController{
+            //Checks kakao-link contains destination content id
             if KGDTableViewController.startingQuery != nil{
                 var urlComponent = URLComponents(url: KGDTableViewController.startingQuery!, resolvingAgainstBaseURL: true);
                 
