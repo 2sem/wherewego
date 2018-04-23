@@ -8,15 +8,35 @@
 
 import UIKit
 import CoreData
+import GoogleMaps
+import GoogleMobileAds
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDelegate, ReviewManagerDelegate {
 
     var window: UIWindow?
-
+    var fullAd : GADInterstialManager?;
+    var rewardAd : GADRewardManager?;
+    var reviewManager : ReviewManager?;
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        KGDTableViewController.startingQuery = launchOptions?[UIApplicationLaunchOptionsKey.url] as? URL;
+
+        GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
+        
+        self.fullAd = GADInterstialManager(self.window!, unitId: GADInterstitial.loadUnitId(name: "FullAd") ?? "", interval: 60.0 * 60.0 * 3);
+        self.fullAd?.delegate = self;
+        self.fullAd?.canShowFirstTime = false;
+        
+        self.rewardAd = GADRewardManager(self.window!, unitId: GADInterstitial.loadUnitId(name: "RewardAd") ?? "", interval: 60.0 * 60.0 * 12); //
+        
+        self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 2);
+        self.reviewManager?.delegate = self;
+        
+        if self.rewardAd!.canShow{
+            self.fullAd?.show();
+        }
         return true
     }
 
@@ -29,9 +49,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
+    
+    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+        guard url.scheme == "kakaode726cc2cd83a2ac99c1c566d386b770" else {
+            return false;
+        }
+        
+        KGDTableViewController.startingQuery = url;
+        return true;
+    }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
+        guard self.reviewManager?.canShow ?? false else{
+            self.fullAd?.show();
+            return;
+        }
+        self.reviewManager?.show();
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -42,6 +76,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
         // Saves changes in the application's managed object context before the application terminates.
         self.saveContext()
+    }
+    
+    // MARK: GADInterstialManagerDelegate
+    func GADInterstialGetLastShowTime() -> Date {
+        return WWGDefaults.LastFullADShown;
+    }
+    
+    func GADInterstialUpdate(showTime: Date) {
+        WWGDefaults.LastFullADShown = showTime;
+    }
+    
+    // MARK: ReviewManagerDelegate
+    func reviewGetLastShowTime() -> Date {
+        return WWGDefaults.LastShareShown;
+    }
+    
+    func reviewUpdate(showTime: Date) {
+        WWGDefaults.LastShareShown = showTime;
     }
 
     // MARK: - Core Data stack

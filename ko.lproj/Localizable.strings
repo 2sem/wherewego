@@ -1,0 +1,31 @@
+/* 
+  Localizable.strings
+  wherewego
+
+  Created by 영준 이 on 2017. 5. 25..
+  Copyright © 2017년 leesam. All rights reserved.
+*/
+
+"All Tour Informations" = "모든 관광정보";
+"Tour" = "관광지";
+"Culture" = "문화시설";
+"Event" = "행사/공연/축제";
+"Course" = "여행코스";
+"Leports" = "레포츠";
+"Hotel" = "숙박";
+"Shopping" = "쇼핑";
+"Food" = "음식점";
+"Travel" = "교통";
+"\"WhereWeGo\" needs to use your location" = "\"우리어디가\"에서 사용자의 위치를 필요로합니다.";
+"This app will not work without the location permission" = "이앱은 위치 권한 없이 사용할 수 없습니다.";
+"Ok" = "확인";
+"Settings" = "설정";
+"Tracking Location" = "현재위치 조회 중";
+"No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea." = "현재 범위에서 검색된 내용이 없습니다.\n범위를 늘리거나 마커를 이동하시기 바랍니다.\n마커나 사용자의 위치가 한국으로 설정되었는지 확인하시기 바랍니다.";
+"Review '%@'" = "'%@' 평가";
+"Recommend '%@'" = "'%@' 추천";
+"Cancel" = "취소";
+"App rating and recommendation" = "앱 평가 및 추천";
+"Please rate '%@' or recommend it to your friends." = "'%@'를 평가하거나 친구들에게 추천해보세요.";
+"Sponsorship(view ads)" = "후원하기(광고보기)";
+"Sponsorship(Video Ads)" = "후원하기(동영상 광고)";

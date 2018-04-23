@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>WhereWeGo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,11 +17,52 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>1.0.6</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakaode726cc2cd83a2ac99c1c566d386b770</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>11</string>
+	<key>GoogleADUnitID</key>
+	<dict>
+		<key>BottomBanner</key>
+		<string>ca-app-pub-9684378399371172/7473624288</string>
+		<key>FullAd</key>
+		<string>ca-app-pub-9684378399371172/1169240044</string>
+		<key>RewardAd</key>
+		<string>ca-app-pub-9684378399371172/2568071527</string>
+	</dict>
+	<key>Itunes App Id</key>
+	<string>1241856636</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>de726cc2cd83a2ac99c1c566d386b770</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaode726cc2cd83a2ac99c1c566d386b770</string>
+		<string>kakaolink</string>
+		<string>kakaotalk-5.9.7</string>
+		<string>comgooglemaps</string>
+		<string>googlechromes</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to get list with TourAPI in "WhereWeGo" app</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string></string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
@@ -31,8 +74,6 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>

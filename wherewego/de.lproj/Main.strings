@@ -1,0 +1,48 @@
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "6Px-81-Jwn"; */
+"6Px-81-Jwn.text" = "Label";
+
+/* Class = "UILabel"; text = "10.1 km"; ObjectID = "AcX-sP-bxj"; */
+"AcX-sP-bxj.text" = "10.1 km";
+
+/* Class = "UILabel"; text = "20 km"; ObjectID = "C9a-Us-yvB"; */
+"C9a-Us-yvB.text" = "20 km";
+
+/* Class = "UINavigationItem"; title = "Search Range"; ObjectID = "CXu-x9-ItX"; */
+"CXu-x9-ItX.title" = "Suchbereich";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "GoG-mr-1jO"; */
+"GoG-mr-1jO.normalTitle" = "Button";
+
+/* Class = "UILabel"; text = "문래청소년수련관"; ObjectID = "RlJ-a6-cJM"; */
+"RlJ-a6-cJM.text" = "문래청소년수련관";
+
+/* Class = "UILabel"; text = "Call"; ObjectID = "WyS-Yx-FWM"; */
+"WyS-Yx-FWM.text" = "Anruf";
+
+/* Class = "UILabel"; text = "Search"; ObjectID = "fCw-qi-AJ0"; */
+"fCw-qi-AJ0.text" = "Suche";
+
+/* Class = "UILabel"; text = "Location"; ObjectID = "fLM-sv-i9K"; */
+"fLM-sv-i9K.text" = "Ort";
+
+/* Class = "UILabel"; text = "Overview"; ObjectID = "ffe-GR-uAx"; */
+"ffe-GR-uAx.text" = "Überblick";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "jLH-Ii-CFR"; */
+"jLH-Ii-CFR.text" = "Label";
+
+/* Class = "UILabel"; text = "Route"; ObjectID = "oXU-DW-mZ0"; */
+"oXU-DW-mZ0.text" = "Route";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "obk-2z-N0I"; */
+"obk-2z-N0I.normalTitle" = "Button";
+
+/* Class = "UINavigationItem"; title = "Title"; ObjectID = "rTr-ZD-Ajr"; */
+"rTr-ZD-Ajr.title" = "Title";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "tbE-RY-juC"; */
+"tbE-RY-juC.normalTitle" = "Button";
+
+/* Class = "UIButton"; normalTitle = "3 km"; ObjectID = "vOk-WC-mWL"; */
+"vOk-WC-mWL.normalTitle" = "3 km";
