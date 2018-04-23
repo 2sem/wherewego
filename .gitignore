@@ -1,6 +1,6 @@
 *.xlsx
 # Created by https://www.gitignore.io/api/xcode,swift,cocoapods
-wherewego/kgdata/KGData.plist
+#wherewego/kgdata/KGData.plist
 ### CocoaPods ###
 ## CocoaPods GitIgnore Template
 
