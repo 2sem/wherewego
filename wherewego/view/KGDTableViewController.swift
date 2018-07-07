@@ -11,6 +11,7 @@ import CoreLocation
 import DownPicker
 import MBProgressHUD
 import LSExtensions
+import SDWebImage
 
 class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, KGDRangePickerViewDelegate {
     static let cell_id = "KGDTableViewCell";
@@ -262,10 +263,10 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         
         let info = self.infos[indexPath.row];
         // Configure the cell...
-        cell?.backgroundImageView.image = nil;
+        cell?.backgroundImageView.sd_setImage(with: info.thumbnail, placeholderImage: WWGImages.noImage, options: .scaleDownLargeImages);
         
         //One by one, Download Image and set to row
-        self.imageLoadingQueue.addOperation {
+        /*self.imageLoadingQueue.addOperation {
             var image : UIImage? = UIImage();
             if info.thumbnail != nil{
                 image = try! UIImage(data: Data(contentsOf: info.thumbnail!));
@@ -282,7 +283,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                     cell?.backgroundImageView.image = WWGImages.noImage;
                 }
             }
-        }
+        }*/
         
         cell?.titleLabel.text = info.title;
         cell?.distanceLabel.text = info.distance?.stringForDistance();
@@ -438,17 +439,11 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                 }
                 view.infoId = Int(contentId)!;
                 KGDTableViewController.startingQuery = nil;
-            }else if let cell = sender as? KGDTableViewCell{
-                //if open from cell
-                 if cell.backgroundImageView.image != nil{
-                    guard let indexPath = self.tableView.indexPath(for: cell)  else {
-                        return;
-                    }
-                    let info = self.infos[indexPath.row];
-                    view.info = info;
-                    view.currentLocation = self.location;
-                    //self.tableView.deselectRow(at: self.tableView.indexPathForSelectedRow!, animated: false);
-                }
+            }else if let indexPath = self.tableView.indexPathForSelectedRow{
+                let info = self.infos[indexPath.row];
+                view.info = info;
+                view.currentLocation = self.location;
+                //self.tableView.deselectRow(at: self.tableView.indexPathForSelectedRow!, animated: false);
             }
         }else if let view = segue.destination as? KGDRangePickerViewController{
             // MARK: Sets info for range picker
@@ -461,9 +456,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
         var value = true;
         
-        if let cell = sender as? KGDTableViewCell{
-            value = cell.backgroundImageView.image != nil;
-        }else if let view = self.navigationController?.topViewController as? KGDTourInfoViewController{
+        if let view = self.navigationController?.topViewController as? KGDTourInfoViewController{
             //Checks kakao-link contains destination content id
             if KGDTableViewController.startingQuery != nil{
                 var urlComponent = URLComponents(url: KGDTableViewController.startingQuery!, resolvingAgainstBaseURL: true);

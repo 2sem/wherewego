@@ -4,6 +4,7 @@
 target 'wherewego' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
+  inhibit_all_warnings!
 
   # Pods for wherewego
   pod 'GoogleMaps'
@@ -14,7 +15,8 @@ target 'wherewego' do
   pod 'MBProgressHUD'
   pod 'Firebase/Core'
   pod 'Firebase/AdMob'
-  pod 'LSExtensions', :path => '~/Projects/leesam/pods/LSExtensions/src/LSExtensions'
+  pod 'LSExtensions'
+  pod 'SDWebImage', '~> 4.0'
 
   target 'wherewegoTests' do
     inherit! :search_paths

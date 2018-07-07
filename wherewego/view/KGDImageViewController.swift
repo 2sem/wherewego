@@ -7,17 +7,18 @@
 //
 
 import UIKit
+import SDWebImage
 
 class KGDImageViewController: UIViewController {
 
-    var image : UIImage?;
+    var imageUrl : URL?;
     
     @IBOutlet weak var imageView: UIImageView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.imageView.image = self.image;
+        self.imageView.sd_setImage(with: self.imageUrl, placeholderImage: WWGImages.noImage, options: []);
         // Do any additional setup after loading the view.
     }
 
@@ -27,7 +28,10 @@ class KGDImageViewController: UIViewController {
     }
     
     @IBAction func onShare(_ sender: Any) {
-        self.share([self.image?.description ?? ""])
+        guard let image = self.imageView.image else{
+            return;
+        }
+        self.share([image]);
     }
 
     /*

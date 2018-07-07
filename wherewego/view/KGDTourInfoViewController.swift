@@ -288,7 +288,7 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let imageView = segue.destination as? KGDImageViewController{
-            imageView.image = self.imageButton.image(for: .normal);
+            imageView.imageUrl = self.info?.image;
         }
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.

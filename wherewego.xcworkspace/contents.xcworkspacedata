@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../../../pods/LSExtensions/src/LSExtensions/LSExtensions.xcodeproj">
-   </FileRef>
-   <FileRef
       location = "group:wherewego.xcodeproj">
    </FileRef>
    <FileRef
