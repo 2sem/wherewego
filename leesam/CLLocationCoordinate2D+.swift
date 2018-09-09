@@ -49,7 +49,6 @@ extension CLLocationCoordinate2D{
             //var urlComponents = URLComponents.init(url: url, resolvingAgainstBaseURL: true);
             
             if !UIApplication.shared.canOpenURL(url){
-                
                 url = URL(string: "https://www.google.co.kr/maps/dir/\(self.latitude),\(self.longitude)/\(end.latitude),\(end.longitude)/@\(end.latitude),\(end.longitude),14z")!;
             }else{
                 url = URL(string: "comgooglemap://?saddr=\(self.latitude),\(self.longitude)&daddr=\(end.latitude),\(end.longitude)")!;

@@ -10,13 +10,16 @@ target 'wherewego' do
   pod 'GoogleMaps'
   pod 'GooglePlaces'
   pod 'Material'
-  pod 'KakaoOpenSDK';
+  pod 'KakaoOpenSDK'
   pod 'DownPicker'
   pod 'MBProgressHUD'
   pod 'Firebase/Core'
   pod 'Firebase/AdMob'
   pod 'LSExtensions'
-  pod 'SDWebImage', '~> 4.0'
+  pod 'SDWebImage'#, '~> 4.0'
+  
+  pod 'Fabric'
+  pod 'Crashlytics'
 
   target 'wherewegoTests' do
     inherit! :search_paths

@@ -265,26 +265,6 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         // Configure the cell...
         cell?.backgroundImageView.sd_setImage(with: info.thumbnail, placeholderImage: WWGImages.noImage, options: .scaleDownLargeImages);
         
-        //One by one, Download Image and set to row
-        /*self.imageLoadingQueue.addOperation {
-            var image : UIImage? = UIImage();
-            if info.thumbnail != nil{
-                image = try! UIImage(data: Data(contentsOf: info.thumbnail!));
-            }
-            
-            DispatchQueue.main.async {
-                //stop image setting if the target row is invisible
-                guard tableView.indexPathsForVisibleRows?.contains(indexPath) ?? false else{
-                    return;
-                }
-                
-                cell?.backgroundImageView.image = image;
-                if image?.size.height == 0 || image?.size.width == 0{
-                    cell?.backgroundImageView.image = WWGImages.noImage;
-                }
-            }
-        }*/
-        
         cell?.titleLabel.text = info.title;
         cell?.distanceLabel.text = info.distance?.stringForDistance();
 

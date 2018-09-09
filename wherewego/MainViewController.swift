@@ -9,6 +9,7 @@
 import UIKit
 import CoreLocation
 import GoogleMobileAds
+import Crashlytics
 
 class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRewardManagerDelegate {
 
@@ -46,6 +47,10 @@ class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRew
             return;
         }*/
         //self.bottomBannerView?.load(req);
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        //Crashlytics.sharedInstance().crash();
     }
 
     override func didReceiveMemoryWarning() {

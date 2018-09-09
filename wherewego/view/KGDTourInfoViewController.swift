@@ -9,6 +9,7 @@
 import UIKit
 import CoreLocation
 import GoogleMaps
+import SafariServices
 
 class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
 
@@ -164,7 +165,9 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
         
         //print("http://map.daum.net/?sX=\(self.location!.latitude)&sY=\(self.location!.longitude)&sName=\("Current Location".localized())&eX=\(self.info.location!.latitude)&eY=\(self.info.location!.longitude)&eName=\(self.info.title)");
         print("open url \(url)");
-        UIApplication.shared.open(url, options: [:], completionHandler: nil);
+        //UIApplication.shared.open(url, options: [:], completionHandler: nil);
+        let webView = SFSafariViewController.init(url: url);
+        self.present(webView, animated: true, completion: nil);
     }
     
     @IBAction func onSearch(_ button: UIButton) {
@@ -176,22 +179,11 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     }
 
     func loadImage(){
-        var image : UIImage? = UIImage();
-        if info?.image != nil{
-            image = try! UIImage(data: Data(contentsOf: info.image!));
-        }
-        
         guard !self.isMovingFromParentViewController else{
             return;
         }
         
-        DispatchQueue.main.async {[unowned self] in
-            if image?.size.height == 0 || image?.size.width == 0{
-                self.imageButton.setImage(image, for: .normal);
-                image = WWGImages.noImage;
-            }
-            self.imageButton.setImage(image, for: .normal);
-        }
+        self.imageButton.sd_setImage(with: self.info?.image, for: .normal, placeholderImage: WWGImages.noImage);
     }
     
     // MARK: - Table view data source
