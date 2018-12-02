@@ -76,15 +76,29 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     @IBOutlet weak var typeButton: UIButton!
     @IBOutlet weak var centerButton: UIBarButtonItem!
     @IBOutlet weak var rangeButton: UIButton!
-    var emptyView : UILabel?;
+    lazy var emptyView : UILabel = {
+        var label = UILabel();
+        label.text = "No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized();
+        label.numberOfLines = 0;
+        label.sizeToFit();
+        label.textAlignment = .center;
+        
+        return label;
+    }()
     
     override func viewWillAppear(_ animated: Bool) {
         //self.reviewManager?.show();
+        LSThemeManager.shared.apply(viewController: self);
+        LSThemeManager.shared.apply(navigationController: self.navigationController);
+        LSThemeManager.shared.apply(barButton: self.rangeButton);
+        LSThemeManager.shared.apply(label: self.emptyView);
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad();
         
+        self.tableView?.hideExtraRows = true;
         if KGDTableViewController._shared == nil{
             KGDTableViewController._shared = self;
         }
@@ -139,16 +153,12 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         self.refreshControl?.addTarget(self, action: #selector(refresh(control:)), for: .valueChanged);
         
         //set background view for the empty result
-        self.emptyView = UILabel();
-        self.emptyView?.text = "No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized();
-        self.tableView.backgroundView = self.emptyView;
-        self.emptyView?.numberOfLines = 0;
-        self.emptyView?.sizeToFit();
-        self.emptyView?.topAnchor.constraint(equalTo: self.view.topAnchor);
-        self.emptyView?.bottomAnchor.constraint(equalTo: self.view.bottomAnchor);
-        self.emptyView?.leftAnchor.constraint(equalTo: self.view.leftAnchor);
-        self.emptyView?.rightAnchor.constraint(equalTo: self.view.rightAnchor);
-        self.emptyView?.textAlignment = .center;
+        self.tableView?.backgroundView = self.emptyView;
+        //self.tableView?.topAnchor.constraint(equalTo: self.view.topAnchor);
+        //self.tableView?.bottomAnchor.constraint(equalTo: self.view.bottomAnchor);
+        //self.tableView?.leftAnchor.constraint(equalTo: self.view.leftAnchor);
+        //self.tableView?.rightAnchor.constraint(equalTo: self.view.rightAnchor);
+        //self.emptyView.isHidden = true;
         
         if KGDTableViewController.startingQuery != nil{
             KGDTableViewController.shared?.performSegue(withIdentifier: "tourInfo", sender: KGDTableViewController.shared);
@@ -250,7 +260,10 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return self.infos.count;
+        let count = self.infos.count;
+        tableView.backgroundView?.isHidden = count > 0;
+        
+        return count;
     }
 
     //var imageQueue = DispatchQueue(label: "tour info image loading");

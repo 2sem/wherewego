@@ -23,6 +23,10 @@ class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRew
     
     @IBOutlet weak var bottomBannerView: GADBannerView!
     
+    override func viewWillAppear(_ animated: Bool) {
+        LSThemeManager.shared.apply(viewController: self);
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
@@ -52,10 +56,13 @@ class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRew
     override func viewDidAppear(_ animated: Bool) {
         //Crashlytics.sharedInstance().crash();
     }
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle{
+        return LSThemeManager.shared.statusBarStyle;
     }
     
     func toggleContraint(value : Bool, constraintOn : NSLayoutConstraint, constarintOff : NSLayoutConstraint){

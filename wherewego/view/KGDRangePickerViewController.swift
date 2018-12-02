@@ -39,6 +39,18 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
     @IBOutlet weak var rangeLabel: UILabel!
     @IBOutlet weak var mapView: GMSMapView!
     
+    override func viewWillAppear(_ animated: Bool) {
+        //self.reviewManager?.show();
+        LSThemeManager.shared.apply(viewController: self);
+        LSThemeManager.shared.apply(button: self.minusButton);
+        LSThemeManager.shared.apply(button: self.plusButton);
+        LSThemeManager.shared.apply(label: rangeLabel);
+        LSThemeManager.shared.apply(slider: self.rangeSlider);
+        //LSThemeManager.shared.apply(navigationController: self.navigationController);
+        //LSThemeManager.shared.apply(barButton: self.rangeButton);
+        //LSThemeManager.shared.apply(label: self.emptyView);
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         

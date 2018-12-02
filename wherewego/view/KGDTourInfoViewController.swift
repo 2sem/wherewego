@@ -10,6 +10,7 @@ import UIKit
 import CoreLocation
 import GoogleMaps
 import SafariServices
+import LSExtensions
 
 class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
 
@@ -19,10 +20,18 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     
     //@IBOutlet weak var imageView: UIImageView!
     @IBOutlet weak var imageButton: UIButton!
-    @IBOutlet weak var phoneLabel: UILabel!
+    
+    @IBOutlet weak var telButton: UIButton!
+    @IBOutlet weak var routeButton: UIButton!
+    @IBOutlet weak var searchButton: UIButton!
+    
+    @IBOutlet weak var addrIconImageView: UIImageView!
+    @IBOutlet weak var addrTitleLabel: UILabel!
     @IBOutlet weak var addrLabel: UILabel!
     @IBOutlet weak var detailAddrLabel: UILabel!
     @IBOutlet weak var mapView: GMSMapView!
+    @IBOutlet weak var overviewIconImageView: UIImageView!
+    @IBOutlet weak var overviewTitleLabel: UILabel!
     @IBOutlet weak var overviewLabel: UILabel!
     
     fileprivate var hereMarker : GMSMarker!;
@@ -34,6 +43,17 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        LSThemeManager.shared.apply(viewController: self);
+        LSThemeManager.shared.apply(roundButton: self.telButton);
+        LSThemeManager.shared.apply(roundButton: self.routeButton);
+        LSThemeManager.shared.apply(roundButton: self.searchButton);
+        LSThemeManager.shared.apply(label: self.addrTitleLabel);
+        LSThemeManager.shared.apply(label: self.addrLabel);
+        LSThemeManager.shared.apply(label: self.overviewTitleLabel);
+        LSThemeManager.shared.apply(label: self.overviewLabel);
+        self.addrIconImageView.tintColor = UIColor.white;
+        self.overviewIconImageView.tintColor = UIColor.white;
+        
         if self.info != nil{
             self.infoId = self.info.id ?? 0;
         }
@@ -203,19 +223,19 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
         //return value;
         
         switch indexPath.row{
-            case 2:
+            case 1:
                 value = self.addrLabel.frame.height + self.addrLabel.frame.origin.y + 5;
                 break;
-            case 3:
+            case 2:
                 value = self.view.frame.height / 3;
                 break;
-            case 4:
-                guard self.info != nil else{
+            case 3:
+                guard let info = self.info else{
                     return value;
                 }
                 
-                if self.overviewLabel.text != self.info.overview{
-                    self.overviewLabel.text = self.info.overview;
+                if self.overviewLabel.text != info.overview{
+                    self.overviewLabel.text = info.overview;
                     self.overviewLabel.sizeToFit();
                 }
                 //value = 100;

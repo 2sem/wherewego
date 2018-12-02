@@ -18,6 +18,8 @@ class KGDTableViewCell: UITableViewCell {
     override func awakeFromNib() {
         super.awakeFromNib()
         
+        LSThemeManager.shared.apply(imageView: self.backgroundImageView);
+        //LSThemeManager.shared.apply(imageView: self.titleLabel);
         self.backgroundImageView.layer.backgroundColor = UIColor.black.cgColor;
         self.backgroundImageView.layer.opacity = 0.7;
     }
