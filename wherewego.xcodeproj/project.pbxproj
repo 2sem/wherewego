@@ -46,8 +46,8 @@
 		2C10002D1ED7093200463759 /* Icons8.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C10002C1ED7093200463759 /* Icons8.png */; };
 		2C10002F1ED70A6600463759 /* icon_tour_api_.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 2C10002E1ED70A6600463759 /* icon_tour_api_.jpg */; };
 		2C1000341ED714B600463759 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C1000361ED714B600463759 /* Localizable.strings */; };
+		2C11696322773C1100B2B1EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C11696222773C1100B2B1EE /* GoogleService-Info.plist */; };
 		2C12EEE51EDC57E200687B9E /* GADInterstitial+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C12EEE31EDC57E100687B9E /* GADInterstitial+.swift */; };
-		2C12EEE71EDC5A6100687B9E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C12EEE61EDC5A6100687B9E /* GoogleService-Info.plist */; };
 		2C14EA771F667ADE00470F80 /* GADBannerView+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C14EA761F667ADE00470F80 /* GADBannerView+.swift */; };
 		2C14EA791F668E0C00470F80 /* icon_donate.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C14EA781F668E0C00470F80 /* icon_donate.png */; };
 		2C14EA7B1F668E7D00470F80 /* icon_favor.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C14EA7A1F668E7D00470F80 /* icon_favor.png */; };
@@ -148,8 +148,8 @@
 		2C1000331ED7144800463759 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		2C1000351ED714B600463759 /* ko */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ko; path = ko.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2C1000371ED714D700463759 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
+		2C11696222773C1100B2B1EE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2C12EEE31EDC57E100687B9E /* GADInterstitial+.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GADInterstitial+.swift"; sourceTree = "<group>"; };
-		2C12EEE61EDC5A6100687B9E /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2C14EA761F667ADE00470F80 /* GADBannerView+.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GADBannerView+.swift"; sourceTree = "<group>"; };
 		2C14EA781F668E0C00470F80 /* icon_donate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_donate.png; sourceTree = "<group>"; };
 		2C14EA7A1F668E7D00470F80 /* icon_favor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_favor.png; sourceTree = "<group>"; };
@@ -346,8 +346,8 @@
 				2C09CE8F1E76227D00993BEA /* LaunchScreen.storyboard */,
 				2C09CE921E76227D00993BEA /* Info.plist */,
 				2C197EEF1EDD53CF00C6229D /* InfoPlist.strings */,
-				2C12EEE61EDC5A6100687B9E /* GoogleService-Info.plist */,
 				2C1000361ED714B600463759 /* Localizable.strings */,
+				2C11696222773C1100B2B1EE /* GoogleService-Info.plist */,
 				2C09CE8A1E76227D00993BEA /* wherewego.xcdatamodeld */,
 			);
 			path = wherewego;
@@ -596,9 +596,9 @@
 				2C77518C208DB738009B786D /* KGData.plist in Resources */,
 				2C10002B1ED7092700463759 /* Y2K.PNG in Resources */,
 				2C234C931ED5706700ED0AC0 /* icon_tour.png in Resources */,
+				2C11696322773C1100B2B1EE /* GoogleService-Info.plist in Resources */,
 				2C14EA7B1F668E7D00470F80 /* icon_favor.png in Resources */,
 				2C197EF01EDD53CF00C6229D /* InfoPlist.strings in Resources */,
-				2C12EEE71EDC5A6100687B9E /* GoogleService-Info.plist in Resources */,
 				2C014C061E9673AA001EFF0D /* icon_shopping.png in Resources */,
 				2CE3CF371ECE8B490095217E /* icon_navi.png in Resources */,
 				2C16049D1ECD6F7D005D07FD /* icon_google_map.png in Resources */,

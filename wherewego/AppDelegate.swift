@@ -36,9 +36,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
         self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 2);
         self.reviewManager?.delegate = self;
         
-        if self.rewardAd!.canShow{
+        self.fullAd?.prepare();
+        /*if self.rewardAd!.canShow{
             self.fullAd?.show();
-        }
+        }*/
         return true
     }
 

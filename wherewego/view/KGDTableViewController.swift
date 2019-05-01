@@ -167,6 +167,7 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
     
     override func viewDidDisappear(_ animated: Bool) {
         //self.reviewManager?.show();
+        GADInterstialManager.shared?.show();
     }
 
     override func didReceiveMemoryWarning() {

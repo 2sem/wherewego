@@ -83,6 +83,23 @@ class GADInterstialManager : NSObject, GADInterstitialDelegate{
         }
     }
     
+    func prepare(){
+        print("create new full ad");
+        self.fullAd = GADInterstitial(adUnitID: self.unitId);
+        self.fullAd?.delegate = self;
+        let req = GADRequest();
+        #if DEBUG
+        req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
+        #endif
+        /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
+         alert.dismiss(animated: false, completion: nil);
+         }
+         }*/
+        
+        self.fullAd?.load(req);
+        self.delegate?.GADInterstialWillLoad();
+    }
+    
     func show(_ force : Bool = false){
         guard self.canShow || force else {
             //self.window.rootViewController?.showAlert(title: "알림", msg: "1시간에 한번만 후원하실 수 있습니다 ^^;", actions: [UIAlertAction(title: "확인", style: .default, handler: nil)], style: .alert);
@@ -96,6 +113,9 @@ class GADInterstialManager : NSObject, GADInterstitialDelegate{
         /*guard self.canShow else {
             return;
         }*/
+        guard self.fullAd?.isReady ?? false else{
+            return;
+        }
         
         guard self.fullAd?.hasBeenUsed ?? true else{
             print("full ad is not yet used - self.fullAd?.hasBeenUsed");
@@ -103,20 +123,7 @@ class GADInterstialManager : NSObject, GADInterstitialDelegate{
             return;
         }
         
-        print("create new full ad");
-        self.fullAd = GADInterstitial(adUnitID: self.unitId);
-        self.fullAd?.delegate = self;
-        let req = GADRequest();
-        #if DEBUG
-            req.testDevices = ["5fb1f297b8eafe217348a756bdb2de56"];
-        #endif
-        /*if let alert = UIApplication.shared.keyWindow?.rootViewController?.presentedViewController as? UIAlertController{
-            alert.dismiss(animated: false, completion: nil);
-         }
-        }*/
-        
-        self.fullAd?.load(req);
-        self.delegate?.GADInterstialWillLoad();
+        //self.prepare();
     }
     
     private func __show(){
@@ -149,13 +156,18 @@ class GADInterstialManager : NSObject, GADInterstitialDelegate{
         //RSDefaults.LastFullADShown = Date();
     }
     
+    func interstitial(_ ad: GADInterstitial, didFailToReceiveAdWithError error: GADRequestError) {
+        print("failed to ready Interstitial. error[\(error)]");
+    }
+    
     func interstitialDidReceiveAd(_ ad: GADInterstitial) {
         print("Interstitial is ready to be presented");
         
-        self._show();
+        //self._show();
     }
     
     func interstitialWillPresentScreen(_ ad: GADInterstitial) {
         self.fullAd = nil;
+        self.prepare();
     }
 }
