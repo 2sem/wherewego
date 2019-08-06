@@ -10,7 +10,7 @@ import UIKit
 import CoreData
 import GoogleMaps
 import GoogleMobileAds
-import Crashlytics
+import Firebase
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDelegate, ReviewManagerDelegate {
@@ -23,6 +23,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
+        FirebaseApp.configure();
+        LSRemoteConfig.shared.fetch { (config, error) in
+            LSThemeManager.shared.theme = config.theme;
+        }
         KGDTableViewController.startingQuery = launchOptions?[UIApplicationLaunchOptionsKey.url] as? URL;
 
         GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
@@ -33,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
         
         self.rewardAd = GADRewardManager(self.window!, unitId: GADInterstitial.loadUnitId(name: "RewardAd") ?? "", interval: 60.0 * 60.0 * 12); //
         
-        self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 2);
+        self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 30);
         self.reviewManager?.delegate = self;
         
         self.fullAd?.prepare();

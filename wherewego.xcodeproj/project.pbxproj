@@ -48,6 +48,7 @@
 		2C1000341ED714B600463759 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2C1000361ED714B600463759 /* Localizable.strings */; };
 		2C11696322773C1100B2B1EE /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C11696222773C1100B2B1EE /* GoogleService-Info.plist */; };
 		2C12EEE51EDC57E200687B9E /* GADInterstitial+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C12EEE31EDC57E100687B9E /* GADInterstitial+.swift */; };
+		2C13873D22F86AAF005954F6 /* LSRemoteConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C13873C22F86AAF005954F6 /* LSRemoteConfig.swift */; };
 		2C14EA771F667ADE00470F80 /* GADBannerView+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C14EA761F667ADE00470F80 /* GADBannerView+.swift */; };
 		2C14EA791F668E0C00470F80 /* icon_donate.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C14EA781F668E0C00470F80 /* icon_donate.png */; };
 		2C14EA7B1F668E7D00470F80 /* icon_favor.png in Resources */ = {isa = PBXBuildFile; fileRef = 2C14EA7A1F668E7D00470F80 /* icon_favor.png */; };
@@ -150,6 +151,7 @@
 		2C1000371ED714D700463759 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/Localizable.strings; sourceTree = "<group>"; };
 		2C11696222773C1100B2B1EE /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		2C12EEE31EDC57E100687B9E /* GADInterstitial+.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GADInterstitial+.swift"; sourceTree = "<group>"; };
+		2C13873C22F86AAF005954F6 /* LSRemoteConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LSRemoteConfig.swift; sourceTree = "<group>"; };
 		2C14EA761F667ADE00470F80 /* GADBannerView+.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "GADBannerView+.swift"; sourceTree = "<group>"; };
 		2C14EA781F668E0C00470F80 /* icon_donate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_donate.png; sourceTree = "<group>"; };
 		2C14EA7A1F668E7D00470F80 /* icon_favor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_favor.png; sourceTree = "<group>"; };
@@ -390,6 +392,7 @@
 			isa = PBXGroup;
 			children = (
 				2C1000221ED6A1C600463759 /* WWGDefaults.swift */,
+				2C13873C22F86AAF005954F6 /* LSRemoteConfig.swift */,
 			);
 			path = data;
 			sourceTree = "<group>";
@@ -540,6 +543,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 				"zh-Hant",
@@ -549,6 +553,7 @@
 				es,
 				fr,
 				ru,
+				ko,
 			);
 			mainGroup = 2C09CE771E76227D00993BEA;
 			productRefGroup = 2C09CE811E76227D00993BEA /* Products */;
@@ -646,6 +651,7 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			outputPaths = (
 			);
@@ -684,6 +690,7 @@
 				"${BUILT_PRODUCTS_DIR}/MBProgressHUD/MBProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/Material/Material.framework",
 				"${BUILT_PRODUCTS_DIR}/Motion/Motion.framework",
+				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
@@ -695,6 +702,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MBProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Material.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Motion.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
@@ -780,6 +788,7 @@
 				2C12EEE51EDC57E200687B9E /* GADInterstitial+.swift in Sources */,
 				2CC12A4E1E7A3359008085E7 /* KGDataTourInfo.swift in Sources */,
 				2C14EA7D1F66901000470F80 /* GADRewardManager.swift in Sources */,
+				2C13873D22F86AAF005954F6 /* LSRemoteConfig.swift in Sources */,
 				2C0B59AE1E87EBBE00C86BC4 /* KGDataTourObject.swift in Sources */,
 				2C191A5B1FAA072400A34718 /* GADInterstialManager.swift in Sources */,
 				2CE3CF391ECEBF380095217E /* KGDImageViewController.swift in Sources */,

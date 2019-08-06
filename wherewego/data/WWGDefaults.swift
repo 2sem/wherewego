@@ -19,6 +19,7 @@ class WWGDefaults{
         static let LastFullADShown = "LastFullADShown";
         static let LastShareShown = "LastShareShown";
         static let LastRewardADShown = "LastRewardADShown";
+        static let LastReviewRequest = "LastReviewRequest";
 
         static let Range = "Range";
     }
@@ -53,6 +54,17 @@ class WWGDefaults{
         
         set(value){
             Defaults.set(value.timeIntervalSince1970, forKey: Keys.LastRewardADShown);
+        }
+    }
+    
+    static var LastReviewRequest : Date{
+        get{
+            let seconds = Defaults.double(forKey: Keys.LastReviewRequest);
+            return Date.init(timeIntervalSince1970: seconds);
+        }
+        
+        set(value){
+            Defaults.set(value.timeIntervalSince1970, forKey: Keys.LastReviewRequest);
         }
     }
     

@@ -20,6 +20,7 @@ target 'wherewego' do
   
   pod 'Fabric'
   pod 'Crashlytics'
+  pod 'Firebase/RemoteConfig'
 
   target 'wherewegoTests' do
     inherit! :search_paths
