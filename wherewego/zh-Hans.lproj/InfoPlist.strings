@@ -1,0 +1,8 @@
+/* 
+  InfoPlist.strings
+  wherewego
+
+  Created by 영준 이 on 2017. 5. 30..
+  Copyright © 2017년 leesam. All rights reserved.
+*/
+NSLocationWhenInUseUsageDescription = "使用位置信息探索附近的景点。";

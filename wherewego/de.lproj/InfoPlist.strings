@@ -5,4 +5,4 @@
   Created by 영준 이 on 2017. 5. 30..
   Copyright © 2017년 leesam. All rights reserved.
 */
-CFBundleDisplayName = "우리어디가?";
+NSLocationWhenInUseUsageDescription = "Verwenden Sie die Standortinformationen, um nahe gelegene Sehenswürdigkeiten zu erkunden.";

@@ -1,0 +1,9 @@
+/* 
+  InfoPlist.strings
+  wherewego
+
+  Created by 영준 이 on 2017. 5. 30..
+  Copyright © 2017년 leesam. All rights reserved.
+*/
+CFBundleDisplayName = "우리어디가?";
+NSLocationWhenInUseUsageDescription = "주변의 관광지를 탐색하기 위해 위치정보를 사용합니다.";
