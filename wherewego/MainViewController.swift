@@ -8,8 +8,8 @@
 
 import UIKit
 import CoreLocation
+import FirebaseCrashlytics
 import GoogleMobileAds
-import Crashlytics
 
 class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRewardManagerDelegate {
 
@@ -92,15 +92,7 @@ class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRew
     }
     
     /// MARK: GADBannerViewDelegate
-    @objc func adViewDidReceiveAd(_ bannerView: GADBannerView) {
-        self.showBanner(visible: true);
-        print("gad banner loading has been completed");
-    }
     
-    func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
-        print("failed to receive ad from google. error[\(error)] size[\(self.bottomBannerView.frame)] hidden[\(self.bottomBannerView.isHidden)]");
-        self.showBanner(visible: false);
-    }
     
     // MARK: GADInterstialManagerDelegate
     func GADInterstialGetLastShowTime() -> Date {
@@ -127,3 +119,14 @@ class MainViewController: UIViewController, GADInterstialManagerDelegate, GADRew
     }
 }
 
+extension MainViewController : GADBannerViewDelegate{
+    @objc func adViewDidReceiveAd(_ bannerView: GADBannerView) {
+        self.showBanner(visible: true);
+        print("gad banner loading has been completed");
+    }
+    
+    func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
+        print("failed to receive ad from google. error[\(error)] size[\(self.bottomBannerView.frame)] hidden[\(self.bottomBannerView.isHidden)]");
+        self.showBanner(visible: false);
+    }
+}

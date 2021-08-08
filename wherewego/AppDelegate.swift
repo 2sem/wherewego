@@ -10,15 +10,23 @@ import UIKit
 import CoreData
 import GoogleMaps
 import GoogleMobileAds
+import StoreKit
+import GADManager
 import Firebase
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDelegate, ReviewManagerDelegate {
 
     var window: UIWindow?
-    var fullAd : GADInterstialManager?;
+    enum GADUnitName : String{
+        case full = "FullAd"
+        case banner = "Banner"
+        case launch = "Launch"
+    }
+    static var sharedGADManager : GADManager<GADUnitName>?;
     var rewardAd : GADRewardManager?;
     var reviewManager : ReviewManager?;
+    let reviewInterval = 90;
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
@@ -31,16 +39,23 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
 
         GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
         
-        self.fullAd = GADInterstialManager(self.window!, unitId: GADInterstitial.loadUnitId(name: "FullAd") ?? "", interval: 60.0 * 60.0 * 3);
-        self.fullAd?.delegate = self;
-        self.fullAd?.canShowFirstTime = false;
-        
-        self.rewardAd = GADRewardManager(self.window!, unitId: GADInterstitial.loadUnitId(name: "RewardAd") ?? "", interval: 60.0 * 60.0 * 12); //
+        self.rewardAd = GADRewardManager(self.window!, unitId: GADInterstitialAd.loadUnitId(name: "RewardAd") ?? "", interval: 60.0 * 60.0 * 12); //
         
         self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 30);
         self.reviewManager?.delegate = self;
         
-        self.fullAd?.prepare();
+        var adManager = GADManager<GADUnitName>.init(self.window!);
+        AppDelegate.sharedGADManager = adManager;
+        adManager.delegate = self;
+        #if DEBUG
+        adManager.prepare(interstitialUnit: .full, interval: 60.0); //
+        adManager.prepare(openingUnit: .launch, isTest: true, interval: 60.0); //
+        #else
+        adManager.prepare(interstitialUnit: .full, interval: 60.0 * 60.0 * 3);
+        adManager.prepare(openingUnit: .launch, interval: 60.0 * 5); //
+        #endif
+        adManager.canShowFirstTime = false;
+        
         /*if self.rewardAd!.canShow{
             self.fullAd?.show();
         }*/
@@ -68,15 +83,38 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-        guard self.reviewManager?.canShow ?? false else{
-            self.fullAd?.show();
+        guard WWGDefaults.LaunchCount % reviewInterval != 0 else{
+            if #available(iOS 10.3, *) {
+                SKStoreReviewController.requestReview()
+            }
+            WWGDefaults.increaseLaunchCount();
             return;
         }
-        self.reviewManager?.show();
+        
+//        print("app going to foreground");
+//        guard ReviewManager.shared?.canShow ?? false else{
+//            //self.fullAd?.show();
+//            return;
+//        }
+//        ReviewManager.shared?.show();
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        print("app become active");
+        #if DEBUG
+        let test = true;
+        #else
+        let test = false;
+        #endif
+        
+        guard !WWGDefaults.requestAppTrackingIfNeed() else{
+            return;
+        }
+        
+        AppDelegate.sharedGADManager?.show(unit: .launch, isTest: test, completion: { (unit, ad, result) in
+            
+        })
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
@@ -150,3 +188,42 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
 
 }
 
+extension AppDelegate : GADManagerDelegate{
+    func GAD<E>(manager: GADManager<E>, lastPreparedTimeForUnit unit: E) -> Date where E : Hashable, E : RawRepresentable, E.RawValue == String {
+        let now = Date();
+  //        if RSDefaults.LastOpeningAdPrepared > now{
+  //            RSDefaults.LastOpeningAdPrepared = now;
+  //        }
+
+          return WWGDefaults.LastOpeningAdPrepared;
+          //Calendar.current.component(<#T##component: Calendar.Component##Calendar.Component#>, from: <#T##Date#>)
+    }
+    
+    func GAD<E>(manager: GADManager<E>, updateLastPreparedTimeForUnit unit: E, preparedTime time: Date){
+        WWGDefaults.LastOpeningAdPrepared = time;
+        
+        //RNInfoTableViewController.shared?.needAds = false;
+        //RNFavoriteTableViewController.shared?.needAds = false;
+    }
+    
+    func GAD<E>(manager: GADManager<E>, didDismissADForUnit unit: E) where E : Hashable, E : RawRepresentable, E.RawValue == String {
+        WWGDefaults.increateAdsShownCount();
+    }
+    
+    func GAD<GADUnitName>(manager: GADManager<GADUnitName>, lastShownTimeForUnit unit: GADUnitName) -> Date{
+        let now = Date();
+        if WWGDefaults.LastFullADShown > now{
+            WWGDefaults.LastFullADShown = now;
+        }
+        
+        return WWGDefaults.LastFullADShown;
+        //Calendar.current.component(<#T##component: Calendar.Component##Calendar.Component#>, from: <#T##Date#>)
+    }
+    
+    func GAD<GADUnitName>(manager: GADManager<GADUnitName>, updatShownTimeForUnit unit: GADUnitName, showTime time: Date){
+        WWGDefaults.LastFullADShown = time;
+        
+        //RNInfoTableViewController.shared?.needAds = false;
+        //RNFavoriteTableViewController.shared?.needAds = false;
+    }
+}

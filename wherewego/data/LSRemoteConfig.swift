@@ -36,10 +36,10 @@ class LSRemoteConfig: NSObject {
          }*/
         self.firebaseConfig.fetch(withExpirationDuration: timeout) { (status, error_fetch) in
             guard let rcerror = error_fetch else{
-                self.firebaseConfig.activate(completionHandler: { (error_act) in
+                self.firebaseConfig.activate{(result, errorAct) in
                     //SWToast.hideActivity();
-                    completion(self, error_act);
-                });
+                    completion(self, errorAct);
+                };
                 return;
             }
             

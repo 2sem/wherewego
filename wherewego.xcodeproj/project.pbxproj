@@ -69,6 +69,7 @@
 		2C234C991ED58BA700ED0AC0 /* KGDRangePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */; };
 		2C77518C208DB738009B786D /* KGData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518B208DB738009B786D /* KGData.plist */; };
 		2C77518E208DB809009B786D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518D208DB809009B786D /* .gitignore */; };
+		2CA8FA3C26BFB12A00892C13 /* GADRewardedAd+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */; };
 		2CC12A4E1E7A3359008085E7 /* KGDataTourInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC12A4D1E7A3359008085E7 /* KGDataTourInfo.swift */; };
 		2CC6AA9E1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC6AA9D1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift */; };
 		2CE3CF371ECE8B490095217E /* icon_navi.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE3CF361ECE8B490095217E /* icon_navi.png */; };
@@ -197,6 +198,7 @@
 		2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KGDRangePickerViewController.swift; sourceTree = "<group>"; };
 		2C77518B208DB738009B786D /* KGData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KGData.plist; sourceTree = "<group>"; };
 		2C77518D208DB809009B786D /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GADRewardedAd+.swift"; sourceTree = "<group>"; };
 		2CC12A4D1E7A3359008085E7 /* KGDataTourInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KGDataTourInfo.swift; sourceTree = "<group>"; };
 		2CC6AA9D1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "KGDataTourInfo+KLKTalkLinkCenter.swift"; sourceTree = "<group>"; };
 		2CE3CF361ECE8B490095217E /* icon_navi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon_navi.png; sourceTree = "<group>"; };
@@ -388,6 +390,7 @@
 				2C1000241ED6E14700463759 /* GMSCircle+.swift */,
 				2C14EA761F667ADE00470F80 /* GADBannerView+.swift */,
 				2C12EEE31EDC57E100687B9E /* GADInterstitial+.swift */,
+				2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */,
 				2C14EA7C1F66901000470F80 /* GADRewardManager.swift */,
 				2C14EA7E1F6690E500470F80 /* UIApplication+KakaoLink.swift */,
 				2C191A5A1FAA072400A34718 /* GADInterstialManager.swift */,
@@ -651,7 +654,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "buildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\")\nbuildNumber=$(($buildNumber + 1))\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"${PROJECT_DIR}/${INFOPLIST_FILE}\"\n";
+			shellScript = "buildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"$PRODUCT_SETTINGS_PATH\")\necho \"/usr/libexec/PlistBuddy -c 'Print CFBundleVersion $PRODUCT_SETTINGS_PATH'\"\nif [ -z \"$buildNumber\" ] || [ \"$buildNumber\" = \"\\$(CURRENT_PROJECT_VERSION)\" ]\nthen\n        echo \"${PRODUCT_NAME} buildNumber is [empty]\"\n        buildNumber=1\nelse\n        echo \"${PRODUCT_NAME} buildnumber is $buildNumber\"\n        buildNumber=$((buildNumber + 1))\nfi\n\necho \"\\n${PRODUCT_NAME} new buildnumber = $buildNumber\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"$PRODUCT_SETTINGS_PATH\"\n";
 		};
 		2C1595322144C77300110830 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -665,7 +668,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Fabric/run\"\n";
+			shellScript = "${PODS_ROOT}/FirebaseCrashlytics/run -gsp \"${PROJECT_DIR}/${PROJECT}/GoogleService-Info.plist\"\n";
 		};
 		490FA8833E337B740D636FB8 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -693,25 +696,41 @@
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-wherewego/Pods-wherewego-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/DownPicker/DownPicker.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseABTesting/FirebaseABTesting.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseCore/FirebaseCore.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseCoreDiagnostics/FirebaseCoreDiagnostics.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseCrashlytics/FirebaseCrashlytics.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseInstallations/FirebaseInstallations.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseRemoteConfig/FirebaseRemoteConfig.framework",
+				"${BUILT_PRODUCTS_DIR}/GoogleDataTransport/GoogleDataTransport.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/LSExtensions/LSExtensions.framework",
 				"${BUILT_PRODUCTS_DIR}/MBProgressHUD/MBProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/Material/Material.framework",
 				"${BUILT_PRODUCTS_DIR}/Motion/Motion.framework",
-				"${BUILT_PRODUCTS_DIR}/Protobuf/Protobuf.framework",
+				"${BUILT_PRODUCTS_DIR}/PromisesObjC/FBLPromises.framework",
 				"${BUILT_PRODUCTS_DIR}/SDWebImage/SDWebImage.framework",
+				"${BUILT_PRODUCTS_DIR}/StringLogger/StringLogger.framework",
 				"${BUILT_PRODUCTS_DIR}/nanopb/nanopb.framework",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DownPicker.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseABTesting.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCore.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCoreDiagnostics.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCrashlytics.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseInstallations.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseRemoteConfig.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleDataTransport.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LSExtensions.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MBProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Material.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Motion.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Protobuf.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FBLPromises.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SDWebImage.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StringLogger.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/nanopb.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -786,6 +805,7 @@
 				2C014BF41E96258A001EFF0D /* KGDataTourDetailRequest.swift in Sources */,
 				2C234C991ED58BA700ED0AC0 /* KGDRangePickerViewController.swift in Sources */,
 				2C014BF81E963A7A001EFF0D /* KGDataTourRequest.swift in Sources */,
+				2CA8FA3C26BFB12A00892C13 /* GADRewardedAd+.swift in Sources */,
 				2C014BF61E963944001EFF0D /* KGDataTourDetailResponse.swift in Sources */,
 				2C060DE61E8B55AD00CF58FB /* KGDTableViewController.swift in Sources */,
 				2C0B59AC1E87EA8600C86BC4 /* KGDataTourResponseHeader.swift in Sources */,
@@ -1024,10 +1044,12 @@
 			baseConfigurationReference = 0CA70926BB2203C8B075B14D /* Pods-wherewego.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = M29A6H95KD;
 				INFOPLIST_FILE = wherewego/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.wherewego;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -1040,10 +1062,12 @@
 			baseConfigurationReference = 4F092F39CC58874935A2A6ED /* Pods-wherewego.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CURRENT_PROJECT_VERSION = 0;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = M29A6H95KD;
 				INFOPLIST_FILE = wherewego/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MARKETING_VERSION = 1.1.7;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.wherewego;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;

@@ -390,7 +390,9 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
                 self.requestLocation();
                 break;
             case .denied:
-                self.openSettingsOrCancel(title: "\"WhereWeGo\" needs to use your location", msg: "This app will not work without the location permission.", style: .alert, titleForOK: "Ok", titleForSettings: "Settings");
+                self.openSettingsOrCancel(title: "\"WhereWeGo\" needs to use your location", msg: "This app will not work without the location permission.", style: .alert, titleForOK: "Ok", titleForSettings: "Settings", cancelHandler: { (act) in
+                    
+                });
                 break;
         }
     }
