@@ -37,8 +37,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
         }
         KGDTableViewController.startingQuery = launchOptions?[UIApplicationLaunchOptionsKey.url] as? URL;
 
-        GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
-        
+//        GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
+//        GMSServices.provideAPIKey("AIzaSyBZ1CJbOc6VHtEgSzu08FuTNQlohycPLo");
+        GMSServices.provideAPIKey("AIzaSyDb9V5xnYItUag4fy_yhXWmmDum0iIgBXY");
+
         self.rewardAd = GADRewardManager(self.window!, unitId: GADInterstitialAd.loadUnitId(name: "RewardAd") ?? "", interval: 60.0 * 60.0 * 12); //
         
         self.reviewManager = ReviewManager(self.window!, interval: 60.0 * 60.0 * 24 * 30);

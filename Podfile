@@ -8,7 +8,7 @@ target 'wherewego' do
 
   # Pods for wherewego
   pod 'GoogleMaps'
-  pod 'GooglePlaces'
+#  pod 'GooglePlaces'
   pod 'Material'
   pod 'KakaoOpenSDK'
   pod 'DownPicker'

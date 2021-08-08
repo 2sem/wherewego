@@ -37,6 +37,7 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
     @IBOutlet weak var plusButton: UIButton!
     @IBOutlet weak var rangeSlider: UISlider!
     @IBOutlet weak var rangeLabel: UILabel!
+//    @IBOutlet weak var mapViewContainer: UIView!
     @IBOutlet weak var mapView: GMSMapView!
     
     override func viewWillAppear(_ animated: Bool) {
@@ -53,6 +54,12 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+   
+        if self.location == nil{
+            self.location = CLLocationCoordinate2D.init(latitude: CLLocationDegrees(37.5866076), longitude: CLLocationDegrees(126.974811));
+        }
+        
+//        self.mapView = self.generateMapView();
         
         //Shows button to show current location
         self.mapView.isMyLocationEnabled = true;
@@ -60,9 +67,7 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
         
         //Sets default location?
         //self.mapView.delegate = self;
-        if self.location == nil{
-            self.location = CLLocationCoordinate2D.init(latitude: CLLocationDegrees(37.5866076), longitude: CLLocationDegrees(126.974811));
-        }
+
         
         //create maker
         self.hereMarker = GMSMarker(position: self.location!)
@@ -80,7 +85,6 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
         self.rangeCircle.fillColor = UIColor.blue.withAlphaComponent(0.3);
         self.rangeCircle?.radius = CLLocationDistance(self.radius);
         
-        //self.mapView.camera = GMSCameraPosition.camera(withLatitude: self.location!.latitude, longitude: self.location!.longitude, zoom: 10);
     
         self.onRangeChanged(self.rangeSlider);
         self.zoomToFit();
@@ -90,6 +94,20 @@ class KGDRangePickerViewController: UIViewController, GMSMapViewDelegate {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func generateMapView() -> GMSMapView?{
+        var mapView : GMSMapView!;
+        
+        guard let location = self.location else {
+            return mapView;
+        }
+        
+        let camera = GMSCameraPosition.camera(withLatitude: location.latitude, longitude: location.longitude, zoom: 10);
+//        mapView = GMSMapView.map(withFrame: self.mapViewContainer.frame, camera: camera)
+//        self.mapViewContainer.addSubview(mapView);
+        
+        return mapView
     }
     
     @IBAction func onMinus(_ sender: UIButton) {
