@@ -30,7 +30,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>34</string>
+	<string>39</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-9684378399371172~7031400848</string>
 	<key>GADUnitIdentifiers</key>
@@ -67,6 +67,8 @@
 	<string>Use location information to explore nearby attractions.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string></string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>We use tracking to provide matched result</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
