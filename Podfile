@@ -18,7 +18,7 @@ target 'wherewego' do
 #  pod 'Google-Mobile-Ads-SDK'
 
   pod 'LSExtensions', :path => '~/Projects/leesam/pods/LSExtensions/src/LSExtensions'
-  pod 'GADManager', '1.2.22'#, :path => '~/Projects/leesam/pods/GADManager/src/GADManager'
+  pod 'GADManager', :path => '~/Projects/leesam/pods/GADManager/src/GADManager'
   pod 'StringLogger'
 
   pod 'SDWebImage'#, '~> 4.0'

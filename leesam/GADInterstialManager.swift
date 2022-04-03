@@ -156,7 +156,7 @@ class GADInterstialManager : NSObject{
 }
 
 extension GADInterstialManager : GADFullScreenContentDelegate{
-    func adDidPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
+    func adWillPresentFullScreenContent(_ ad: GADFullScreenPresentingAd) {
         self.fullAd = nil;
     }
     
