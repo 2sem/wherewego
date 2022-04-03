@@ -163,16 +163,29 @@ class KGDTableViewController: UITableViewController, CLLocationManagerDelegate, 
         if KGDTableViewController.startingQuery != nil{
             KGDTableViewController.shared?.performSegue(withIdentifier: "tourInfo", sender: KGDTableViewController.shared);
         }
+        
+        self.requestLocation()
     }
     
     override func viewDidDisappear(_ animated: Bool) {
         //self.reviewManager?.show();
         GADInterstialManager.shared?.show();
+        
+        self.fixNavigationBar()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    func fixNavigationBar(){
+        guard #available(iOS 15, *) else { return }
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
     }
     
     @objc func refresh(control : UIRefreshControl){
