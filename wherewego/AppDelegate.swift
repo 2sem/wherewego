@@ -28,14 +28,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
     var reviewManager : ReviewManager?;
     let reviewInterval = 90;
 
-    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
         
         FirebaseApp.configure();
         LSRemoteConfig.shared.fetch { (config, error) in
             LSThemeManager.shared.theme = config.theme;
         }
-        KGDTableViewController.startingQuery = launchOptions?[UIApplicationLaunchOptionsKey.url] as? URL;
+        KGDTableViewController.startingQuery = launchOptions?[UIApplication.LaunchOptionsKey.url] as? URL;
 
 //        GMSServices.provideAPIKey("AIzaSyAC0Osk1PtxmnRnSM1aWAmW1ro52UYfyFs");
 //        GMSServices.provideAPIKey("AIzaSyBZ1CJbOc6VHtEgSzu08FuTNQlohycPLo");
@@ -74,7 +74,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GADInterstialManagerDeleg
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
     
-    func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         guard url.scheme == "kakaode726cc2cd83a2ac99c1c566d386b770" else {
             return false;
         }

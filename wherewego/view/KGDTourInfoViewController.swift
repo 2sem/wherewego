@@ -199,7 +199,7 @@ class KGDTourInfoViewController: UITableViewController, GMSMapViewDelegate {
     }
 
     func loadImage(){
-        guard !self.isMovingFromParentViewController else{
+        guard !self.isMovingFromParent else{
             return;
         }
         
