@@ -69,6 +69,8 @@
 		2C234C991ED58BA700ED0AC0 /* KGDRangePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */; };
 		2C77518C208DB738009B786D /* KGData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518B208DB738009B786D /* KGData.plist */; };
 		2C77518E208DB809009B786D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518D208DB809009B786D /* .gitignore */; };
+		2CA2EED6283E435200D0AF11 /* .github in Resources */ = {isa = PBXBuildFile; fileRef = 2CA2EED5283E435200D0AF11 /* .github */; };
+		2CA2EEDB283E472600D0AF11 /* Fastfile in Resources */ = {isa = PBXBuildFile; fileRef = 2CA2EEDA283E472600D0AF11 /* Fastfile */; };
 		2CA8FA3C26BFB12A00892C13 /* GADRewardedAd+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */; };
 		2CC12A4E1E7A3359008085E7 /* KGDataTourInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC12A4D1E7A3359008085E7 /* KGDataTourInfo.swift */; };
 		2CC6AA9E1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC6AA9D1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift */; };
@@ -198,6 +200,8 @@
 		2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KGDRangePickerViewController.swift; sourceTree = "<group>"; };
 		2C77518B208DB738009B786D /* KGData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KGData.plist; sourceTree = "<group>"; };
 		2C77518D208DB809009B786D /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		2CA2EED5283E435200D0AF11 /* .github */ = {isa = PBXFileReference; lastKnownFileType = folder; path = .github; sourceTree = "<group>"; };
+		2CA2EEDA283E472600D0AF11 /* Fastfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Fastfile; sourceTree = "<group>"; };
 		2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GADRewardedAd+.swift"; sourceTree = "<group>"; };
 		2CC12A4D1E7A3359008085E7 /* KGDataTourInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KGDataTourInfo.swift; sourceTree = "<group>"; };
 		2CC6AA9D1F135BC200B59A21 /* KGDataTourInfo+KLKTalkLinkCenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "KGDataTourInfo+KLKTalkLinkCenter.swift"; sourceTree = "<group>"; };
@@ -322,7 +326,9 @@
 		2C09CE771E76227D00993BEA = {
 			isa = PBXGroup;
 			children = (
+				2CA2EED5283E435200D0AF11 /* .github */,
 				2C77518D208DB809009B786D /* .gitignore */,
+				2CA2EED7283E46CD00D0AF11 /* fastlane */,
 				2CFE235A1EAC993000298626 /* libs */,
 				2C09CEB41E7622CB00993BEA /* leesam */,
 				2C09CE821E76227D00993BEA /* wherewego */,
@@ -414,6 +420,14 @@
 				2C1604931ECD582A005D07FD /* no_image.jpg */,
 			);
 			path = background;
+			sourceTree = "<group>";
+		};
+		2CA2EED7283E46CD00D0AF11 /* fastlane */ = {
+			isa = PBXGroup;
+			children = (
+				2CA2EEDA283E472600D0AF11 /* Fastfile */,
+			);
+			path = fastlane;
 			sourceTree = "<group>";
 		};
 		2CC12A4C1E7A32A0008085E7 /* kgdata */ = {
@@ -587,6 +601,7 @@
 				2C014C091E96750C001EFF0D /* icon_bed.png in Resources */,
 				2C014BFA1E966E79001EFF0D /* icon_overview.png in Resources */,
 				2C10002F1ED70A6600463759 /* icon_tour_api_.jpg in Resources */,
+				2CA2EEDB283E472600D0AF11 /* Fastfile in Resources */,
 				2C09CE911E76227D00993BEA /* LaunchScreen.storyboard in Resources */,
 				2C014BF21E961399001EFF0D /* icon_call@x0.5.png in Resources */,
 				2C014C0B1E967587001EFF0D /* icon_leports.png in Resources */,
@@ -606,6 +621,7 @@
 				2C09CE891E76227D00993BEA /* Main.storyboard in Resources */,
 				2C1604991ECD69CE005D07FD /* icon_call_.png in Resources */,
 				2C14EA791F668E0C00470F80 /* icon_donate.png in Resources */,
+				2CA2EED6283E435200D0AF11 /* .github in Resources */,
 				2C014C0F1E9677BF001EFF0D /* icon_event.png in Resources */,
 				2C16049B1ECD6A3B005D07FD /* icon_call@x0.7.png in Resources */,
 				2C10002D1ED7093200463759 /* Icons8.png in Resources */,
@@ -1050,7 +1066,7 @@
 				INFOPLIST_FILE = wherewego/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.1.8;
+				MARKETING_VERSION = 1.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.wherewego;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
@@ -1069,7 +1085,7 @@
 				INFOPLIST_FILE = wherewego/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 1.1.8;
+				MARKETING_VERSION = 1.1.9;
 				PRODUCT_BUNDLE_IDENTIFIER = com.y2k.wherewego;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
