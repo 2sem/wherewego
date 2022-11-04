@@ -15,12 +15,12 @@ class KGDataAPI : NSObject{
         /** 
             tour 30
         */
-        static let VisitKorea = URL(string: "http://api.visitkorea.or.kr/openapi/service")!;
+        static let VisitKorea = URL(string: "http://apis.data.go.kr/B551011")!;
     }
     
     class RestURL{
         static func VisitKorea(_ locale : Locale = Locale.current) -> URL{
-            var value : URL = Hosts.VisitKorea.appendingPathComponent("rest");
+            var value : URL = Hosts.VisitKorea
             
             if locale.isKorean{
                 value.appendPathComponent("KorService");
