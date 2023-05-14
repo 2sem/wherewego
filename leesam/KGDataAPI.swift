@@ -15,7 +15,7 @@ class KGDataAPI : NSObject{
         /** 
             tour 30
         */
-        static let VisitKorea = URL(string: "http://apis.data.go.kr/B551011")!;
+        static let VisitKorea = URL(string: "https://apis.data.go.kr/B551011")!;
     }
     
     class RestURL{
@@ -23,30 +23,30 @@ class KGDataAPI : NSObject{
             var value : URL = Hosts.VisitKorea
             
             if locale.isKorean{
-                value.appendPathComponent("KorService");
+                value.appendPathComponent("KorService1");
             }else if locale.isChineseTraditional{
-                value.appendPathComponent("ChtService");
+                value.appendPathComponent("ChtService1");
             }
             else if locale.isChineseSimple{
-                value.appendPathComponent("ChsService");
+                value.appendPathComponent("ChsService1");
             }
             else if locale.isGerman{
-                value.appendPathComponent("GerService");
+                value.appendPathComponent("GerService1");
             }
             else if locale.isJapanease{
-                value.appendPathComponent("JpnService");
+                value.appendPathComponent("JpnService1");
             }
             else if locale.isSpanish{
-                value.appendPathComponent("SpnService");
+                value.appendPathComponent("SpnService1");
             }
             else if locale.isFrench{
-                value.appendPathComponent("FreService");
+                value.appendPathComponent("FreService1");
             }
             else if locale.isRussian{
-                value.appendPathComponent("RusService");
+                value.appendPathComponent("RusService1");
             }
             else{
-                value.appendPathComponent("EngService");
+                value.appendPathComponent("EngService1");
             }
             
             return value;

@@ -25,7 +25,7 @@ class KGDataTourListRequest : KGDataTourRequest{
     
     var urlRequest : URLRequest{
         get{
-            let restUrl = KGDataAPI.RestURL.VisitKorea(locale).appendingPathComponent("locationBasedList");
+            let restUrl = KGDataAPI.RestURL.VisitKorea(locale).appendingPathComponent("locationBasedList1");
             //let params : [String: AnyObject] = [:];
             var urlComponents = URLComponents(url: restUrl, resolvingAgainstBaseURL: true);
             var queries = urlComponents?.queryItems ?? [];
