@@ -69,6 +69,8 @@
 		2C234C991ED58BA700ED0AC0 /* KGDRangePickerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */; };
 		2C77518C208DB738009B786D /* KGData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518B208DB738009B786D /* KGData.plist */; };
 		2C77518E208DB809009B786D /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 2C77518D208DB809009B786D /* .gitignore */; };
+		2C97BCD52A137DFA00C4B62E /* kakao.plist in Resources */ = {isa = PBXBuildFile; fileRef = 2C97BCD42A137DFA00C4B62E /* kakao.plist */; };
+		2C97BCD82A137F4400C4B62E /* KakaoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C97BCD72A137F4400C4B62E /* KakaoManager.swift */; };
 		2CA2EED6283E435200D0AF11 /* .github in Resources */ = {isa = PBXBuildFile; fileRef = 2CA2EED5283E435200D0AF11 /* .github */; };
 		2CA2EEDB283E472600D0AF11 /* Fastfile in Resources */ = {isa = PBXBuildFile; fileRef = 2CA2EEDA283E472600D0AF11 /* Fastfile */; };
 		2CA8FA3C26BFB12A00892C13 /* GADRewardedAd+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */; };
@@ -200,6 +202,8 @@
 		2C234C981ED58BA700ED0AC0 /* KGDRangePickerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KGDRangePickerViewController.swift; sourceTree = "<group>"; };
 		2C77518B208DB738009B786D /* KGData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = KGData.plist; sourceTree = "<group>"; };
 		2C77518D208DB809009B786D /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		2C97BCD42A137DFA00C4B62E /* kakao.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = kakao.plist; sourceTree = "<group>"; };
+		2C97BCD72A137F4400C4B62E /* KakaoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KakaoManager.swift; sourceTree = "<group>"; };
 		2CA2EED5283E435200D0AF11 /* .github */ = {isa = PBXFileReference; lastKnownFileType = folder; path = .github; sourceTree = "<group>"; };
 		2CA2EEDA283E472600D0AF11 /* Fastfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Fastfile; sourceTree = "<group>"; };
 		2CA8FA3B26BFB12A00892C13 /* GADRewardedAd+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GADRewardedAd+.swift"; sourceTree = "<group>"; };
@@ -353,6 +357,7 @@
 		2C09CE821E76227D00993BEA /* wherewego */ = {
 			isa = PBXGroup;
 			children = (
+				2C97BCD62A137F1B00C4B62E /* managers */,
 				2C1000211ED6A14900463759 /* data */,
 				2C014BF01E961245001EFF0D /* image */,
 				2C060DE21E8B53D600CF58FB /* view */,
@@ -367,6 +372,7 @@
 				2C1000361ED714B600463759 /* Localizable.strings */,
 				2C11696222773C1100B2B1EE /* GoogleService-Info.plist */,
 				2C09CE8A1E76227D00993BEA /* wherewego.xcdatamodeld */,
+				2C97BCD42A137DFA00C4B62E /* kakao.plist */,
 			);
 			path = wherewego;
 			sourceTree = "<group>";
@@ -420,6 +426,14 @@
 				2C1604931ECD582A005D07FD /* no_image.jpg */,
 			);
 			path = background;
+			sourceTree = "<group>";
+		};
+		2C97BCD62A137F1B00C4B62E /* managers */ = {
+			isa = PBXGroup;
+			children = (
+				2C97BCD72A137F4400C4B62E /* KakaoManager.swift */,
+			);
+			path = managers;
 			sourceTree = "<group>";
 		};
 		2CA2EED7283E46CD00D0AF11 /* fastlane */ = {
@@ -620,6 +634,7 @@
 				2C014C111E9678A5001EFF0D /* icon_culture.png in Resources */,
 				2C09CE891E76227D00993BEA /* Main.storyboard in Resources */,
 				2C1604991ECD69CE005D07FD /* icon_call_.png in Resources */,
+				2C97BCD52A137DFA00C4B62E /* kakao.plist in Resources */,
 				2C14EA791F668E0C00470F80 /* icon_donate.png in Resources */,
 				2CA2EED6283E435200D0AF11 /* .github in Resources */,
 				2C014C0F1E9677BF001EFF0D /* icon_event.png in Resources */,
@@ -711,6 +726,7 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-wherewego/Pods-wherewego-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
 				"${BUILT_PRODUCTS_DIR}/DownPicker/DownPicker.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseABTesting/FirebaseABTesting.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseCore/FirebaseCore.framework",
@@ -720,6 +736,9 @@
 				"${BUILT_PRODUCTS_DIR}/FirebaseRemoteConfig/FirebaseRemoteConfig.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleDataTransport/GoogleDataTransport.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
+				"${BUILT_PRODUCTS_DIR}/KakaoSDKCommon/KakaoSDKCommon.framework",
+				"${BUILT_PRODUCTS_DIR}/KakaoSDKShare/KakaoSDKShare.framework",
+				"${BUILT_PRODUCTS_DIR}/KakaoSDKTemplate/KakaoSDKTemplate.framework",
 				"${BUILT_PRODUCTS_DIR}/LSExtensions/LSExtensions.framework",
 				"${BUILT_PRODUCTS_DIR}/MBProgressHUD/MBProgressHUD.framework",
 				"${BUILT_PRODUCTS_DIR}/Material/Material.framework",
@@ -731,6 +750,7 @@
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DownPicker.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseABTesting.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCore.framework",
@@ -740,6 +760,9 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseRemoteConfig.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleDataTransport.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KakaoSDKCommon.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KakaoSDKShare.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KakaoSDKTemplate.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/LSExtensions.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MBProgressHUD.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Material.framework",
@@ -831,6 +854,7 @@
 				2C12EEE51EDC57E200687B9E /* GADInterstitial+.swift in Sources */,
 				2CC12A4E1E7A3359008085E7 /* KGDataTourInfo.swift in Sources */,
 				2C14EA7D1F66901000470F80 /* GADRewardManager.swift in Sources */,
+				2C97BCD82A137F4400C4B62E /* KakaoManager.swift in Sources */,
 				2C13873D22F86AAF005954F6 /* LSRemoteConfig.swift in Sources */,
 				2C0B59AE1E87EBBE00C86BC4 /* KGDataTourObject.swift in Sources */,
 				2C191A5B1FAA072400A34718 /* GADInterstialManager.swift in Sources */,
