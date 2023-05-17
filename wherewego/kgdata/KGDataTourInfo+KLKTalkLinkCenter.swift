@@ -7,100 +7,69 @@
 //
 
 import Foundation
-import KakaoLink
-import KakaoMessageTemplate
+import KakaoSDKShare
+import KakaoSDKTemplate
 import CoreLocation
 
 extension KGDataTourInfo{
     func shareByKakao(_ location : CLLocationCoordinate2D){
-        let kakaoLink = KMTLinkObject();
-        //kakaoLink.webURL = URL(string: self.personHomepage?.url ?? "");
-        kakaoLink.androidExecutionParams = "srcLatitude=\(location.latitude)"
-            .appending("&srcLongitude=\(location.longitude)")
-            .appending("&destLatitude=\(self.location!.latitude)")
-            .appending("&destLongitude=\(self.location!.longitude)")
-            .appending("&destTitle=\(self.title!)")
-            .appending("&destAddress=\(self.primaryAddr ?? "") \(self.detailAddr ?? "")")
-            .appending("&destPhoneNo=\(self.tel ?? " ")")
-            .appending("&destDistance=\(self.distance ?? 0)")
-            .appending("&destImageUrl=\(self.image?.absoluteString ?? " ")")
-            .appending("&destContentId=\(self.id ?? 0)")
-            .appending("&destContentTypeId=\(self.type.rawValue)")
-            .appending("&destContentTypeText=\(self.type.stringValue)");
+        let kakaoLink = Link.init(androidExecutionParams: ["srcLatitude":location.latitude.description,
+                                                           "srcLongitude":location.longitude.description,
+                                                           "destLatitude":self.location!.latitude.description,
+                                                           "destLongitude":self.location!.longitude.description,
+                                                           "destTitle":self.title!,
+                                                           "destAddress":"\(self.primaryAddr ?? "") \(self.detailAddr ?? "")",
+                                                           "destPhoneNo":self.tel ?? " ",
+                                                           "destDistance":(self.distance ?? 0).description,
+                                                           "destImageUrl":self.image?.absoluteString ?? " ",
+                                                           "destContentId":(self.id ?? 0).description,
+                                                           "destContentTypeId":self.type.rawValue.description,
+                                                           "destContentTypeText":self.type.stringValue],
+                                  iosExecutionParams: ["destContentId":(self.id ?? 0).description,
+                                                       "srcLatitude": location.latitude.description,
+                                                       "srcLongitude": location.longitude.description]);
         
-        kakaoLink.iosExecutionParams = "destContentId=\(self.id ?? 0)"
-            .appending("&srcLatitude=\(location.latitude)")
-            .appending("&srcLongitude=\(location.longitude)");
-        
-        //kakaoLink.iosExecutionParams = kakaoLink.iosExecutionParams!.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed);*/
-        var kakaoText : KMTTextTemplate!;
-        var kakaoFeed : KMTFeedTemplate!;
-        var kakaoContent : KMTContentObject!;
-        if self.image != nil{
-            kakaoContent = KMTContentObject(title: self.title ?? "", imageURL: self.image!, link: kakaoLink);
-            kakaoContent.imageWidth = 120;
-            kakaoContent.imageHeight = 1;
-            kakaoContent.desc = "\(self.primaryAddr ?? "") \(self.detailAddr ?? "")\n"
-            .appending("\(self.tel ?? "")\n\n");
-            //.appending("\(self.overview ?? "")");
-            
-            kakaoFeed = KMTFeedTemplate.init(builderBlock: { (kakaoBuilder) in
-                kakaoBuilder.content = kakaoContent;
-                //kakaoBuilder.buttons?.add(kakaoWebButton);
-                //link can't have more than two buttons
-                // - content's url, button1 url, button2 url
-                /*kakaoBuilder.addButton(KLKButtonObject(builderBlock: { (buttonBuilder) in
-                 buttonBuilder.link = KLKLinkObject(builderBlock: { (linkBuilder) in
-                 var searchUrl = URLComponents(string: "http://search.daum.net/search");
-                 searchUrl?.queryItems = [URLQueryItem(name: "q", value: "\(self.title ?? "")")];
-                 linkBuilder.webURL = searchUrl?.url;
-                 //kakaoLink.webURL = URL(string:"http://www.assembly.go.kr/assm/memPop/memPopup.do?dept_cd=9770941")!;
-                 linkBuilder.mobileWebURL = searchUrl?.url;
-                 })
-                 buttonBuilder.title = "검색";
-                 }));*/
-                
-                /*kakaoBuilder.addButton(KLKButtonObject(builderBlock: { (buttonBuilder) in
-                 buttonBuilder.link = KLKLinkObject(builderBlock: { (linkBuilder) in
-                 if let webUrl = self.personHomepage?.url, !webUrl.isEmpty{
-                 linkBuilder.webURL = URL(string: self.personHomepage?.url ?? "");
-                 //kakaoLink.webURL = URL(string:"http://www.assembly.go.kr/assm/memPop/memPopup.do?dept_cd=9770941")!;
-                 linkBuilder.mobileWebURL = URL(string: self.personHomepage?.url ?? "");
-                 //kakaoLink.mobileWebURL = URL(string:"http://www.assembly.go.kr/assm/memPop/memPopup.do?dept_cd=9770941")!;
-                 }
-                 })
-                 buttonBuilder.title = "홈페이지";
-                 }));*/
-                
-                kakaoBuilder.addButton(KMTButtonObject(builderBlock: { (buttonBuilder) in
-                    buttonBuilder.link = KMTLinkObject(builderBlock: { (linkBuilder) in
-                        linkBuilder.webURL = kakaoLink.webURL;
-                        linkBuilder.iosExecutionParams = kakaoLink.iosExecutionParams;
-                        linkBuilder.androidExecutionParams = kakaoLink.androidExecutionParams;
-                    })
-                    buttonBuilder.title = "앱으로 열기";
-                }));
-            })
+        var kakaoText : TextTemplate!;
+        var kakaoFeed : FeedTemplate!;
+        var kakaoContent : Content!;
+        if let image = self.image{
+            kakaoContent = Content.init(title: self.title ?? "",
+                                        imageUrl: image,
+                                        imageWidth: 120,
+                                        imageHeight: 1,
+                                        description: "\(self.primaryAddr ?? "") \(self.detailAddr ?? "")\n".appending("\(self.tel ?? "")\n\n"),
+                                        link: kakaoLink)
+            kakaoFeed = FeedTemplate.init(content: kakaoContent, buttons: [Button.init(title: "앱으로 열기", link: kakaoLink)])
         }else{
-            kakaoText = KMTTextTemplate.init(text: "\(self.title ?? "")\n\(self.primaryAddr ?? "") \(self.detailAddr ?? "")\n".appending("\(self.tel ?? "")\n\n"), link: kakaoLink);
-            kakaoText.buttons = [KMTButtonObject(builderBlock: { (buttonBuilder) in
-                buttonBuilder.link = KMTLinkObject(builderBlock: { (linkBuilder) in
-                    linkBuilder.webURL = kakaoLink.webURL;
-                    linkBuilder.iosExecutionParams = kakaoLink.iosExecutionParams;
-                    linkBuilder.androidExecutionParams = kakaoLink.androidExecutionParams;
-                })
-                buttonBuilder.title = "앱으로 열기";
-            })];
+            kakaoText = TextTemplate.init(text: "\(self.title ?? "")\n\(self.primaryAddr ?? "") \(self.detailAddr ?? "")\n".appending("\(self.tel ?? "")\n\n"),
+                                          link: kakaoLink, buttonTitle: "앱으로 열기",
+                                          buttons: [Button.init(title: "앱으로 열기", link: kakaoLink)])
         }
         
-        let kakaoTemplate : KMTTemplate! = self.image != nil ? kakaoFeed : kakaoText;
-        DispatchQueue.main.syncInMain {
-            KLKTalkLinkCenter.shared().sendDefault(with: kakaoTemplate, success: { (warn, args) in
-                print("kakao share warn[\(warn?.description ?? "")] args[\(args?.description ?? "")]");
-            }, failure: { (error) in
-                print("kakao share error[\(error)] ios[\(kakaoLink.iosExecutionParams ?? "")]");
-            })
-        }
+        let kakaoTemplate : Templatable! = self.image != nil ? kakaoFeed : kakaoText;
+//        DispatchQueue.main.syncInMain {
+            guard ShareApi.isKakaoTalkSharingAvailable() else {
+                guard let kakaoWebUrl = ShareApi.shared.makeDefaultUrl(templatable: kakaoTemplate) else { return }
+                UIApplication.shared.open(kakaoWebUrl)
+                return
+            }
+            
+            ShareApi.shared.shareDefault(templatable: kakaoTemplate) { result, error in
+                guard let result = result else {
+                    debugPrint("kakao share error[\(error)] ios[\(kakaoLink.iosExecutionParams ?? "")]");
+                    return
+                }
+                
+                debugPrint("kakao share warn[\(result.warningMsg?.description ?? "")] args[\(result.argumentMsg?.description ?? "")]");
+                UIApplication.shared.open(result.url)
+            }
+        
+//            KLKTalkLinkCenter.shared().sendDefault(with: kakaoTemplate, success: { (warn, args) in
+//                print("kakao share warn[\(warn?.description ?? "")] args[\(args?.description ?? "")]");
+//            }, failure: { (error) in
+//                print("kakao share error[\(error)] ios[\(kakaoLink.iosExecutionParams ?? "")]");
+//            })
+//        }
         
     }
 

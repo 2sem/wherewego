@@ -151,9 +151,9 @@ class KGDataTourManager: NSObject {
                 
                 var body = response["body"] as? [String : AnyObject] ?? [:];
                 let items = body["items"] as? [String : AnyObject] ?? [:];
-                let item = items["item"] as? [String : AnyObject] ?? [:];
+                let item = items["item"] as? [[String : AnyObject]] ?? [[:]];
 
-                let tourInfo : KGDataTourInfo? = KGDataTourInfo(item);
+                let tourInfo : KGDataTourInfo? = KGDataTourInfo(item[0]);
                 print("tour detail info - \(tourInfo?.description ?? "") - response[\(response)] body[\(body)]");
                 
                 //pageNo : received page number
