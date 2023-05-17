@@ -25,12 +25,12 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>kakaode726cc2cd83a2ac99c1c566d386b770</string>
+				<string>kakao49c83c1edb5b4ef1e9989bf55c04ef9d</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>54</string>
+	<string>73</string>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-9684378399371172~7031400848</string>
 	<key>GADUnitIdentifiers</key>
@@ -48,11 +48,12 @@
 	<string>1241856636</string>
 	<key>KAKAO_APP_KEY</key>
 	<string>de726cc2cd83a2ac99c1c566d386b770</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>kakaode726cc2cd83a2ac99c1c566d386b770</string>
+		<string>kakaokompassauth</string>
 		<string>kakaolink</string>
-		<string>kakaotalk-5.9.7</string>
 		<string>comgooglemaps</string>
 		<string>googlechromes</string>
 	</array>

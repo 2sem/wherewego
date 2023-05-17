@@ -10,7 +10,7 @@ target 'wherewego' do
   pod 'GoogleMaps'
 #  pod 'GooglePlaces'
   pod 'Material'
-  pod 'KakaoOpenSDK'
+  pod 'KakaoSDKShare'
   pod 'DownPicker'
   pod 'MBProgressHUD'
 #  pod 'Firebase/Core'
