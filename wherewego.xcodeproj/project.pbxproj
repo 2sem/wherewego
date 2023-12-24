@@ -495,7 +495,6 @@
 				2C09CE7E1E76227D00993BEA /* Resources */,
 				6222DA9BCD770631707F4CAC /* [CP] Embed Pods Frameworks */,
 				C18A70DF73657736CD7A8A37 /* [CP] Copy Pods Resources */,
-				2C122C1521B2705B00EB9435 /* ShellScript */,
 				2C1595322144C77300110830 /* ShellScript */,
 			);
 			buildRules = (
@@ -670,23 +669,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2C122C1521B2705B00EB9435 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "buildNumber=$(/usr/libexec/PlistBuddy -c \"Print CFBundleVersion\" \"$PRODUCT_SETTINGS_PATH\")\necho \"/usr/libexec/PlistBuddy -c 'Print CFBundleVersion $PRODUCT_SETTINGS_PATH'\"\nif [ -z \"$buildNumber\" ] || [ \"$buildNumber\" = \"\\$(CURRENT_PROJECT_VERSION)\" ]\nthen\n        echo \"${PRODUCT_NAME} buildNumber is [empty]\"\n        buildNumber=1\nelse\n        echo \"${PRODUCT_NAME} buildnumber is $buildNumber\"\n        buildNumber=$((buildNumber + 1))\nfi\n\necho \"\\n${PRODUCT_NAME} new buildnumber = $buildNumber\"\n/usr/libexec/PlistBuddy -c \"Set :CFBundleVersion $buildNumber\" \"$PRODUCT_SETTINGS_PATH\"\n";
-		};
 		2C1595322144C77300110830 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -736,6 +718,7 @@
 				"${BUILT_PRODUCTS_DIR}/FirebaseInstallations/FirebaseInstallations.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseRemoteConfig/FirebaseRemoteConfig.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseSessions/FirebaseSessions.framework",
+				"${BUILT_PRODUCTS_DIR}/FirebaseSharedSwift/FirebaseSharedSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleDataTransport/GoogleDataTransport.framework",
 				"${BUILT_PRODUCTS_DIR}/GoogleUtilities/GoogleUtilities.framework",
 				"${BUILT_PRODUCTS_DIR}/KakaoSDKCommon/KakaoSDKCommon.framework",
@@ -763,6 +746,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseInstallations.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseRemoteConfig.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseSessions.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseSharedSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleDataTransport.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleUtilities.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/KakaoSDKCommon.framework",
