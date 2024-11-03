@@ -18,34 +18,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  install-pods:
-    runs-on: macos-13
-    steps:
-      - name: Checkout project
-        uses: actions/checkout@v3
-
-      - name: Create pods cache key
-        id: pods-cache-hash
-        run: echo "::set-output name=hash::${{ runner.os }}-pods-cache-hash-${{ hashFiles('./Podfile.lock') }}"
-
-      - name: Cache pods
-        uses: actions/cache@v3
-        id: cache-pods
-        with:
-          path: ./Pods
-          key: ${{ steps.pods-cache-hash.outputs.hash }}
-
-      - name: Install CocoaPods
-        if: steps.cache-pods.outputs.cache-hit == ''
-        run: |
-          pod install
-
-    outputs:
-      pods-cache-key: ${{ steps.pods-cache-hash.outputs.hash }}
-      
   deploy:
-    needs: install-pods
-    runs-on: macos-13
+    runs-on: macos-14
     env:
         PRODUCT_NAME: 'wherewego'
         IOS_CERT_PATH: 'cert.p12'
@@ -55,16 +29,39 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v3
-        
-      - name: Load cached pods
-        uses: actions/cache@v3
-        with:
-          path: ./Pods
-          key: ${{ needs.install-pods.outputs.pods-cache-key }}
 
-      - name: Install CocoaPods
+      - name: Select Xcode
         run: |
-          pod install
+          sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: Import Secret Key
+        run: |
+          echo ${{ secrets.GPG_PRIVATE_KEY }} | base64 -d -o $GPG_PRIVATE_KEY_PATH
+          gpg --batch --no-tty --yes --import $GPG_PRIVATE_KEY_PATH
+          
+      - name: Install Encrypter
+        run: |
+            brew install git-secret
+      
+      - name: Decrypt Secret Data
+        run: |
+          git secret reveal -p ${{ secrets.GPG_PRIVATE_PWD }}
+      
+      - name: Install Mise
+        run: |
+            brew install mise
+  
+      - name: Install Tuist
+        run: |
+          mise install tuist
+
+      - name: Install Dependencies
+        run: |
+          mise x -- tuist install
+
+      - name: Build Tuist
+        run: |
+            mise x -- tuist build
 
       - name: Import signing certificate
         env:
@@ -96,19 +93,6 @@ jobs:
           echo '${{ secrets.IOS_API_KEY }}' > $API_KEY_PATH_BASE64
           base64 --decode -i $API_KEY_PATH_BASE64 -o $IOS_KEY_PATH
           rm $API_KEY_PATH_BASE64
-          
-      - name: Import Secret Key
-        run: |
-          echo ${{ secrets.GPG_PRIVATE_KEY }} | base64 -d -o $GPG_PRIVATE_KEY_PATH
-          gpg --batch --no-tty --yes --import $GPG_PRIVATE_KEY_PATH
-          
-      - name: Install Encrypter
-        run: |
-            brew install git-secret
-      
-      - name: Decrypt Secret Data
-        run: |
-          git secret reveal -p ${{ secrets.GPG_PRIVATE_PWD }}
           
       - name: Build/Upload app
         env:

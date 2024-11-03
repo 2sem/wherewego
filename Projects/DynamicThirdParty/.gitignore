@@ -68,8 +68,3 @@ Derived/
 
 ### Tuist managed dependencies ###
 Tuist/.build
-.gitsecret/keys/random_seed
-!*.secret
-Projects/App/Resources/Plists/GoogleService-Info.plist
-Projects/App/Resources/Plists/kakao.plist
-Projects/App/Resources/Plists/KGData.plist
