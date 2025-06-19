@@ -95,10 +95,10 @@ class ReviewManager : NSObject{
             }/*,UIAlertAction(title: "제보하기".localized(), style: .default, handler: { (act) in
              //do not gain today
              UIApplication.shared.open(URL(string: "https://open.kakao.com/o/g1jk9Xx")!, options: [:], completionHandler: nil);
-             })*/,UIAlertAction(title: "후원하기(전면광고)".localized(), style: .default, handler: { (act) in
+             }),UIAlertAction(title: "후원하기(전면광고)".localized(), style: .default, handler: { (act) in
 //                GADInterstialManager.shared?.show(true);
                  AppDelegate.sharedGADManager?.show(unit: .full, force: true)
-             }),UIAlertAction(title: "다음에 보기".localized(), style: .default, handler: { (act) in
+             })*/,UIAlertAction(title: "다음에 하기".localized(), style: .default, handler: { (act) in
                 //do not gain today
                 self.delegate?.reviewUpdate(showTime: Date().addingTimeInterval(60 * 60 * 24));
              })]
