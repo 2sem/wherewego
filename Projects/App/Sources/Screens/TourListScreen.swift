@@ -222,7 +222,7 @@ struct TourListScreen: View {
                     .foregroundStyle(themeBarTintColor())
             }
         }
-        ToolbarItem(placement: .navigationBarTrailing) {
+        ToolbarItem(placement: .navigationBarLeading) {
             Button { navPath.append(.rangePicker) } label: {
                 Text(viewModel.radius.stringForDistance())
                     .foregroundStyle(themeBarTintColor())
