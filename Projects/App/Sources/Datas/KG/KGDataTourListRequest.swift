@@ -25,7 +25,7 @@ class KGDataTourListRequest : KGDataTourRequest{
     
     var urlRequest : URLRequest{
         get{
-            let restUrl = KGDataAPI.RestURL.VisitKorea(locale).appendingPathComponent("locationBasedList1");
+            let restUrl = KGDataAPI.RestURL.VisitKorea(locale).appendingPathComponent("locationBasedList2");
             //let params : [String: AnyObject] = [:];
             var urlComponents = URLComponents(url: restUrl, resolvingAgainstBaseURL: true);
             var queries = urlComponents?.queryItems ?? [];
@@ -41,7 +41,7 @@ class KGDataTourListRequest : KGDataTourRequest{
             queries.append(URLQueryItem(name: "_type", value: "json"));
             //
             queries.append(URLQueryItem(name: "arrange", value: "E"));
-            queries.append(URLQueryItem(name: "listYN", value: "Y"));
+            
             
             if type != nil{
                 queries.append(URLQueryItem(name: "contentTypeId", value: "\(type?.rawValue ?? KGDataTourInfo.ContentType.Tour.rawValue)"));

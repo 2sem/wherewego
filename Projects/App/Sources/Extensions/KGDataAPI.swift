@@ -23,30 +23,30 @@ class KGDataAPI : NSObject{
             var value : URL = Hosts.VisitKorea
             
             if locale.isKorean{
-                value.appendPathComponent("KorService1");
+                value.appendPathComponent("KorService2");
             }else if locale.isChineseTraditional{
-                value.appendPathComponent("ChtService1");
+                value.appendPathComponent("ChtService2");
             }
             else if locale.isChineseSimple{
-                value.appendPathComponent("ChsService1");
+                value.appendPathComponent("ChsService2");
             }
             else if locale.isGerman{
-                value.appendPathComponent("GerService1");
+                value.appendPathComponent("GerService2");
             }
             else if locale.isJapanease{
-                value.appendPathComponent("JpnService1");
+                value.appendPathComponent("JpnService2");
             }
             else if locale.isSpanish{
-                value.appendPathComponent("SpnService1");
+                value.appendPathComponent("SpnService2");
             }
             else if locale.isFrench{
-                value.appendPathComponent("FreService1");
+                value.appendPathComponent("FreService2");
             }
             else if locale.isRussian{
-                value.appendPathComponent("RusService1");
+                value.appendPathComponent("RusService2");
             }
             else{
-                value.appendPathComponent("EngService1");
+                value.appendPathComponent("EngService2");
             }
             
             return value;
