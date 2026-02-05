@@ -149,25 +149,6 @@ extension WWGDefaults{
         }
     }
     
-    static func requestAppTrackingIfNeed() -> Bool{
-        guard !AdsTrackingRequested else{
-            return false;
-        }
-        
-        guard AdsShownCount >= 3 else{
-            AdsShownCount += 1;
-            return false;
-        }
-        
-        guard #available(iOS 14.0, *) else{
-            return false;
-        }
-        
-        AppDelegate.sharedGADManager?.requestPermission(completion: { (result) in
-            AdsTrackingRequested = true;
-        })
-        
-        return true;
-    }
+    // ATT permission is now handled by SwiftUIAdManager.requestAppTrackingIfNeed()
 }
 
