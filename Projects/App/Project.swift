@@ -79,6 +79,17 @@ let project = Project(
                     "CFBundleDisplayName": "WhereWeGo",
                     "NSAppTransportSecurity": [
                         "NSAllowsArbitraryLoads": true
+                    ],
+                    "MKDirectionsApplicationSupportedModes": [
+                        "MKDirectionsModeBike",
+                        "MKDirectionsModeBus",
+                        "MKDirectionsModeCar",
+                        "MKDirectionsModePedestrian",
+                        "MKDirectionsModeSubway",
+                        "MKDirectionsModeTransit",
+                        "MKDirectionsModeTaxi",
+                        "MKDirectionsModeRideShare",
+                        "MKDirectionsModeStreetCar"
                     ]
                 ]
             ),

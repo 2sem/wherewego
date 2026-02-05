@@ -17,6 +17,8 @@ struct TourInfoScreen: View {
     @State private var loadedImage: UIImage? = nil;
     @State private var showShareSheet = false;
     @State private var shareItems: [Any] = [];
+    @State private var routeCoordinates: [CLLocationCoordinate2D] = [];
+    @State private var mapCameraPosition: MapCameraPosition = .automatic;
 
     private var resolvedInfo: KGDataTourInfo? { detailInfo ?? info; }
     private var resolvedId: Int { info?.id ?? infoId; }
@@ -70,15 +72,28 @@ struct TourInfoScreen: View {
 
                 // Row 2: map (1/3 screen height)
                 if let dest = resolvedInfo?.location, let src = currentLocation {
-                    Map(initialPosition: .region(regionFitting(src, dest))) {
+                    let _ = print("[Route] Map content eval — routeCoordinates.count: \(routeCoordinates.count)");
+                    Map(position: $mapCameraPosition) {
                         Marker("Here", coordinate: src)
                             .foregroundStyle(.blue)
                         Marker(resolvedInfo?.title ?? "", coordinate: dest)
                             .foregroundStyle(.red)
+                        if !routeCoordinates.isEmpty {
+                            let _ = print("[Route] MapPolyline rendered, count: \(routeCoordinates.count)");
+                            MapPolyline(coordinates: routeCoordinates)
+                                .stroke(Color("PathColor"), lineWidth: 5)
+                        }
                     }
                     .frame(height: UIScreen.main.bounds.height / 3)
                     .mapControls {
                         MapCompass()
+                    }
+                    .onChange(of: resolvedInfo?.location) { _, _ in
+                        mapCameraPosition = .region(regionFitting(src, dest));
+                    }
+                    .task {
+                        mapCameraPosition = .region(regionFitting(src, dest));
+                        await fetchRoute(from: src, to: dest);
                     }
                 }
 
@@ -192,6 +207,47 @@ struct TourInfoScreen: View {
     }
 
     // MARK: - Map helpers
+
+    private func fetchRoute(from src: CLLocationCoordinate2D, to dest: CLLocationCoordinate2D) async {
+        print("[Route] fetchRoute called: src=(\(src.latitude),\(src.longitude)) dest=(\(dest.latitude),\(dest.longitude))");
+
+        let request = MKDirections.Request();
+        request.source      = MKMapItem(placemark: MKPlacemark(coordinate: src));
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: dest));
+        request.transportType = .walking;
+
+        let (response, error): (MKDirections.Response?, Error?) = await withCheckedContinuation { continuation in
+            MKDirections(request: request).calculate { response, error in
+                continuation.resume(returning: (response, error));
+            };
+        };
+
+        if let error = error {
+            print("[Route] MKDirections error: \(error)");
+            return;
+        }
+
+        guard let response = response else {
+            print("[Route] response is nil");
+            return;
+        }
+
+        print("[Route] routes count: \(response.routes.count)");
+
+        guard let route = response.routes.first else {
+            print("[Route] no routes in response");
+            return;
+        }
+
+        let polyline = route.polyline;
+        print("[Route] polyline pointCount: \(polyline.pointCount)");
+
+        let points = polyline.points();
+        routeCoordinates = (0..<polyline.pointCount).map { points[$0].coordinate };
+        print("[Route] routeCoordinates set, count: \(routeCoordinates.count)");
+        print("[Route] first: (\(routeCoordinates.first?.latitude ?? -1), \(routeCoordinates.first?.longitude ?? -1))");
+        print("[Route] last:  (\(routeCoordinates.last?.latitude ?? -1), \(routeCoordinates.last?.longitude ?? -1))");
+    }
 
     private func regionFitting(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> MKCoordinateRegion {
         let center = CLLocationCoordinate2D(
