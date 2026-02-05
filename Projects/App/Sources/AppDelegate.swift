@@ -9,6 +9,5 @@
 import UIKit
 
 // Kept for @UIApplicationDelegateAdaptor — stripped of all logic during SwiftUI migration.
-// Init, ads, Core Data, and deep linking are now handled in App.swift / SplashScreen.
 class AppDelegate: UIResponder, UIApplicationDelegate {
 }

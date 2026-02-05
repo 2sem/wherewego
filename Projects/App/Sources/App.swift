@@ -8,6 +8,10 @@ import StoreKit
 struct WhereWeGoApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
+    init() {
+        FirebaseApp.configure();
+    }
+
     @State private var isSplashDone = false
     @State private var isSetupDone = false
     @Environment(\.scenePhase) private var scenePhase
