@@ -89,9 +89,8 @@ struct TourListScreen: View {
                 .navigationDestination(for: TourNavDestination.self) { dest in
                     navigationDestinationView(for: dest)
                 }
-                .navigationBarTitle("WhereWeGo")
-                .toolbar { toolbarItems }
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar { toolbarItems }
                 .toolbarBackground(themeNavBarColor(), for: .navigationBar)
         }
         // Location denied alert
@@ -144,18 +143,6 @@ struct TourListScreen: View {
 
     private var contentBody: some View {
         VStack(spacing: 0) {
-            // Type filter
-            Picker("Type", selection: $typeIndex) {
-                ForEach(typeOptions.indices) { i in
-                    Text(typeOptions[i].0).tag(i);
-                }
-            }
-            .pickerStyle(.segmented)
-            .padding(.horizontal)
-            .padding(.vertical, 6)
-            .background(themeNavBarColor())
-
-            // List
             tourList
 
             // Banner ad
@@ -221,6 +208,14 @@ struct TourListScreen: View {
 
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .principal) {
+            Picker("Type", selection: $typeIndex) {
+                ForEach(typeOptions.indices) { i in
+                    Text(typeOptions[i].0).tag(i);
+                }
+            }
+            .pickerStyle(.menu)
+        }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {
                 Image(systemName: "location.fill")
