@@ -1,6 +1,6 @@
 import SwiftUI
 import CoreLocation
-import GoogleMaps
+import MapKit
 import SDWebImage
 import KakaoSDKShare
 import SafariServices
@@ -70,16 +70,16 @@ struct TourInfoScreen: View {
 
                 // Row 2: map (1/3 screen height)
                 if let dest = resolvedInfo?.location, let src = currentLocation {
-                    let bounds = GMSCoordinateBounds(coordinate: src, coordinate: dest);
-                    GMSMapViewRepresentable(
-                        initialCamera: GMSCameraPosition.camera(withLatitude: src.latitude, longitude: src.longitude, zoom: 10),
-                        markers: [
-                            MapMarkerConfig(position: src, title: "Here", color: .blue, isDraggable: false),
-                            MapMarkerConfig(position: dest, title: resolvedInfo?.title ?? "", color: .red, isDraggable: false)
-                        ],
-                        fitBounds: bounds
-                    )
+                    Map(initialPosition: .region(regionFitting(src, dest))) {
+                        Marker("Here", coordinate: src)
+                            .foregroundStyle(.blue)
+                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                            .foregroundStyle(.red)
+                    }
                     .frame(height: UIScreen.main.bounds.height / 3)
+                    .mapControls {
+                        MapCompass()
+                    }
                 }
 
                 // Row 3: overview
@@ -189,6 +189,18 @@ struct TourInfoScreen: View {
             shareItems = items;
             showShareSheet = true;
         }
+    }
+
+    // MARK: - Map helpers
+
+    private func regionFitting(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> MKCoordinateRegion {
+        let center = CLLocationCoordinate2D(
+            latitude: (a.latitude + b.latitude) / 2,
+            longitude: (a.longitude + b.longitude) / 2
+        );
+        let latSpan = max(abs(a.latitude - b.latitude) * 1.4, 0.005);
+        let lonSpan = max(abs(a.longitude - b.longitude) * 1.4, 0.005);
+        return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan));
     }
 
     // MARK: - Theme helpers

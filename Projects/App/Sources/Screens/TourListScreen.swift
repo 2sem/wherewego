@@ -155,8 +155,7 @@ struct TourListScreen: View {
 
     private var tourList: some View {
         List {
-            ForEach(viewModel.infos.indices, id: \.self) { index in
-                let info = viewModel.infos[index];
+            ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
                 TourCellView(info: info)
                     .onAppear {
                         // Infinite scroll: 2 rows before end

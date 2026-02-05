@@ -1,5 +1,5 @@
 import SwiftUI
-import GoogleMaps
+
 
 struct SplashScreen: View {
     @Binding var isDone: Bool
@@ -17,7 +17,7 @@ struct SplashScreen: View {
             // MARK: App initialization
             // FirebaseApp.configure() is in AppDelegate — must run before any view code.
             KakaoManager.initialize();
-            GMSServices.provideAPIKey("AIzaSyDb9V5xnYItUag4fy_yhXWmmDum0iIgBXY");
+            
 
             LSRemoteConfig.shared.fetch { (config, error) in
                 LSThemeManager.shared.theme = config.theme;

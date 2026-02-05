@@ -1,6 +1,6 @@
 import SwiftUI
 import CoreLocation
-import GoogleMaps
+import MapKit
 
 struct RangePickerScreen: View {
     @Binding var location: CLLocationCoordinate2D
@@ -10,7 +10,6 @@ struct RangePickerScreen: View {
     // Local state for live map updates
     @State private var localLocation: CLLocationCoordinate2D
     @State private var localRadiusKm: Int  // slider value in km
-
     private let minKm = 1
     private let maxKm = 20
 
@@ -30,27 +29,23 @@ struct RangePickerScreen: View {
         )
     }
 
-    private var circleBounds: GMSCoordinateBounds {
-        let circle = GMSCircle(position: localLocation, radius: CLLocationDistance(localRadiusMeters));
-        return circle.bounds;
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             // Map fills available space
-            GMSMapViewRepresentable(
-                initialCamera: GMSCameraPosition.camera(withLatitude: localLocation.latitude, longitude: localLocation.longitude, zoom: 10),
-                markers: [
-                    MapMarkerConfig(position: localLocation, title: "Here", color: .blue, isDraggable: true)
-                ],
-                circle: MapCircleConfig(position: localLocation, radius: CLLocationDistance(localRadiusMeters), fillColor: UIColor.blue.withAlphaComponent(0.3)),
-                fitBounds: circleBounds,
-                isMyLocationEnabled: true,
-                myLocationButtonEnabled: true,
-                onMarkerDragEnd: { newPos in
-                    localLocation = newPos;
+            MapReader { proxy in
+                Map(initialPosition: .region(regionForCircle(center: localLocation, radiusKm: localRadiusKm))) {
+                    UserAnnotation()
+                    Annotation("Here", coordinate: localLocation, anchor: .center) {
+                        draggablePin(proxy: proxy)
+                    }
+                    MapPolygon(coordinates: circleCoordinates(center: localLocation, radius: Double(localRadiusMeters)))
+                        .foregroundStyle(Color.blue.opacity(0.25))
                 }
-            )
+                .mapControls {
+                    MapUserLocationButton()
+                    MapCompass()
+                }
+            }
             .ignoresSafeArea(edges: .horizontal)
 
             // Bottom controls
@@ -111,6 +106,44 @@ struct RangePickerScreen: View {
                 .foregroundStyle(themeBarTintColor())
             }
         }
+    }
+
+    // MARK: - Map helpers
+
+    private func draggablePin(proxy: MapProxy) -> some View {
+        Image(systemName: "mappin.circle.fill")
+            .font(.system(size: 30))
+            .foregroundStyle(.white, .blue)
+            .shadow(color: .black.opacity(0.3), radius: 3)
+            .gesture(
+                DragGesture(minimumDistance: 0, coordinateSpace: .global)
+                    .onChanged { value in
+                        if let newCoord = proxy.convert(value.location, from: .global) {
+                            localLocation = newCoord;
+                        }
+                    }
+            )
+    }
+
+    /// Generates coordinates around a circle on the map (64-segment polygon approximation).
+    private func circleCoordinates(center: CLLocationCoordinate2D, radius: Double, segments: Int = 64) -> [CLLocationCoordinate2D] {
+        let latRadius = radius / 111_320;
+        let lonRadius = radius / (111_320 * cos(center.latitude * .pi / 180));
+        return (0..<segments).map { i in
+            let angle = Double(i) / Double(segments) * 2 * .pi;
+            return CLLocationCoordinate2D(
+                latitude:  center.latitude  + latRadius * sin(angle),
+                longitude: center.longitude + lonRadius * cos(angle)
+            );
+        };
+    }
+
+    /// Computes an MKCoordinateRegion that fits a circle of the given radius around center.
+    private func regionForCircle(center: CLLocationCoordinate2D, radiusKm: Int) -> MKCoordinateRegion {
+        let meters   = Double(radiusKm * 1000);
+        let latDelta = meters / 111_320 * 2.2;
+        let lonDelta = meters / (111_320 * cos(center.latitude * .pi / 180)) * 2.2;
+        return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta));
     }
 
     // MARK: - Theme
