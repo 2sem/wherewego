@@ -7,7 +7,7 @@ struct SplashScreen: View {
 
     var body: some View {
         ZStack {
-            Color(LSThemeManager.shared.theme == .default ? .systemBackground : (LSThemeManager.shared.theme == .summer ? .init(uiColor: LSThemeManager.MaterialColors.lightBlue._400!) : .init(uiColor: LSThemeManager.MaterialColors.red.red400!)))
+            themeBackground()
                 .ignoresSafeArea()
 
             ProgressView()
@@ -30,6 +30,14 @@ struct SplashScreen: View {
             withAnimation {
                 isDone = true;
             }
+        }
+    }
+
+    private func themeBackground() -> Color {
+        switch LSThemeManager.shared.theme {
+        case .summer: return Color(uiColor: LSThemeManager.MaterialColors.lightBlue._400!);
+        case .xmas:   return Color(uiColor: LSThemeManager.MaterialColors.red.red400!);
+        default:      return Color(uiColor: .systemBackground);
         }
     }
 }

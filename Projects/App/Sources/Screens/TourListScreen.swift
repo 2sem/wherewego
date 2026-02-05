@@ -39,9 +39,15 @@ enum TourNavDestination: Hashable {
     }
 }
 
+extension CLLocationCoordinate2D: @retroactive Equatable {
+    public static func == (lhs: CLLocationCoordinate2D, rhs: CLLocationCoordinate2D) -> Bool {
+        return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude;
+    }
+}
+
 private func coordEqual(_ a: CLLocationCoordinate2D?, _ b: CLLocationCoordinate2D?) -> Bool {
     guard let a = a, let b = b else { return a == nil && b == nil };
-    return a.latitude == b.latitude && a.longitude == b.longitude;
+    return a == b;
 }
 
 private func hashCoord(_ coord: CLLocationCoordinate2D?, _ hasher: inout Hasher) {
@@ -79,89 +85,14 @@ struct TourListScreen: View {
 
     var body: some View {
         NavigationStack(path: $navPath) {
-            VStack(spacing: 0) {
-                // Type filter
-                Picker("Type", selection: $typeIndex) {
-                    ForEach(typeOptions.indices) { i in
-                        Text(typeOptions[i].0).tag(i);
-                    }
+            contentBody
+                .navigationDestination(for: TourNavDestination.self) { dest in
+                    navigationDestinationView(for: dest)
                 }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.vertical, 6)
-                .background(themeNavBarColor())
-
-                // List
-                List {
-                    ForEach(viewModel.infos.indices, id: \.self) { index in
-                        let info = viewModel.infos[index];
-                        TourCellView(info: info)
-                            .onAppear {
-                                // Infinite scroll: 2 rows before end
-                                if index == viewModel.infos.count - 2 {
-                                    viewModel.fetchNextPage();
-                                }
-                            }
-                            .onTapGesture {
-                                showInterstitialThenNavigate(info: info)
-                            }
-                    }
-                }
-                .listStyle(.plain)
-                .refreshable {
-                    await viewModel.refresh();
-                }
-                .overlay {
-                    if viewModel.infos.isEmpty && !viewModel.isLoading {
-                        Text("No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized())
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                            .padding()
-                    }
-                }
-
-                // Banner ad
-                if launchCount > 1 {
-                    BannerAdView(isVisible: $isBannerVisible)
-                        .frame(maxWidth: .infinity, height: isBannerVisible ? 50 : 0)
-                }
-            }
-            .background(themeNavBarColor())
-            // MARK: Navigation destinations
-            .navigationDestination(for: TourNavDestination.self) { dest in
-                switch dest {
-                case .tourInfo(let info, let loc):
-                    TourInfoScreen(info: info, currentLocation: loc)
-                        .onDisappear { onDetailDismiss(); }
-                case .tourInfoById(let id, let loc):
-                    TourInfoScreen(infoId: id, currentLocation: loc)
-                        .onDisappear { onDetailDismiss(); }
-                case .imageViewer(let url):
-                    ImageViewerScreen(imageUrl: url)
-                case .rangePicker:
-                    RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
-                        .onDisappear { onRangePickerDone(); }
-                }
-            }
-            .navigationBarTitle("WhereWeGo")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { locationManager.requestLocation() } label: {
-                        Image(systemName: "location.fill")
-                            .foregroundStyle(themeBarTintColor())
-                    }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button { navPath.append(.rangePicker) } label: {
-                        Text(viewModel.radius.stringForDistance())
-                            .foregroundStyle(themeBarTintColor())
-                            .font(.system(size: 14))
-                    }
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(themeNavBarColor(), for: .navigationBar)
-            .toolbarForegroundStyle(themeBarTintColor(), for: .navigationBar)
+                .navigationBarTitle("WhereWeGo")
+                .toolbar { toolbarItems }
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbarBackground(themeNavBarColor(), for: .navigationBar)
         }
         // Location denied alert
         .alert("\"WhereWeGo\" needs to use your location".localized(), isPresented: $showLocationAlert) {
@@ -206,6 +137,102 @@ struct TourListScreen: View {
             guard let id = newId else { return };
             navPath.append(.tourInfoById(id, DeepLinkManager.shared.srcLocation));
             DeepLinkManager.shared.consume();
+        }
+    }
+
+    // MARK: - Sub-views (broken out to help the type-checker)
+
+    private var contentBody: some View {
+        VStack(spacing: 0) {
+            // Type filter
+            Picker("Type", selection: $typeIndex) {
+                ForEach(typeOptions.indices) { i in
+                    Text(typeOptions[i].0).tag(i);
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .background(themeNavBarColor())
+
+            // List
+            tourList
+
+            // Banner ad
+            if launchCount > 1 {
+                bannerAdView
+            }
+        }
+        .background(themeNavBarColor())
+    }
+
+    private var tourList: some View {
+        List {
+            ForEach(viewModel.infos.indices, id: \.self) { index in
+                let info = viewModel.infos[index];
+                TourCellView(info: info)
+                    .onAppear {
+                        // Infinite scroll: 2 rows before end
+                        if index == viewModel.infos.count - 2 {
+                            viewModel.fetchNextPage();
+                        }
+                    }
+                    .onTapGesture {
+                        showInterstitialThenNavigate(info: info)
+                    }
+            }
+        }
+        .listStyle(.plain)
+        .refreshable {
+            await viewModel.refresh();
+        }
+        .overlay {
+            if viewModel.infos.isEmpty && !viewModel.isLoading {
+                Text("No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized())
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(.secondary)
+                    .padding()
+            }
+        }
+    }
+
+    private var bannerAdView: some View {
+        BannerAdView(isVisible: $isBannerVisible)
+            .frame(height: isBannerVisible ? 50 : 0)
+            .frame(maxWidth: .infinity);
+    }
+
+    @ViewBuilder
+    private func navigationDestinationView(for dest: TourNavDestination) -> some View {
+        switch dest {
+        case .tourInfo(let info, let loc):
+            TourInfoScreen(info: info, currentLocation: loc)
+                .onDisappear { onDetailDismiss(); }
+        case .tourInfoById(let id, let loc):
+            TourInfoScreen(infoId: id, currentLocation: loc)
+                .onDisappear { onDetailDismiss(); }
+        case .imageViewer(let url):
+            ImageViewerScreen(imageUrl: url)
+        case .rangePicker:
+            RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
+                .onDisappear { onRangePickerDone(); }
+        }
+    }
+
+    @ToolbarContentBuilder
+    private var toolbarItems: some ToolbarContent {
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { locationManager.requestLocation() } label: {
+                Image(systemName: "location.fill")
+                    .foregroundStyle(themeBarTintColor())
+            }
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { navPath.append(.rangePicker) } label: {
+                Text(viewModel.radius.stringForDistance())
+                    .foregroundStyle(themeBarTintColor())
+                    .font(.system(size: 14))
+            }
         }
     }
 

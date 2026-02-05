@@ -12,6 +12,7 @@ struct TourInfoScreen: View {
     var infoId: Int = 0
     var currentLocation: CLLocationCoordinate2D?
 
+    @Environment(\.dismiss) private var dismiss;
     @State private var detailInfo: KGDataTourInfo? = nil;
     @State private var loadedImage: UIImage? = nil;
     @State private var showShareSheet = false;
@@ -42,7 +43,7 @@ struct TourInfoScreen: View {
                     }
                     .buttonStyle(.plain)
                     .onAppear {
-                        SDWebImageManager.default.loadImage(with: imgUrl, options: .scaleDownLargeImages, progress: nil) { image, _, _, _, _, _ in
+                        SDWebImageManager.shared.loadImage(with: imgUrl, options: .scaleDownLargeImages, progress: nil) { image, _, _, _, _, _ in
                             loadedImage = image;
                         };
                     }
@@ -106,10 +107,16 @@ struct TourInfoScreen: View {
             }
         }
         .background(themeBackground())
-        .navigationBarTitle(resolvedInfo?.title ?? "", displayMode: .inline)
+        .navigationTitle(resolvedInfo?.title ?? "")
+        .navigationBarBackButtonHidden()
         .toolbarBackground(themeNavBarColor(), for: .navigationBar)
-        .toolbarForegroundStyle(themeBarTintColor(), for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.backward")
+                        .foregroundStyle(themeBarTintColor())
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button { onShare(); } label: {
                     Image(systemName: "square.and.arrow.up")

@@ -5,6 +5,7 @@ import GoogleMaps
 struct RangePickerScreen: View {
     @Binding var location: CLLocationCoordinate2D
     @Binding var radius: Int
+    @Environment(\.dismiss) private var dismiss;
 
     // Local state for live map updates
     @State private var localLocation: CLLocationCoordinate2D
@@ -21,6 +22,13 @@ struct RangePickerScreen: View {
     }
 
     private var localRadiusMeters: Int { localRadiusKm * 1000; }
+
+    private var sliderValue: Binding<Double> {
+        Binding(
+            get: { Double(localRadiusKm) },
+            set: { localRadiusKm = Int($0.rounded()) }
+        )
+    }
 
     private var circleBounds: GMSCoordinateBounds {
         let circle = GMSCircle(position: localLocation, radius: CLLocationDistance(localRadiusMeters));
@@ -61,7 +69,7 @@ struct RangePickerScreen: View {
                     .disabled(localRadiusKm <= minKm)
 
                     // Slider
-                    Slider(value: $localRadiusKm, through: minKm...maxKm, step: 1)
+                    Slider(value: sliderValue, in: Double(minKm)...Double(maxKm), step: 1.0)
                         .tint(themeSliderColor())
 
                     // Plus
@@ -84,14 +92,21 @@ struct RangePickerScreen: View {
             }
             .background(themeBackground())
         }
-        .navigationBarTitle("Search Range".localized(), displayMode: .inline)
+        .navigationTitle("Search Range".localized())
+        .navigationBarBackButtonHidden()
         .toolbarBackground(themeNavBarColor(), for: .navigationBar)
-        .toolbarForegroundStyle(themeBarTintColor(), for: .navigationBar)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.backward")
+                        .foregroundStyle(themeBarTintColor())
+                }
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Done".localized()) {
                     location = localLocation;
                     radius = localRadiusMeters;
+                    dismiss();
                 }
                 .foregroundStyle(themeBarTintColor())
             }
