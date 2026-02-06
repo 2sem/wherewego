@@ -247,6 +247,11 @@ struct TourInfoScreen: View {
         print("[Route] routeCoordinates set, count: \(routeCoordinates.count)");
         print("[Route] first: (\(routeCoordinates.first?.latitude ?? -1), \(routeCoordinates.first?.longitude ?? -1))");
         print("[Route] last:  (\(routeCoordinates.last?.latitude ?? -1), \(routeCoordinates.last?.longitude ?? -1))");
+
+        // Adjust camera to fit entire route
+        if !routeCoordinates.isEmpty {
+            mapCameraPosition = .region(regionFittingRoute(routeCoordinates));
+        }
     }
 
     private func regionFitting(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> MKCoordinateRegion {
@@ -256,6 +261,35 @@ struct TourInfoScreen: View {
         );
         let latSpan = max(abs(a.latitude - b.latitude) * 1.4, 0.005);
         let lonSpan = max(abs(a.longitude - b.longitude) * 1.4, 0.005);
+        return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan));
+    }
+
+    private func regionFittingRoute(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+        guard !coordinates.isEmpty else {
+            return MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1));
+        }
+
+        // Find bounding box
+        var minLat = coordinates[0].latitude;
+        var maxLat = coordinates[0].latitude;
+        var minLon = coordinates[0].longitude;
+        var maxLon = coordinates[0].longitude;
+
+        for coord in coordinates {
+            minLat = min(minLat, coord.latitude);
+            maxLat = max(maxLat, coord.latitude);
+            minLon = min(minLon, coord.longitude);
+            maxLon = max(maxLon, coord.longitude);
+        }
+
+        // Calculate center and span with padding
+        let center = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        );
+        let latSpan = max((maxLat - minLat) * 1.6, 0.005);  // 60% padding for markers
+        let lonSpan = max((maxLon - minLon) * 1.6, 0.005);
+
         return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan));
     }
 
