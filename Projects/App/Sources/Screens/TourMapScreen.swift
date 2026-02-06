@@ -11,6 +11,7 @@ struct TourMapScreen: View {
     @State private var showReviewAlert = false
     @State private var showNoDataAlert = false
     @State private var showRangeSheet = false
+    @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
@@ -108,6 +109,12 @@ struct TourMapScreen: View {
             mapView
                 .ignoresSafeArea(edges: .bottom)
 
+            if let tour = selectedTour {
+                floatingInfoCard(for: tour)
+                    .padding(.bottom, 60)  // Above banner
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
             bannerAdView
         }
     }
@@ -142,7 +149,9 @@ struct TourMapScreen: View {
                     Annotation(title, coordinate: location) {
                         markerView(for: info)
                             .onTapGesture {
-                                navigateToDetail(info: info)
+                                withAnimation {
+                                    selectedTour = info;
+                                }
                             }
                     }
                 }
@@ -214,6 +223,94 @@ struct TourMapScreen: View {
         case .Shopping, .Shopping_Foreign:   return Color("ShoppingMarkerColor")   // 쇼핑
         case .Food, .Food_Foreign:           return Color("FoodMarkerColor")       // 음식점
         case .Travel, .Travel_Foreign:       return Color("TravelMarkerColor")     // 여행
+        }
+    }
+
+    private func floatingInfoCard(for tour: KGDataTourInfo) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            // Thumbnail
+            if let imgUrl = tour.thumbnail {
+                AsyncImage(url: imgUrl) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Color.gray.opacity(0.3)
+                }
+                .frame(width: 100, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+
+            // Info
+            VStack(alignment: .leading, spacing: 6) {
+                // Type badge
+                HStack(spacing: 4) {
+                    Image(systemName: markerIcon(for: tour.type))
+                        .font(.system(size: 12))
+                        .foregroundStyle(.white)
+
+                    Text(tour.type.stringValue.localized())
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(.white)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(markerColor(for: tour.type))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                // Title
+                Text(tour.title ?? "")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+
+                // Address
+                if let addr = tour.primaryAddr, !addr.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin.circle.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                        Text(addr)
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+
+                // Phone
+                if let tel = tour.tel, !tel.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "phone.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                        Text(tel)
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                // Distance
+                if let distance = tour.distance {
+                    HStack(spacing: 4) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.blue)
+                        Text(distance.stringForDistance())
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.blue)
+                    }
+                }
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
+        .padding(.horizontal)
+        .onTapGesture {
+            navigateToDetail(info: tour);
         }
     }
 
