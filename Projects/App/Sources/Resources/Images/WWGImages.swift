@@ -9,5 +9,5 @@
 import UIKit
 
 class WWGImages{
-    private(set) static var noImage : UIImage? = UIImage(named: "no_image");
+    private(set) static var noImage : UIImage! = UIImage(named: "no_image");
 }
