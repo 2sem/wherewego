@@ -45,6 +45,10 @@ class SwiftUIAdManager: NSObject, ObservableObject {
         }
     }
 
+    func createBannerAdView(withAdSize size: AdSize, forUnit unit: GADUnitName) -> BannerView? {
+        return gadManager?.prepare(bannerUnit: unit, isTesting: self.isTesting(unit: unit), size: size)
+    }
+
     // MARK: - Testing
 
     func isTesting(unit: GADUnitName) -> Bool {

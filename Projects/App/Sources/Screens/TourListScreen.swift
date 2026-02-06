@@ -65,7 +65,6 @@ struct TourListScreen: View {
     @State private var navPath: [TourNavDestination] = []
     @State private var typeIndex: Int = 0          // 0 = All, 1… = ContentType
     @State private var showLocationAlert = false
-    @State private var isBannerVisible = false
     @State private var showReviewAlert = false
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
@@ -146,9 +145,7 @@ struct TourListScreen: View {
             tourList
 
             // Banner ad
-            if launchCount > 1 {
-                bannerAdView
-            }
+            bannerAdView
         }
         .background(themeNavBarColor())
     }
@@ -183,8 +180,8 @@ struct TourListScreen: View {
     }
 
     private var bannerAdView: some View {
-        BannerAdView(isVisible: $isBannerVisible)
-            .frame(height: isBannerVisible ? 50 : 0)
+        BannerAdView()
+            .frame(height: 50)
             .frame(maxWidth: .infinity);
     }
 
