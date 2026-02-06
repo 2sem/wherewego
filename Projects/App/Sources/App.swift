@@ -21,7 +21,7 @@ struct WhereWeGoApp: App {
         WindowGroup {
             ZStack {
                 if isSplashDone {
-                    TourListScreen()
+                    MainScreen()
                 }
 
                 if !isSplashDone {
