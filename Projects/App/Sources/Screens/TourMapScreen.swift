@@ -10,6 +10,7 @@ struct TourMapScreen: View {
     @State private var showLocationAlert = false
     @State private var showReviewAlert = false
     @State private var showNoDataAlert = false
+    @State private var showRangeSheet = false
     @State private var mapCameraPosition: MapCameraPosition = .automatic
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
@@ -17,6 +18,7 @@ struct TourMapScreen: View {
     // Range picker bindings
     @State private var pickerLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.5866076, longitude: 126.974811);
     @State private var pickerRadius: Int = 3000;
+    @State private var tempRadius: Int = 3000;  // Temporary while adjusting slider
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
         var options: [(String, KGDataTourInfo.ContentType?)] = [("All Tour Informations".localized(), nil)];
@@ -63,6 +65,19 @@ struct TourMapScreen: View {
             Button("OK".localized()) {}
         } message: {
             Text("No locations found for the selected type.\nTry selecting a different type or adjusting your search range.".localized())
+        }
+        .sheet(isPresented: $showRangeSheet, onDismiss: {
+            // Apply the new radius and fetch when sheet is dismissed
+            if tempRadius != viewModel.radius {
+                viewModel.radius = tempRadius;
+                pickerRadius = tempRadius;
+                WWGDefaults.Range = tempRadius;
+                viewModel.fetchList();
+            }
+        }) {
+            rangeSliderSheet
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
         }
         .onAppear { onScreenAppear(); }
         .onChange(of: locationManager.currentLocation) { _, newLoc in
@@ -112,6 +127,13 @@ struct TourMapScreen: View {
                                 .stroke(.white, lineWidth: 2)
                         )
                 }
+            }
+
+            // Range circle (only show while adjusting)
+            if showRangeSheet, let center = viewModel.location {
+                MapCircle(center: center, radius: CLLocationDistance(tempRadius))
+                    .foregroundStyle(Color.blue.opacity(0.15))
+                    .stroke(Color.blue.opacity(0.5), lineWidth: 2)
             }
 
             // Tour markers
@@ -203,6 +225,52 @@ struct TourMapScreen: View {
             .shadow(color: .black.opacity(0.1), radius: 5, y: -2)
     }
 
+    private var rangeSliderSheet: some View {
+        VStack(spacing: 16) {
+            Text("Search Range".localized())
+                .font(.headline)
+                .padding(.top, 8)
+
+            HStack(spacing: 12) {
+                // Minus button
+                Button {
+                    tempRadius = max(1000, tempRadius - 1000);
+                } label: {
+                    Image(systemName: "minus.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.blue)
+                }
+                .disabled(tempRadius <= 1000)
+
+                // Slider
+                Slider(value: Binding(
+                    get: { Double(tempRadius) },
+                    set: { tempRadius = Int($0.rounded()) }
+                ), in: 1000...20000, step: 1000)
+                    .tint(.blue)
+
+                // Plus button
+                Button {
+                    tempRadius = min(20000, tempRadius + 1000);
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.blue)
+                }
+                .disabled(tempRadius >= 20000)
+            }
+            .padding(.horizontal)
+
+            // Distance label
+            Text(tempRadius.stringForDistance())
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.primary)
+
+            Spacer()
+        }
+        .padding()
+    }
+
     @ViewBuilder
     private func navigationDestinationView(for dest: TourNavDestination) -> some View {
         switch dest {
@@ -250,7 +318,10 @@ struct TourMapScreen: View {
             }
         }
         ToolbarItem(placement: .navigationBarLeading) {
-            Button { navPath.append(.rangePicker) } label: {
+            Button {
+                tempRadius = viewModel.radius;
+                showRangeSheet = true;
+            } label: {
                 Text(viewModel.radius.stringForDistance())
                     .foregroundStyle(themeBarTintColor())
                     .font(.system(size: 14))
@@ -267,6 +338,7 @@ struct TourMapScreen: View {
         // Restore persisted radius
         viewModel.radius = WWGDefaults.Range;
         pickerRadius = viewModel.radius;
+        tempRadius = viewModel.radius;
 
         // Handle deep link that arrived before screen was ready
         if let id = DeepLinkManager.shared.contentId {
