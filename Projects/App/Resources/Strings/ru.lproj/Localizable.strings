@@ -29,3 +29,7 @@
 "Please rate '%@' or recommend it to your friends." = "Пожалуйста, оцените '%@' или порекомендуйте его своим друзьям.";
 "Sponsorship(view ads)" = "Спонсорство(просмотреть рекламу)";
 "Sponsorship(Video Ads)" = "Спонсорство(видеообъявления)";
+
+"No Results" = "Нет результатов";
+"No locations found for the selected type.\nTry selecting a different type or adjusting your search range." = "Поблизости не найдено туристической информации выбранного типа";
+"OK" = "OK";

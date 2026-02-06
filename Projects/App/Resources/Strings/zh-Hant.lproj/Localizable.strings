@@ -29,3 +29,7 @@
 "Please rate '%@' or recommend it to your friends." = "請評價'%@'或推薦給你的朋友";
 "Sponsorship(view ads)" = "贊助(查看廣告)";
 "Sponsorship(Video Ads)" = "贊助(影片廣告)";
+
+"No Results" = "無結果";
+"No locations found for the selected type.\nTry selecting a different type or adjusting your search range." = "附近沒有所選類型的旅遊資訊";
+"OK" = "確定";

@@ -29,3 +29,7 @@
 "Please rate '%@' or recommend it to your friends." = "Veuillez évaluer '%@' ou le recommander à vos amis.";
 "Sponsorship(view ads)" = "Parrainage(voir les annonces)";
 "Sponsorship(Video Ads)" = "Sponsoring(annonces vidéo)";
+
+"No Results" = "Aucun résultat";
+"No locations found for the selected type.\nTry selecting a different type or adjusting your search range." = "Aucune information touristique trouvée à proximité pour le type sélectionné";
+"OK" = "OK";
