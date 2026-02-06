@@ -205,15 +205,15 @@ struct TourMapScreen: View {
 
     private func markerColor(for type: KGDataTourInfo.ContentType) -> Color {
         switch type {
-        case .Tour, .Tour_Foreign:           return .orange     // 관광지
-        case .Culture, .Culture_Foreign:     return .purple     // 문화시설
-        case .Event, .Event_Foreign:         return .pink       // 행사/공연/축제
-        case .Course:                        return .blue       // 여행코스
-        case .Leports, .Leports_Foreign:     return .green      // 레포츠
-        case .Hotel, .Hotel_Foreign:         return .indigo     // 숙박
-        case .Shopping, .Shopping_Foreign:   return .cyan       // 쇼핑
-        case .Food, .Food_Foreign:           return .red        // 음식점
-        case .Travel, .Travel_Foreign:       return .teal       // 여행
+        case .Tour, .Tour_Foreign:           return Color("TourMarkerColor")       // 관광지
+        case .Culture, .Culture_Foreign:     return Color("CultureMarkerColor")    // 문화시설
+        case .Event, .Event_Foreign:         return Color("EventMarkerColor")      // 행사/공연/축제
+        case .Course:                        return Color("CourseMarkerColor")     // 여행코스
+        case .Leports, .Leports_Foreign:     return Color("LeportsMarkerColor")    // 레포츠
+        case .Hotel, .Hotel_Foreign:         return Color("HotelMarkerColor")      // 숙박
+        case .Shopping, .Shopping_Foreign:   return Color("ShoppingMarkerColor")   // 쇼핑
+        case .Food, .Food_Foreign:           return Color("FoodMarkerColor")       // 음식점
+        case .Travel, .Travel_Foreign:       return Color("TravelMarkerColor")     // 여행
         }
     }
 
