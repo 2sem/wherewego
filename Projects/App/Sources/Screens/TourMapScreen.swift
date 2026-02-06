@@ -9,6 +9,7 @@ struct TourMapScreen: View {
     @State private var typeIndex: Int = 0
     @State private var showLocationAlert = false
     @State private var showReviewAlert = false
+    @State private var showNoDataAlert = false
     @State private var mapCameraPosition: MapCameraPosition = .automatic
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
@@ -58,6 +59,11 @@ struct TourMapScreen: View {
         } message: {
             Text(String(format: "'%@'을 평가하거나 친구들에게 추천해보세요.".localized(), UIApplication.shared.displayName ?? ""))
         }
+        .alert("No Results".localized(), isPresented: $showNoDataAlert) {
+            Button("OK".localized()) {}
+        } message: {
+            Text("No locations found for the selected type.\nTry selecting a different type or adjusting your search range.".localized())
+        }
         .onAppear { onScreenAppear(); }
         .onChange(of: locationManager.currentLocation) { _, newLoc in
             handleLocationChange(newLoc);
@@ -68,6 +74,12 @@ struct TourMapScreen: View {
         .onChange(of: typeIndex) { _, _ in
             viewModel.selectedType = typeOptions[typeIndex].1;
             if viewModel.location != nil { viewModel.fetchList(); }
+        }
+        .onChange(of: viewModel.isLoading) { oldValue, newValue in
+            // Show alert when loading finishes and no data found
+            if oldValue && !newValue && viewModel.infos.isEmpty && viewModel.location != nil {
+                showNoDataAlert = true;
+            }
         }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
             handleDeepLink(newId);
