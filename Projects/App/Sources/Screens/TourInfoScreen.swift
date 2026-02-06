@@ -19,13 +19,32 @@ struct TourInfoScreen: View {
     @State private var shareItems: [Any] = [];
     @State private var routeCoordinates: [CLLocationCoordinate2D] = [];
     @State private var mapCameraPosition: MapCameraPosition = .automatic;
+    @State private var transportType: TransportType = .fastest;
+
+    enum TransportType {
+        case fastest
+        case walking
+        case automobile
+        case bicycle
+        case transit
+
+        var mkDirectionsType: MKDirectionsTransportType {
+            switch self {
+            case .fastest:    return .any
+            case .walking:    return .walking
+            case .automobile: return .automobile
+            case .bicycle:    return .cycling
+            case .transit:    return .transit
+            }
+        }
+    }
 
     private var resolvedInfo: KGDataTourInfo? { detailInfo ?? info; }
     private var resolvedId: Int { info?.id ?? infoId; }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 12) {
                 // Row 0: action buttons
                 HStack(spacing: 12) {
                     roundButton(title: "", icon: "phone.fill") { onPhone(); }
@@ -38,10 +57,19 @@ struct TourInfoScreen: View {
                 // Row 1: image + address
                 if let imgUrl = resolvedInfo?.image {
                     NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
-                        SDWebImageSwiftUIView(url: imgUrl, placeholder: WWGImages.noImage)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 200)
-                            .contentShape(Rectangle())
+                        AsyncImage(url: imgUrl) { image in
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Image(uiImage: WWGImages.noImage)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                        }
+                        .frame(height: 200)
+                        .frame(maxWidth: .infinity)
+                        .clipped()
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .onAppear {
@@ -72,28 +100,38 @@ struct TourInfoScreen: View {
 
                 // Row 2: map
                 if let dest = resolvedInfo?.location, let src = currentLocation {
-                    let _ = print("[Route] Map content eval — routeCoordinates.count: \(routeCoordinates.count)");
-                    Map(position: $mapCameraPosition) {
-                        Marker("Here", coordinate: src)
-                            .foregroundStyle(.blue)
-                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
-                            .foregroundStyle(.red)
-                        if !routeCoordinates.isEmpty {
-                            let _ = print("[Route] MapPolyline rendered, count: \(routeCoordinates.count)");
-                            MapPolyline(coordinates: routeCoordinates)
-                                .stroke(Color("PathColor"), lineWidth: 5)
+                    ZStack(alignment: .topLeading) {
+                        Map(position: $mapCameraPosition) {
+                            Marker("Here", coordinate: src)
+                                .foregroundStyle(.blue)
+                            Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                                .foregroundStyle(.red)
+                            if !routeCoordinates.isEmpty {
+                                MapPolyline(coordinates: routeCoordinates)
+                                    .stroke(Color("PathColor"), lineWidth: 5)
+                            }
                         }
-                    }
-                    .frame(height: 450)
-                    .mapControls {
-                        MapCompass()
-                    }
-                    .onChange(of: resolvedInfo?.location) { _, _ in
-                        mapCameraPosition = .region(regionFitting(src, dest));
-                    }
-                    .task {
-                        mapCameraPosition = .region(regionFitting(src, dest));
-                        await fetchRoute(from: src, to: dest);
+                        .frame(height: 450)
+                        .mapControls {
+                            MapCompass()
+                        }
+                        .onChange(of: resolvedInfo?.location) { _, _ in
+                            mapCameraPosition = .region(regionFitting(src, dest));
+                        }
+                        .onChange(of: transportType) { _, _ in
+                            routeCoordinates = [];  // Clear old route
+                            Task {
+                                await fetchRoute(from: src, to: dest);
+                            }
+                        }
+                        .task {
+                            mapCameraPosition = .region(regionFitting(src, dest));
+                            await fetchRoute(from: src, to: dest);
+                        }
+
+                        // Transport type picker overlaid on top-left
+                        transportTypePicker
+                            .padding()
                     }
                 }
 
@@ -206,6 +244,62 @@ struct TourInfoScreen: View {
         }
     }
 
+    // MARK: - Transport Type Picker
+
+    private var transportTypePicker: some View {
+        Menu {
+            Button {
+                transportType = .fastest;
+            } label: {
+                Label("Fastest", systemImage: "bolt.fill")
+            }
+
+            Button {
+                transportType = .walking;
+            } label: {
+                Label("Walking", systemImage: "figure.walk")
+            }
+
+            Button {
+                transportType = .bicycle;
+            } label: {
+                Label("Cycling", systemImage: "bicycle")
+            }
+
+            Button {
+                transportType = .automobile;
+            } label: {
+                Label("Driving", systemImage: "car.fill")
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: transportIcon(for: transportType))
+                    .font(.system(size: 14, weight: .semibold))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(.white.opacity(0.5), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+        }
+    }
+
+    private func transportIcon(for type: TransportType) -> String {
+        switch type {
+        case .fastest:     return "bolt.fill";
+        case .walking:     return "figure.walk";
+        case .bicycle:     return "bicycle";
+        case .automobile:  return "car.fill";
+        case .transit:     return "bus.fill";
+        }
+    }
+
     // MARK: - Map helpers
 
     private func fetchRoute(from src: CLLocationCoordinate2D, to dest: CLLocationCoordinate2D) async {
@@ -214,7 +308,7 @@ struct TourInfoScreen: View {
         let request = MKDirections.Request();
         request.source      = MKMapItem(placemark: MKPlacemark(coordinate: src));
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: dest));
-        request.transportType = .walking;
+        request.transportType = transportType.mkDirectionsType;
 
         let (response, error): (MKDirections.Response?, Error?) = await withCheckedContinuation { continuation in
             MKDirections(request: request).calculate { response, error in
