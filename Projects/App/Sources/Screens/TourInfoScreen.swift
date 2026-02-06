@@ -113,6 +113,7 @@ struct TourInfoScreen: View {
                         }
                         .frame(height: 450)
                         .mapControls {
+                            MapUserLocationButton()
                             MapCompass()
                         }
                         .onChange(of: resolvedInfo?.location) { _, _ in
