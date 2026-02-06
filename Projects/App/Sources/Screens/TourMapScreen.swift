@@ -137,6 +137,22 @@ struct TourMapScreen: View {
         }
     }
 
+    private func pickerIcon(for type: KGDataTourInfo.ContentType?) -> String {
+        guard let type = type else { return "list.bullet" } // "All" option
+
+        switch type {
+        case .Tour, .Tour_Foreign:           return "camera.fill"
+        case .Culture, .Culture_Foreign:     return "building.columns.fill"
+        case .Event, .Event_Foreign:         return "party.popper.fill"
+        case .Course:                        return "map.fill"
+        case .Leports, .Leports_Foreign:     return "figure.run"
+        case .Hotel, .Hotel_Foreign:         return "bed.double.fill"
+        case .Shopping, .Shopping_Foreign:   return "cart.fill"
+        case .Food, .Food_Foreign:           return "fork.knife"
+        case .Travel, .Travel_Foreign:       return "airplane"
+        }
+    }
+
     private func markerIcon(for type: KGDataTourInfo.ContentType) -> String {
         switch type {
         case .Tour, .Tour_Foreign:           return "camera.fill"              // 관광지
@@ -193,12 +209,25 @@ struct TourMapScreen: View {
     @ToolbarContentBuilder
     private var toolbarItems: some ToolbarContent {
         ToolbarItem(placement: .principal) {
-            Picker("Type", selection: $typeIndex) {
-                ForEach(typeOptions.indices) { i in
-                    Text(typeOptions[i].0).tag(i);
+            Menu {
+                Picker("Type", selection: $typeIndex) {
+                    ForEach(typeOptions.indices) { i in
+                        Label(typeOptions[i].0, systemImage: pickerIcon(for: typeOptions[i].1))
+                            .tag(i);
+                    }
                 }
+                .pickerStyle(.inline)
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: pickerIcon(for: typeOptions[typeIndex].1))
+                        .font(.system(size: 14))
+                    Text(typeOptions[typeIndex].0)
+                        .font(.system(size: 15, weight: .medium))
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 10, weight: .semibold))
+                }
+                .foregroundStyle(themeBarTintColor())
             }
-            .pickerStyle(.menu)
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {
