@@ -36,7 +36,7 @@ struct TourMapScreen: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarItems }
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-                .toolbarColorScheme(themeColorScheme(), for: .navigationBar)
+//                .toolbarColorScheme(themeColorScheme(), for: .navigationBar)
         }
         .alert("\"WhereWeGo\" needs to use your location".localized(), isPresented: $showLocationAlert) {
             Button("Settings".localized()) {
@@ -91,6 +91,8 @@ struct TourMapScreen: View {
     private var contentBody: some View {
         ZStack(alignment: .bottom) {
             mapView
+                .ignoresSafeArea(edges: .bottom)
+
             bannerAdView
         }
     }
