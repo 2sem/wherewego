@@ -34,7 +34,7 @@ struct WhereWeGoApp: App {
                 guard url.scheme?.starts(with: "kakao") ?? false else { return }
                 DeepLinkManager.shared.handleURL(url)
             }
-            .onAppear {
+            .task {
                 setupAds()
             }
             .onChange(of: scenePhase) { _, newPhase in
