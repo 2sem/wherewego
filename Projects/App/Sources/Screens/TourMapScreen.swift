@@ -34,7 +34,8 @@ struct TourMapScreen: View {
                 }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarItems }
-                .toolbarBackground(themeNavBarColor(), for: .navigationBar)
+                .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+                .toolbarColorScheme(themeColorScheme(), for: .navigationBar)
         }
         .alert("\"WhereWeGo\" needs to use your location".localized(), isPresented: $showLocationAlert) {
             Button("Settings".localized()) {
@@ -243,11 +244,10 @@ struct TourMapScreen: View {
 
     // MARK: - Theme colors
 
-    private func themeNavBarColor() -> Color {
+    private func themeColorScheme() -> ColorScheme? {
         switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
+        case .xmas, .summer: return .dark;
+        default:             return nil;
         }
     }
 
