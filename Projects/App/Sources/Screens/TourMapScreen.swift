@@ -146,8 +146,9 @@ struct TourMapScreen: View {
             // Tour markers
             ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
                 if let title = info.title, let location = info.location {
+                    let isSelected = selectedTour?.id == info.id;
                     Annotation(title, coordinate: location) {
-                        markerView(for: info)
+                        markerView(for: info, isSelected: isSelected)
                             .onTapGesture {
                                 withAnimation {
                                     selectedTour = info;
@@ -167,19 +168,29 @@ struct TourMapScreen: View {
         }
     }
 
-    private func markerView(for info: KGDataTourInfo) -> some View {
+    private func markerView(for info: KGDataTourInfo, isSelected: Bool) -> some View {
         ZStack {
+            // Outer ring for selected marker
+            if isSelected {
+                Circle()
+                    .stroke(.white, lineWidth: 4)
+                    .frame(width: 44, height: 44)
+                    .shadow(color: .black.opacity(0.4), radius: 4)
+            }
+
             // Background circle
             Circle()
                 .fill(markerColor(for: info.type))
-                .frame(width: 32, height: 32)
+                .frame(width: isSelected ? 40 : 32, height: isSelected ? 40 : 32)
                 .shadow(color: .black.opacity(0.3), radius: 3)
 
             // Icon
             Image(systemName: markerIcon(for: info.type))
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: isSelected ? 20 : 16, weight: .semibold))
                 .foregroundStyle(.white)
         }
+        .scaleEffect(isSelected ? 1.0 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
     }
 
     private func pickerIcon(for type: KGDataTourInfo.ContentType?) -> String {
