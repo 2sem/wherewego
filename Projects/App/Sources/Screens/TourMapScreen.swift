@@ -104,15 +104,10 @@ struct TourMapScreen: View {
             ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
                 if let title = info.title, let location = info.location {
                     Annotation(title, coordinate: location) {
-                        VStack(spacing: 0) {
-                            Image(systemName: "mappin.circle.fill")
-                                .font(.system(size: 30))
-                                .foregroundStyle(.white, .red)
-                                .shadow(color: .black.opacity(0.3), radius: 3)
-                        }
-                        .onTapGesture {
-                            navigateToDetail(info: info)
-                        }
+                        markerView(for: info)
+                            .onTapGesture {
+                                navigateToDetail(info: info)
+                            }
                     }
                 }
             }
@@ -124,6 +119,49 @@ struct TourMapScreen: View {
         .onMapCameraChange { context in
             // Fetch more when user pans/zooms to edge of loaded data
             checkAndLoadMore(region: context.region)
+        }
+    }
+
+    private func markerView(for info: KGDataTourInfo) -> some View {
+        ZStack {
+            // Background circle
+            Circle()
+                .fill(markerColor(for: info.type))
+                .frame(width: 32, height: 32)
+                .shadow(color: .black.opacity(0.3), radius: 3)
+
+            // Icon
+            Image(systemName: markerIcon(for: info.type))
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+        }
+    }
+
+    private func markerIcon(for type: KGDataTourInfo.ContentType) -> String {
+        switch type {
+        case .Tour, .Tour_Foreign:           return "camera.fill"              // 관광지
+        case .Culture, .Culture_Foreign:     return "building.columns.fill"    // 문화시설
+        case .Event, .Event_Foreign:         return "party.popper.fill"        // 행사/공연/축제
+        case .Course:                        return "map.fill"                 // 여행코스
+        case .Leports, .Leports_Foreign:     return "figure.run"               // 레포츠
+        case .Hotel, .Hotel_Foreign:         return "bed.double.fill"          // 숙박
+        case .Shopping, .Shopping_Foreign:   return "cart.fill"                // 쇼핑
+        case .Food, .Food_Foreign:           return "fork.knife"               // 음식점
+        case .Travel, .Travel_Foreign:       return "airplane"                 // 여행
+        }
+    }
+
+    private func markerColor(for type: KGDataTourInfo.ContentType) -> Color {
+        switch type {
+        case .Tour, .Tour_Foreign:           return .orange     // 관광지
+        case .Culture, .Culture_Foreign:     return .purple     // 문화시설
+        case .Event, .Event_Foreign:         return .pink       // 행사/공연/축제
+        case .Course:                        return .blue       // 여행코스
+        case .Leports, .Leports_Foreign:     return .green      // 레포츠
+        case .Hotel, .Hotel_Foreign:         return .indigo     // 숙박
+        case .Shopping, .Shopping_Foreign:   return .cyan       // 쇼핑
+        case .Food, .Food_Foreign:           return .red        // 음식점
+        case .Travel, .Travel_Foreign:       return .teal       // 여행
         }
     }
 
