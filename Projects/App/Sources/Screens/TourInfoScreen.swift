@@ -70,7 +70,7 @@ struct TourInfoScreen: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Row 2: map (1/3 screen height)
+                // Row 2: map
                 if let dest = resolvedInfo?.location, let src = currentLocation {
                     let _ = print("[Route] Map content eval — routeCoordinates.count: \(routeCoordinates.count)");
                     Map(position: $mapCameraPosition) {
@@ -84,7 +84,7 @@ struct TourInfoScreen: View {
                                 .stroke(Color("PathColor"), lineWidth: 5)
                         }
                     }
-                    .frame(height: UIScreen.main.bounds.height / 3)
+                    .frame(height: 450)
                     .mapControls {
                         MapCompass()
                     }
