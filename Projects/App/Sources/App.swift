@@ -55,10 +55,10 @@ struct WhereWeGoApp: App {
             MobileAds.shared.requestConfiguration.testDeviceIdentifiers = ["8a00796a760e384800262e0b7c3d08fe"]
 
             #if DEBUG
-            mgr.prepare(interstitialUnit: .full, interval: 60.0)
+            // mgr.prepare(interstitialUnit: .full, interval: 60.0)
             mgr.prepare(openingUnit: .launch, interval: 60.0)
             #else
-            mgr.prepare(interstitialUnit: .full, interval: 60.0 * 60.0 * 3.0)
+            // mgr.prepare(interstitialUnit: .full, interval: 60.0 * 60.0 * 3.0)
             mgr.prepare(openingUnit: .launch, interval: 60.0 * 5.0)
             #endif
             mgr.canShowFirstTime = true

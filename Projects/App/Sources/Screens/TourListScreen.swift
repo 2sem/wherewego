@@ -164,7 +164,7 @@ struct TourListScreen: View {
                         }
                     }
                     .onTapGesture {
-                        showInterstitialThenNavigate(info: info)
+                        navigateToDetail(info: info)
                     }
             }
         }
@@ -264,12 +264,8 @@ struct TourListScreen: View {
         WWGDefaults.LastShareShown = Date()
     }
 
-    private func showInterstitialThenNavigate(info: KGDataTourInfo) {
-        let mgr = adManager
-        Task { @MainActor in
-            await mgr.show(unit: .full)
-            navPath.append(.tourInfo(info, viewModel.location))
-        }
+    private func navigateToDetail(info: KGDataTourInfo) {
+        navPath.append(.tourInfo(info, viewModel.location));
     }
 
     // MARK: - Theme colors
