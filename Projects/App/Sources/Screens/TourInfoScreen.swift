@@ -91,7 +91,7 @@ struct TourInfoScreen: View {
         }
         .sheet(isPresented: $showRouteSheet) {
             routeOptionsSheet
-                .presentationDetents([.height(200)])
+                .presentationDetents([.height(280)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showNaverWebSheet) {
@@ -403,41 +403,63 @@ struct TourInfoScreen: View {
                 .font(.system(size: 17, weight: .semibold))
                 .padding(.top, 8)
 
-            HStack(spacing: 12) {
-                // KakaoMap button
-                Button(action: {
-                    showRouteSheet = false;
-                    openKakaoMap();
-                }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "map.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.yellow)
-                        Text("KakaoMap".localized())
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.primary)
+            VStack(spacing: 12) {
+                // First row: KakaoMap + Naver Map
+                HStack(spacing: 12) {
+                    // KakaoMap button
+                    Button(action: {
+                        showRouteSheet = false;
+                        openKakaoMap();
+                    }) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "map.fill")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.yellow)
+                            Text("KakaoMap")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 100)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 100)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    // Naver Map button
+                    Button(action: {
+                        showRouteSheet = false;
+                        openNaverMap();
+                    }) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "map.fill")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.green)
+                            Text("Naver Map")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 100)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
 
-                // Naver Map button
+                // Second row: Google Maps (full width)
                 Button(action: {
                     showRouteSheet = false;
-                    openNaverMap();
+                    openGoogleMaps();
                 }) {
-                    VStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         Image(systemName: "map.fill")
                             .font(.system(size: 32))
-                            .foregroundStyle(.green)
-                        Text("Naver Map".localized())
+                            .foregroundStyle(.blue)
+                        Text("Google Maps")
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.primary)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 100)
+                    .frame(height: 60)
                     .background(Color(UIColor.secondarySystemBackground))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
@@ -578,6 +600,39 @@ struct TourInfoScreen: View {
         if let url = URL(string: urlString) {
             naverWebURL = url;
             showNaverWebSheet = true;
+        }
+    }
+
+    private func openGoogleMaps() {
+        guard let dest = resolvedInfo?.location, let src = currentLocation else { return };
+
+        // Map transport type to Google Maps format
+        let googleMode: String = {
+            switch transportType {
+            case .fastest, .automobile:
+                return "driving"
+            case .walking:
+                return "walking"
+            case .bicycle:
+                return "bicycling"
+            case .transit:
+                return "transit"
+            }
+        }();
+
+        // Try app URL scheme first
+        let appURLString = "comgooglemaps://?saddr=\(src.latitude),\(src.longitude)&daddr=\(dest.latitude),\(dest.longitude)&directionsmode=\(googleMode)";
+
+        if let appURL = URL(string: appURLString), UIApplication.shared.canOpenURL(appURL) {
+            UIApplication.shared.open(appURL);
+        } else {
+            // Fallback to web URL in Safari sheet
+            let webURLString = "https://www.google.com/maps/dir/?api=1&origin=\(src.latitude),\(src.longitude)&destination=\(dest.latitude),\(dest.longitude)&travelmode=\(googleMode)";
+
+            if let webURL = URL(string: webURLString) {
+                naverWebURL = webURL;
+                showNaverWebSheet = true;
+            }
         }
     }
 

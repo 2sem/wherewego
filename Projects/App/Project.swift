@@ -93,7 +93,8 @@ let project = Project(
                     ],
                     "LSApplicationQueriesSchemes": [
                         "nmap",
-                        "kakaomap"
+                        "kakaomap",
+                        "comgooglemaps"
                     ]
                 ]
             ),
