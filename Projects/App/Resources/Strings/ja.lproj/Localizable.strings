@@ -34,3 +34,15 @@
 "No locations found for the selected type.\nTry selecting a different type or adjusting your search range." = "選択したタイプの観光情報が近くにありません";
 "OK" = "OK";
 "Search Range" = "Search Range";
+"Call" = "Call";
+"Directions" = "Directions";
+"Copy" = "Copy";
+"Map not available" = "Map not available";
+"Open in Apple Maps" = "Open in Apple Maps";
+"Open in KakaoMap" = "Open in KakaoMap";
+"Call" = "Call";
+"Directions" = "Directions";
+"Copy" = "Copy";
+"Map not available" = "Map not available";
+"Open in Apple Maps" = "Open in Apple Maps";
+"Open in KakaoMap" = "Open in KakaoMap";
