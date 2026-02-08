@@ -21,6 +21,7 @@ struct TourInfoScreen: View {
     @State private var showRouteSheet = false;
     @State private var showNaverWebSheet = false;
     @State private var naverWebURL: URL?;
+    @AppStorage("PreferredNavigationApp") private var preferredNavApp: String = "";
 
     enum TransportType {
         case fastest
@@ -239,20 +240,66 @@ struct TourInfoScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            // Directions button
-            Button(action: onRoute) {
-                HStack(spacing: 8) {
-                    Image(systemName: "map.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Directions".localized())
-                        .font(.system(size: 17, weight: .semibold))
+            // Directions button with settings
+            HStack(spacing: 8) {
+                // Directions button
+                Button(action: onRoute) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text("Directions".localized())
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                // Settings menu
+                Menu {
+                    Button {
+                        preferredNavApp = "kakao";
+                    } label: {
+                        Label("KakaoMap", systemImage: preferredNavApp == "kakao" ? "checkmark" : "")
+                    }
+
+                    Button {
+                        preferredNavApp = "naver";
+                    } label: {
+                        Label("Naver Map", systemImage: preferredNavApp == "naver" ? "checkmark" : "")
+                    }
+
+                    Button {
+                        preferredNavApp = "google";
+                    } label: {
+                        Label("Google Maps", systemImage: preferredNavApp == "google" ? "checkmark" : "")
+                    }
+
+                    Button {
+                        preferredNavApp = "apple";
+                    } label: {
+                        Label("Apple Maps", systemImage: preferredNavApp == "apple" ? "checkmark" : "")
+                    }
+
+                    Divider()
+
+                    Button {
+                        preferredNavApp = "";
+                    } label: {
+                        Label("Ask Every Time".localized(), systemImage: preferredNavApp == "" ? "checkmark" : "")
+                    }
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: 50, height: 50)
+                        .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
+            .frame(maxWidth: .infinity)
         }
     }
 
@@ -460,15 +507,24 @@ struct TourInfoScreen: View {
     }
 
     private func onRoute() {
-        if Locale.current.isKorean {
-            showRouteSheet = true;
+        // Check if user has a preferred navigation app
+        if !preferredNavApp.isEmpty {
+            // Open preferred app directly
+            switch preferredNavApp {
+            case "kakao":
+                openKakaoMap();
+            case "naver":
+                openNaverMap();
+            case "google":
+                openGoogleMaps();
+            case "apple":
+                openAppleMaps();
+            default:
+                showRouteSheet = true;
+            }
         } else {
-            // Non-Korean users: open Google Maps via Safari
-            guard let dest = resolvedInfo?.location else { return };
-            let src = currentLocation ?? dest;
-            let url = src.urlForGoogleRoute(startName: "Current Location".localized(), end: dest, endName: resolvedInfo?.title ?? "Destination".localized());
-            let safari = SFSafariViewControllerPresenter();
-            safari.present(url: url);
+            // No preference - show sheet for all users
+            showRouteSheet = true;
         }
     }
 
