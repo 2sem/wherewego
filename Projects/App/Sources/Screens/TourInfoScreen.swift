@@ -80,6 +80,12 @@ struct TourInfoScreen: View {
                         .foregroundStyle(.primary)
                 }
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button { onShare() } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .foregroundStyle(.primary)
+                }
+            }
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheetView(items: shareItems)
@@ -246,16 +252,6 @@ struct TourInfoScreen: View {
                 .frame(height: 50)
                 .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-
-            // Share button
-            Button(action: onShare) {
-                Image(systemName: "square.and.arrow.up")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 50, height: 50)
-                    .background(Color.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
     }
