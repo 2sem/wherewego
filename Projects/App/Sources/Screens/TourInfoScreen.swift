@@ -66,11 +66,6 @@ struct TourInfoScreen: View {
                 mapSection
                     .padding(.top, 16)
 
-                // External navigation buttons
-                externalNavButtons
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-
                 // Bottom padding
                 Color.clear.frame(height: 20)
             }
@@ -91,7 +86,7 @@ struct TourInfoScreen: View {
         }
         .sheet(isPresented: $showRouteSheet) {
             routeOptionsSheet
-                .presentationDetents([.height(280)])
+                .presentationDetents([.height(260)])
                 .presentationDragIndicator(.visible)
         }
         .sheet(isPresented: $showNaverWebSheet) {
@@ -348,55 +343,6 @@ struct TourInfoScreen: View {
         }
     }
 
-    private var externalNavButtons: some View {
-        HStack(spacing: 12) {
-            Button(action: {
-                // Open in Apple Maps
-                guard let dest = resolvedInfo?.location else { return };
-                let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: dest));
-                mapItem.name = resolvedInfo?.title;
-                mapItem.openInMaps(launchOptions: [
-                    MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
-                ]);
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "map.fill")
-                        .font(.system(size: 16, weight: .semibold))
-                    Text("Open in Apple Maps".localized())
-                        .font(.system(size: 15, weight: .medium))
-                }
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(Color(UIColor.secondarySystemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-
-            if Locale.current.isKorean {
-                Button(action: {
-                    // Open in KakaoMap
-                    guard let dest = resolvedInfo?.location else { return };
-                    let urlString = "kakaomap://route?ep=\(dest.latitude),\(dest.longitude)&by=CAR";
-                    if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
-                        UIApplication.shared.open(url);
-                    }
-                }) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "map.fill")
-                            .font(.system(size: 16, weight: .semibold))
-                        Text("Open in KakaoMap".localized())
-                            .font(.system(size: 15, weight: .medium))
-                    }
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                }
-            }
-        }
-    }
-
     private var routeOptionsSheet: some View {
         VStack(spacing: 16) {
             Text("Choose Navigation App".localized())
@@ -413,14 +359,14 @@ struct TourInfoScreen: View {
                     }) {
                         VStack(spacing: 8) {
                             Image(systemName: "map.fill")
-                                .font(.system(size: 32))
+                                .font(.system(size: 28))
                                 .foregroundStyle(.yellow)
                             Text("KakaoMap")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(.primary)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 100)
+                        .frame(height: 90)
                         .background(Color(UIColor.secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
@@ -432,36 +378,58 @@ struct TourInfoScreen: View {
                     }) {
                         VStack(spacing: 8) {
                             Image(systemName: "map.fill")
-                                .font(.system(size: 32))
+                                .font(.system(size: 28))
                                 .foregroundStyle(.green)
                             Text("Naver Map")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: 14, weight: .medium))
                                 .foregroundStyle(.primary)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 100)
+                        .frame(height: 90)
                         .background(Color(UIColor.secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                 }
 
-                // Second row: Google Maps (full width)
-                Button(action: {
-                    showRouteSheet = false;
-                    openGoogleMaps();
-                }) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "map.fill")
-                            .font(.system(size: 32))
-                            .foregroundStyle(.blue)
-                        Text("Google Maps")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.primary)
+                // Second row: Google Maps + Apple Maps
+                HStack(spacing: 12) {
+                    // Google Maps button
+                    Button(action: {
+                        showRouteSheet = false;
+                        openGoogleMaps();
+                    }) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "map.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.blue)
+                            Text("Google Maps")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 90)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 60)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                    // Apple Maps button
+                    Button(action: {
+                        showRouteSheet = false;
+                        openAppleMaps();
+                    }) {
+                        VStack(spacing: 8) {
+                            Image(systemName: "map.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.red)
+                            Text("Apple Maps")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 90)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -634,6 +602,15 @@ struct TourInfoScreen: View {
                 showNaverWebSheet = true;
             }
         }
+    }
+
+    private func openAppleMaps() {
+        guard let dest = resolvedInfo?.location else { return };
+        let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: dest));
+        mapItem.name = resolvedInfo?.title;
+        mapItem.openInMaps(launchOptions: [
+            MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+        ]);
     }
 
     // MARK: - Map helpers
