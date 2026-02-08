@@ -18,6 +18,9 @@ struct TourInfoScreen: View {
     @State private var routeCoordinates: [CLLocationCoordinate2D] = [];
     @State private var mapCameraPosition: MapCameraPosition = .automatic;
     @State private var transportType: TransportType = .fastest;
+    @State private var showRouteSheet = false;
+    @State private var showNaverWebSheet = false;
+    @State private var naverWebURL: URL?;
 
     enum TransportType {
         case fastest
@@ -85,6 +88,17 @@ struct TourInfoScreen: View {
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheetView(items: shareItems)
+        }
+        .sheet(isPresented: $showRouteSheet) {
+            routeOptionsSheet
+                .presentationDetents([.height(200)])
+                .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showNaverWebSheet) {
+            if let url = naverWebURL {
+                SafariView(url: url)
+                    .ignoresSafeArea()
+            }
         }
         .task {
             fetchDetail();
@@ -383,6 +397,56 @@ struct TourInfoScreen: View {
         }
     }
 
+    private var routeOptionsSheet: some View {
+        VStack(spacing: 16) {
+            Text("Choose Navigation App".localized())
+                .font(.system(size: 17, weight: .semibold))
+                .padding(.top, 8)
+
+            HStack(spacing: 12) {
+                // KakaoMap button
+                Button(action: {
+                    showRouteSheet = false;
+                    openKakaoMap();
+                }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.yellow)
+                        Text("KakaoMap".localized())
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 100)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // Naver Map button
+                Button(action: {
+                    showRouteSheet = false;
+                    openNaverMap();
+                }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.green)
+                        Text("Naver Map".localized())
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 100)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .padding(.bottom, 20)
+    }
+
     @EnvironmentObject var adManager: SwiftUIAdManager
 
     // MARK: - Data
@@ -410,11 +474,16 @@ struct TourInfoScreen: View {
     }
 
     private func onRoute() {
-        guard let dest = resolvedInfo?.location else { return };
-        let src = currentLocation ?? dest;
-        let url = src.urlForGoogleRoute(startName: "Current Location".localized(), end: dest, endName: resolvedInfo?.title ?? "Destination".localized());
-        let safari = SFSafariViewControllerPresenter();
-        safari.present(url: url);
+        if Locale.current.isKorean {
+            showRouteSheet = true;
+        } else {
+            // Non-Korean users: open Google Maps via Safari
+            guard let dest = resolvedInfo?.location else { return };
+            let src = currentLocation ?? dest;
+            let url = src.urlForGoogleRoute(startName: "Current Location".localized(), end: dest, endName: resolvedInfo?.title ?? "Destination".localized());
+            let safari = SFSafariViewControllerPresenter();
+            safari.present(url: url);
+        }
     }
 
     private func onSearch() {
@@ -437,6 +506,78 @@ struct TourInfoScreen: View {
             }
             shareItems = items;
             showShareSheet = true;
+        }
+    }
+
+    private func openKakaoMap() {
+        guard let dest = resolvedInfo?.location else { return };
+        let urlString = "kakaomap://route?ep=\(dest.latitude),\(dest.longitude)&by=CAR";
+
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url);
+        } else {
+            // KakaoMap not installed - open App Store
+            if let appStoreURL = URL(string: "http://itunes.apple.com/app/id304608425?mt=8") {
+                UIApplication.shared.open(appStoreURL);
+            }
+        }
+    }
+
+    private func openNaverMap() {
+        guard let dest = resolvedInfo?.location, let src = currentLocation else { return };
+
+        // Map transport type to Naver's format
+        let naverMode: String = {
+            switch transportType {
+            case .fastest, .automobile:
+                return "car"
+            case .walking, .bicycle:
+                return "walk"
+            case .transit:
+                return "bus"
+            }
+        }();
+
+        let sname = "Current Location".localized().addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "Current";
+        let dname = (resolvedInfo?.title ?? "Destination").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "Destination";
+        let appname = "com.leesam.wherewego".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "wherewego";
+
+        let urlString = "nmap://route/\(naverMode)?slat=\(src.latitude)&slng=\(src.longitude)&sname=\(sname)&dlat=\(dest.latitude)&dlng=\(dest.longitude)&dname=\(dname)&appname=\(appname)";
+
+        if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url);
+        } else {
+            // Naver Map not installed - open Safari with web version
+            openNaverMapWeb();
+        }
+    }
+
+    private func openNaverMapWeb() {
+        guard let dest = resolvedInfo?.location, let src = currentLocation else { return };
+
+        // Map transport type to Naver web format
+        let webMode: String = {
+            switch transportType {
+            case .fastest, .automobile:
+                return "car"
+            case .walking:
+                return "walk"
+            case .bicycle:
+                return "bike"
+            case .transit:
+                return "transit"
+            }
+        }();
+
+        let sname = (resolvedInfo?.title ?? "Destination").addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "Destination";
+
+        // Note: Naver web uses projected coordinates, but we'll try with WGS84
+        // User may need to manually adjust in the web interface
+        let urlString = "https://map.naver.com/p/directions/\(src.latitude),\(src.longitude),Current,,PLACE_POI/\(dest.latitude),\(dest.longitude),\(sname),,PLACE_POI/-/\(webMode)?c=12.00,0,0,0,dh";
+
+        if let url = URL(string: urlString) {
+            naverWebURL = url;
+            showNaverWebSheet = true;
         }
     }
 
@@ -527,6 +668,18 @@ struct TourInfoScreen: View {
         return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan));
     }
 
+}
+
+// MARK: - Helper: SafariView
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: Context) {}
 }
 
 // MARK: - Helper: present SFSafariViewController
