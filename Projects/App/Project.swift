@@ -90,6 +90,10 @@ let project = Project(
                         "MKDirectionsModeTaxi",
                         "MKDirectionsModeRideShare",
                         "MKDirectionsModeStreetCar"
+                    ],
+                    "LSApplicationQueriesSchemes": [
+                        "nmap",
+                        "kakaomap"
                     ]
                 ]
             ),
