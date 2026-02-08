@@ -22,6 +22,7 @@ struct TourInfoScreen: View {
     @State private var showNaverWebSheet = false;
     @State private var naverWebURL: URL?;
     @AppStorage("PreferredNavigationApp") private var preferredNavApp: String = "";
+    @State private var isMapFullScreen = false;
 
     enum TransportType {
         case fastest
@@ -45,38 +46,52 @@ struct TourInfoScreen: View {
     private var resolvedId: Int { info?.id ?? infoId; }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Hero section: Large image with title overlay (40-50% of screen)
-                heroSection
+        ZStack {
+            if isMapFullScreen {
+                // Full screen map mode
+                fullScreenMapView
+            } else {
+                // Normal scroll view
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Hero section: Large image with title overlay (40-50% of screen)
+                        heroSection
 
-                // Action button bar
-                actionButtonBar
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+                        // Action button bar
+                        actionButtonBar
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
 
-                // Banner ad slot
-                bannerAdSlot
+                        // Banner ad slot
+                        bannerAdSlot
 
-                // Address card
-                addressCard
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
+                        // Address card
+                        addressCard
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
 
-                // Map section (30-40% of screen)
-                mapSection
-                    .padding(.top, 16)
+                        // Map section (30-40% of screen)
+                        mapSection
+                            .padding(.top, 16)
 
-                // Bottom padding
-                Color.clear.frame(height: 20)
+                        // Bottom padding
+                        Color.clear.frame(height: 20)
+                    }
+                }
+                .background(Color(UIColor.systemBackground))
             }
         }
-        .background(Color(UIColor.systemBackground))
         .navigationBarBackButtonHidden()
         .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button { dismiss() } label: {
+                Button {
+                    if isMapFullScreen {
+                        isMapFullScreen = false;
+                    } else {
+                        dismiss();
+                    }
+                } label: {
                     Image(systemName: "chevron.backward")
                         .foregroundStyle(.primary)
                 }
@@ -353,27 +368,48 @@ struct TourInfoScreen: View {
     private var mapSection: some View {
         VStack(spacing: 0) {
             if let dest = resolvedInfo?.location, let src = currentLocation {
-                Map(position: $mapCameraPosition) {
-                    Marker("Here", coordinate: src)
-                        .foregroundStyle(.blue)
-                    Marker(resolvedInfo?.title ?? "", coordinate: dest)
-                        .foregroundStyle(.red)
-                    if !routeCoordinates.isEmpty {
-                        MapPolyline(coordinates: routeCoordinates)
-                            .stroke(Color("PathColor"), lineWidth: 5)
+                ZStack(alignment: .bottomTrailing) {
+                    Map(position: $mapCameraPosition) {
+                        Marker("Here", coordinate: src)
+                            .foregroundStyle(.blue)
+                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                            .foregroundStyle(.red)
+                        if !routeCoordinates.isEmpty {
+                            MapPolyline(coordinates: routeCoordinates)
+                                .stroke(Color("PathColor"), lineWidth: 5)
+                        }
                     }
-                }
-                .frame(height: UIScreen.main.bounds.height * 0.35)
-                .mapControls {
-                    MapUserLocationButton()
-                    MapCompass()
-                }
-                .onChange(of: resolvedInfo?.location) { _, _ in
-                    mapCameraPosition = .region(regionFitting(src, dest));
-                }
-                .task {
-                    mapCameraPosition = .region(regionFitting(src, dest));
-                    await fetchRoute(from: src, to: dest);
+                    .frame(height: UIScreen.main.bounds.height * 0.35)
+                    .mapControls {
+                        MapUserLocationButton()
+                        MapCompass()
+                    }
+                    .onChange(of: resolvedInfo?.location) { _, _ in
+                        mapCameraPosition = .region(regionFitting(src, dest));
+                    }
+                    .task {
+                        mapCameraPosition = .region(regionFitting(src, dest));
+                        await fetchRoute(from: src, to: dest);
+                    }
+
+                    // Full screen toggle button
+                    Button {
+                        withAnimation {
+                            isMapFullScreen = true;
+                        }
+                    } label: {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                            )
+                            .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+                    }
+                    .padding(12)
                 }
             } else {
                 Color.gray.opacity(0.2)
@@ -384,6 +420,61 @@ struct TourInfoScreen: View {
                     )
             }
         }
+    }
+
+    private var fullScreenMapView: some View {
+        VStack(spacing: 0) {
+            // Banner ad at top
+            bannerAdSlot
+
+            // Full screen map
+            if let dest = resolvedInfo?.location, let src = currentLocation {
+                ZStack(alignment: .bottomTrailing) {
+                    Map(position: $mapCameraPosition) {
+                        Marker("Here", coordinate: src)
+                            .foregroundStyle(.blue)
+                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                            .foregroundStyle(.red)
+                        if !routeCoordinates.isEmpty {
+                            MapPolyline(coordinates: routeCoordinates)
+                                .stroke(Color("PathColor"), lineWidth: 5)
+                        }
+                    }
+                    .mapControls {
+                        MapUserLocationButton()
+                        MapCompass()
+                    }
+                    .onAppear {
+                        // Ensure proper zoom level when entering full screen
+                        if !routeCoordinates.isEmpty {
+                            mapCameraPosition = .region(regionFittingRoute(routeCoordinates));
+                        } else {
+                            mapCameraPosition = .region(regionFitting(src, dest));
+                        }
+                    }
+
+                    // Exit full screen button
+                    Button {
+                        withAnimation {
+                            isMapFullScreen = false;
+                        }
+                    } label: {
+                        Image(systemName: "arrow.down.right.and.arrow.up.left")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(.primary)
+                            .padding(10)
+                            .background(.ultraThinMaterial, in: Circle())
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(.white.opacity(0.3), lineWidth: 1)
+                            )
+                            .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
+                    }
+                    .padding(12)
+                }
+            }
+        }
+        .background(Color(UIColor.systemBackground))
     }
 
     private var routeOptionsSheet: some View {
