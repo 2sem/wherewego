@@ -1,7 +1,6 @@
 import SwiftUI
 import CoreLocation
 import MapKit
-import SDWebImage
 import KakaoSDKShare
 import SafariServices
 
@@ -14,7 +13,6 @@ struct TourInfoScreen: View {
 
     @Environment(\.dismiss) private var dismiss;
     @State private var detailInfo: KGDataTourInfo? = nil;
-    @State private var loadedImage: UIImage? = nil;
     @State private var showShareSheet = false;
     @State private var shareItems: [Any] = [];
     @State private var routeCoordinates: [CLLocationCoordinate2D] = [];
@@ -98,33 +96,36 @@ struct TourInfoScreen: View {
     private var heroSection: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottomLeading) {
-                // Hero image
+                // Background: Photo or gradient fallback
                 if let imgUrl = resolvedInfo?.image {
+                    // Case 1: Photo exists
                     NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
-                        AsyncImage(url: imgUrl) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Image(uiImage: WWGImages.noImage)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
+                        AsyncImage(url: imgUrl) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            case .failure, .empty:
+                                // Fallback to gradient if image fails to load
+                                categoryGradientBackground
+                            @unknown default:
+                                categoryGradientBackground
+                            }
                         }
                         .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
                     }
                     .buttonStyle(.plain)
-                    .onAppear {
-                        SDWebImageManager.shared.loadImage(with: imgUrl, options: .scaleDownLargeImages, progress: nil) { image, _, _, _, _, _ in
-                            loadedImage = image;
-                        };
-                    }
                 } else {
-                    Image(uiImage: WWGImages.noImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
+                    // Case 2: No photo - gradient with category icon
+                    categoryGradientBackground
+                        .overlay(
+                            // Large category icon
+                            Image(systemName: categoryIcon(for: resolvedInfo?.type))
+                                .font(.system(size: 140, weight: .light))
+                                .foregroundStyle(.white.opacity(0.25))
+                        )
                 }
 
                 // Gradient overlay for title readability
@@ -137,21 +138,73 @@ struct TourInfoScreen: View {
                 // Title overlay
                 VStack(alignment: .leading, spacing: 4) {
                     Text(resolvedInfo?.title ?? "")
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 32, weight: .bold))
                         .foregroundStyle(.white)
-                        .shadow(radius: 4)
+                        .shadow(color: .black.opacity(0.5), radius: 8)
 
                     if let type = resolvedInfo?.type {
                         Text(type.stringValue.localized())
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(.white.opacity(0.9))
+                            .shadow(color: .black.opacity(0.3), radius: 4)
                     }
                 }
                 .padding(20)
-                .allowsHitTesting(false)  // Let tap go through to NavigationLink
+                .allowsHitTesting(false)
             }
         }
         .frame(height: UIScreen.main.bounds.height * 0.45)
+    }
+
+    private var categoryGradientBackground: some View {
+        LinearGradient(
+            colors: categoryGradientColors(for: resolvedInfo?.type),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private func categoryGradientColors(for type: KGDataTourInfo.ContentType?) -> [Color] {
+        guard let type = type else {
+            return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // Default teal to blue
+        }
+
+        switch type {
+        case .Tour, .Tour_Foreign:
+            return [Color(red: 1.0, green: 0.6, blue: 0.2), Color(red: 1.0, green: 0.4, blue: 0.0)]  // Orange
+        case .Culture, .Culture_Foreign:
+            return [Color(red: 0.6, green: 0.4, blue: 0.8), Color(red: 0.4, green: 0.2, blue: 0.6)]  // Purple
+        case .Event, .Event_Foreign:
+            return [Color(red: 1.0, green: 0.3, blue: 0.5), Color(red: 0.9, green: 0.1, blue: 0.3)]  // Pink
+        case .Course:
+            return [Color(red: 0.2, green: 0.6, blue: 0.9), Color(red: 0.1, green: 0.4, blue: 0.7)]  // Blue
+        case .Leports, .Leports_Foreign:
+            return [Color(red: 0.3, green: 0.8, blue: 0.3), Color(red: 0.2, green: 0.6, blue: 0.2)]  // Green
+        case .Hotel, .Hotel_Foreign:
+            return [Color(red: 0.4, green: 0.5, blue: 0.7), Color(red: 0.2, green: 0.3, blue: 0.5)]  // Navy
+        case .Shopping, .Shopping_Foreign:
+            return [Color(red: 0.9, green: 0.5, blue: 0.8), Color(red: 0.7, green: 0.3, blue: 0.6)]  // Magenta
+        case .Food, .Food_Foreign:
+            return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // Teal to blue
+        case .Travel, .Travel_Foreign:
+            return [Color(red: 0.5, green: 0.7, blue: 0.9), Color(red: 0.3, green: 0.5, blue: 0.7)]  // Sky blue
+        }
+    }
+
+    private func categoryIcon(for type: KGDataTourInfo.ContentType?) -> String {
+        guard let type = type else { return "mappin.circle.fill" }
+
+        switch type {
+        case .Tour, .Tour_Foreign:           return "camera.fill"
+        case .Culture, .Culture_Foreign:     return "building.columns.fill"
+        case .Event, .Event_Foreign:         return "party.popper.fill"
+        case .Course:                        return "map.fill"
+        case .Leports, .Leports_Foreign:     return "figure.run"
+        case .Hotel, .Hotel_Foreign:         return "bed.double.fill"
+        case .Shopping, .Shopping_Foreign:   return "cart.fill"
+        case .Food, .Food_Foreign:           return "fork.knife"
+        case .Travel, .Travel_Foreign:       return "airplane"
+        }
     }
 
     private var actionButtonBar: some View {
@@ -378,7 +431,6 @@ struct TourInfoScreen: View {
             info.shareByKakao(currentLocation ?? info.location!);
         } else {
             var items: [Any] = [];
-            if let img = loadedImage { items.append(img); }
             items.append("[\(info.title ?? "")] \(info.tel ?? "")");
             if let loc = currentLocation, let dest = info.location {
                 items.append(loc.urlForGoogleRoute(startName: "Current Location".localized(), end: dest, endName: info.title ?? "Destination".localized()));
