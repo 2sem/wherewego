@@ -44,17 +44,61 @@ struct TourInfoScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                // Row 0: action buttons
-                HStack(spacing: 12) {
-                    roundButton(title: "", icon: "phone.fill") { onPhone(); }
-                    roundButton(title: "", icon: "map.fill") { onRoute(); }
-                    roundButton(title: "", icon: "magnifyingglass") { onSearch(); }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+            VStack(spacing: 0) {
+                // Hero section: Large image with title overlay (40-50% of screen)
+                heroSection
 
-                // Row 1: image + address
+                // Action button bar
+                actionButtonBar
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                // Banner ad slot
+                bannerAdSlot
+
+                // Address card
+                addressCard
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                // Map section (30-40% of screen)
+                mapSection
+                    .padding(.top, 16)
+
+                // External navigation buttons
+                externalNavButtons
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 12)
+
+                // Bottom padding
+                Color.clear.frame(height: 20)
+            }
+        }
+        .background(Color(UIColor.systemBackground))
+        .navigationBarBackButtonHidden()
+        .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button { dismiss() } label: {
+                    Image(systemName: "chevron.backward")
+                        .foregroundStyle(.primary)
+                }
+            }
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheetView(items: shareItems)
+        }
+        .task {
+            fetchDetail();
+        }
+    }
+
+    // MARK: - Sub-views
+
+    private var heroSection: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottomLeading) {
+                // Hero image
                 if let imgUrl = resolvedInfo?.image {
                     NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
                         AsyncImage(url: imgUrl) { image in
@@ -66,10 +110,8 @@ struct TourInfoScreen: View {
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
                         }
-                        .frame(height: 200)
-                        .frame(maxWidth: .infinity)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
                         .clipped()
-                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .onAppear {
@@ -77,117 +119,218 @@ struct TourInfoScreen: View {
                             loadedImage = image;
                         };
                     }
-                }
-
-                // Address
-                HStack(spacing: 8) {
-                    Image("icon_tour_api_")
+                } else {
+                    Image(uiImage: WWGImages.noImage)
                         .resizable()
-                        .renderingMode(.template)
-                        .foregroundStyle(themeAccent())
-                        .frame(width: 20, height: 20)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Address".localized())
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(themeLabelColor())
-                        Text("\(resolvedInfo?.primaryAddr ?? "") \(resolvedInfo?.detailAddr ?? "")")
-                            .font(.system(size: 14))
-                            .foregroundStyle(themeLabelColor())
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .clipped()
+                }
+
+                // Gradient overlay for title readability
+                LinearGradient(
+                    colors: [.clear, .black.opacity(0.7)],
+                    startPoint: .center,
+                    endPoint: .bottom
+                )
+
+                // Title overlay
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(resolvedInfo?.title ?? "")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(.white)
+                        .shadow(radius: 4)
+
+                    if let type = resolvedInfo?.type {
+                        Text(type.stringValue.localized())
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.9))
                     }
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-
-                // Row 2: map
-                if let dest = resolvedInfo?.location, let src = currentLocation {
-                    ZStack(alignment: .topLeading) {
-                        Map(position: $mapCameraPosition) {
-                            Marker("Here", coordinate: src)
-                                .foregroundStyle(.blue)
-                            Marker(resolvedInfo?.title ?? "", coordinate: dest)
-                                .foregroundStyle(.red)
-                            if !routeCoordinates.isEmpty {
-                                MapPolyline(coordinates: routeCoordinates)
-                                    .stroke(Color("PathColor"), lineWidth: 5)
-                            }
-                        }
-                        .frame(height: 450)
-                        .mapControls {
-                            MapUserLocationButton()
-                            MapCompass()
-                        }
-                        .onChange(of: resolvedInfo?.location) { _, _ in
-                            mapCameraPosition = .region(regionFitting(src, dest));
-                        }
-                        .onChange(of: transportType) { _, _ in
-                            routeCoordinates = [];  // Clear old route
-                            Task {
-                                await fetchRoute(from: src, to: dest);
-                            }
-                        }
-                        .task {
-                            mapCameraPosition = .region(regionFitting(src, dest));
-                            await fetchRoute(from: src, to: dest);
-                        }
-
-                        // Transport type picker overlaid on top-left
-                        transportTypePicker
-                            .padding()
-                    }
-                }
-
-                // Row 3: overview
-                if let overview = resolvedInfo?.overview, !overview.isEmpty {
-                    Divider()
-                    HStack(spacing: 8) {
-                        Image("icon_overview")
-                            .resizable()
-                            .renderingMode(.template)
-                            .foregroundStyle(themeAccent())
-                            .frame(width: 20, height: 20)
-                        Text("Overview".localized())
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(themeLabelColor())
-                    }
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-
-                    Text(overview)
-                        .font(.system(size: 14))
-                        .foregroundStyle(themeLabelColor())
-                        .padding(.horizontal)
-                        .padding(.bottom, 12)
-                }
+                .padding(20)
+                .allowsHitTesting(false)  // Let tap go through to NavigationLink
             }
         }
-        .background(themeBackground())
-        .navigationTitle(resolvedInfo?.title ?? "")
-        .navigationBarBackButtonHidden()
-        .toolbarBackground(themeNavBarColor(), for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button { dismiss() } label: {
-                    Image(systemName: "chevron.backward")
-                        .foregroundStyle(themeBarTintColor())
+        .frame(height: UIScreen.main.bounds.height * 0.45)
+    }
+
+    private var actionButtonBar: some View {
+        HStack(spacing: 12) {
+            // Call button
+            Button(action: onPhone) {
+                HStack(spacing: 8) {
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Call".localized())
+                        .font(.system(size: 17, weight: .semibold))
                 }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color(red: 0.0, green: 0.66, blue: 0.59))  // Teal #00A896
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button { onShare(); } label: {
-                    Image(systemName: "square.and.arrow.up")
-                        .foregroundStyle(themeBarTintColor())
+
+            // Directions button
+            Button(action: onRoute) {
+                HStack(spacing: 8) {
+                    Image(systemName: "map.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                    Text("Directions".localized())
+                        .font(.system(size: 17, weight: .semibold))
                 }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-        }
-        // Full-screen image navigation — handled by parent NavigationStack
-        // Share sheet
-        .sheet(isPresented: $showShareSheet) {
-            ShareSheetView(items: shareItems)
-        }
-        // Fetch detail on appear
-        .task {
-            fetchDetail();
+
+            // Share button
+            Button(action: onShare) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 50, height: 50)
+                    .background(Color.secondary)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
         }
     }
+
+    private var bannerAdSlot: some View {
+        BannerAdView()
+            .frame(height: 50)
+            .frame(maxWidth: .infinity)
+    }
+
+    private var addressCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Address".localized())
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button(action: {
+                    let address = "\(resolvedInfo?.primaryAddr ?? "") \(resolvedInfo?.detailAddr ?? "")";
+                    UIPasteboard.general.string = address;
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.on.doc")
+                            .font(.system(size: 13))
+                        Text("Copy".localized())
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .foregroundStyle(.blue)
+                }
+            }
+
+            Text("\(resolvedInfo?.primaryAddr ?? "") \(resolvedInfo?.detailAddr ?? "")")
+                .font(.system(size: 17))
+                .foregroundStyle(.primary)
+
+            if let tel = resolvedInfo?.tel, !tel.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "phone.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.secondary)
+                    Text(tel)
+                        .font(.system(size: 15))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(16)
+        .background(Color(UIColor.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var mapSection: some View {
+        VStack(spacing: 0) {
+            if let dest = resolvedInfo?.location, let src = currentLocation {
+                Map(position: $mapCameraPosition) {
+                    Marker("Here", coordinate: src)
+                        .foregroundStyle(.blue)
+                    Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                        .foregroundStyle(.red)
+                    if !routeCoordinates.isEmpty {
+                        MapPolyline(coordinates: routeCoordinates)
+                            .stroke(Color("PathColor"), lineWidth: 5)
+                    }
+                }
+                .frame(height: UIScreen.main.bounds.height * 0.35)
+                .mapControls {
+                    MapUserLocationButton()
+                    MapCompass()
+                }
+                .onChange(of: resolvedInfo?.location) { _, _ in
+                    mapCameraPosition = .region(regionFitting(src, dest));
+                }
+                .task {
+                    mapCameraPosition = .region(regionFitting(src, dest));
+                    await fetchRoute(from: src, to: dest);
+                }
+            } else {
+                Color.gray.opacity(0.2)
+                    .frame(height: UIScreen.main.bounds.height * 0.35)
+                    .overlay(
+                        Text("Map not available".localized())
+                            .foregroundStyle(.secondary)
+                    )
+            }
+        }
+    }
+
+    private var externalNavButtons: some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                // Open in Apple Maps
+                guard let dest = resolvedInfo?.location else { return };
+                let mapItem = MKMapItem(placemark: MKPlacemark(coordinate: dest));
+                mapItem.name = resolvedInfo?.title;
+                mapItem.openInMaps(launchOptions: [
+                    MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving
+                ]);
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "map.fill")
+                        .font(.system(size: 16, weight: .semibold))
+                    Text("Open in Apple Maps".localized())
+                        .font(.system(size: 15, weight: .medium))
+                }
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 44)
+                .background(Color(UIColor.secondarySystemBackground))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+            }
+
+            if Locale.current.isKorean {
+                Button(action: {
+                    // Open in KakaoMap
+                    guard let dest = resolvedInfo?.location else { return };
+                    let urlString = "kakaomap://route?ep=\(dest.latitude),\(dest.longitude)&by=CAR";
+                    if let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url);
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "map.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Open in KakaoMap".localized())
+                            .font(.system(size: 15, weight: .medium))
+                    }
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+            }
+        }
+    }
+
+    @EnvironmentObject var adManager: SwiftUIAdManager
 
     // MARK: - Data
 
@@ -242,62 +385,6 @@ struct TourInfoScreen: View {
             }
             shareItems = items;
             showShareSheet = true;
-        }
-    }
-
-    // MARK: - Transport Type Picker
-
-    private var transportTypePicker: some View {
-        Menu {
-            Button {
-                transportType = .fastest;
-            } label: {
-                Label("Fastest", systemImage: "bolt.fill")
-            }
-
-            Button {
-                transportType = .walking;
-            } label: {
-                Label("Walking", systemImage: "figure.walk")
-            }
-
-            Button {
-                transportType = .bicycle;
-            } label: {
-                Label("Cycling", systemImage: "bicycle")
-            }
-
-            Button {
-                transportType = .automobile;
-            } label: {
-                Label("Driving", systemImage: "car.fill")
-            }
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: transportIcon(for: transportType))
-                    .font(.system(size: 14, weight: .semibold))
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 10, weight: .semibold))
-            }
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .strokeBorder(.white.opacity(0.5), lineWidth: 1)
-            )
-            .shadow(color: .black.opacity(0.3), radius: 8, y: 2)
-        }
-    }
-
-    private func transportIcon(for type: TransportType) -> String {
-        switch type {
-        case .fastest:     return "bolt.fill";
-        case .walking:     return "figure.walk";
-        case .bicycle:     return "bicycle";
-        case .automobile:  return "car.fill";
-        case .transit:     return "bus.fill";
         }
     }
 
@@ -388,58 +475,6 @@ struct TourInfoScreen: View {
         return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latSpan, longitudeDelta: lonSpan));
     }
 
-    // MARK: - Theme helpers
-
-    private func themeNavBarColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
-        }
-    }
-    private func themeBarTintColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
-    private func themeBackground() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.BackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.BackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
-        }
-    }
-    private func themeLabelColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
-    private func themeAccent() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.MaterialColors.red.red50 ?? .white);
-        case .summer: return Color(uiColor: LSThemeManager.MaterialColors.lightBlue._50 ?? .white);
-        default:     return .accentColor;
-        }
-    }
-
-    private func roundButton(title: String, icon: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: icon)
-                .foregroundStyle(.white)
-                .frame(width: 44, height: 44)
-                .background(themeRoundButtonBg())
-                .clipShape(Circle())
-        }
-    }
-    private func themeRoundButtonBg() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.RoundButtonBackgroundColors.red ?? .systemBlue);
-        case .summer: return Color(uiColor: LSThemeManager.RoundButtonBackgroundColors.lightBlue ?? .systemBlue);
-        default:     return .accentColor;
-        }
-    }
 }
 
 // MARK: - Helper: present SFSafariViewController
