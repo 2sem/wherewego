@@ -244,22 +244,24 @@ struct TourInfoScreen: View {
 
     private var actionButtonBar: some View {
         HStack(spacing: 12) {
-            // Call button - Primary action
-            Button(action: onPhone) {
-                HStack(spacing: 8) {
-                    Image(systemName: "phone.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                    Text("Call".localized())
-                        .font(.system(size: 17, weight: .semibold))
+            // Call button - Only show if phone number exists
+            if let tel = resolvedInfo?.tel, !tel.isEmpty {
+                Button(action: onPhone) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "phone.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                        Text("Call".localized())
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(Color(red: 0.0, green: 0.66, blue: 0.59))  // Teal #00A896
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(Color(red: 0.0, green: 0.66, blue: 0.59))  // Teal #00A896
-                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            // Directions button - Primary action (unified with Call)
+            // Directions button - Primary action
             Button(action: onRoute) {
                 HStack(spacing: 8) {
                     Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
