@@ -72,7 +72,7 @@ struct TourInfoScreen: View {
 
                         // Map section (30-40% of screen)
                         mapSection
-                            .padding(.top, 16)
+                            .padding(.top, 24)
 
                         // Bottom padding
                         Color.clear.frame(height: 20)
@@ -325,7 +325,7 @@ struct TourInfoScreen: View {
     }
 
     private var addressCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Address".localized())
                     .font(.system(size: 15, weight: .semibold))
@@ -348,6 +348,7 @@ struct TourInfoScreen: View {
             Text("\(resolvedInfo?.primaryAddr ?? "") \(resolvedInfo?.detailAddr ?? "")")
                 .font(.system(size: 17))
                 .foregroundStyle(.primary)
+                .lineSpacing(4)
 
             if let tel = resolvedInfo?.tel, !tel.isEmpty {
                 HStack(spacing: 6) {
@@ -360,7 +361,7 @@ struct TourInfoScreen: View {
                 }
             }
         }
-        .padding(16)
+        .padding(20)
         .background(Color(UIColor.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
