@@ -244,7 +244,7 @@ struct TourInfoScreen: View {
 
     private var actionButtonBar: some View {
         HStack(spacing: 12) {
-            // Call button
+            // Call button - Primary action
             Button(action: onPhone) {
                 HStack(spacing: 8) {
                     Image(systemName: "phone.fill")
@@ -259,66 +259,62 @@ struct TourInfoScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
 
-            // Directions button with settings
-            HStack(spacing: 8) {
-                // Directions button
-                Button(action: onRoute) {
-                    HStack(spacing: 8) {
-                        Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text("Directions".localized())
-                            .font(.system(size: 17, weight: .semibold))
-                    }
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-
-                // Settings menu
-                Menu {
-                    Button {
-                        preferredNavApp = "kakao";
-                    } label: {
-                        Label("KakaoMap", systemImage: preferredNavApp == "kakao" ? "checkmark" : "")
-                    }
-
-                    Button {
-                        preferredNavApp = "naver";
-                    } label: {
-                        Label("Naver Map", systemImage: preferredNavApp == "naver" ? "checkmark" : "")
-                    }
-
-                    Button {
-                        preferredNavApp = "google";
-                    } label: {
-                        Label("Google Maps", systemImage: preferredNavApp == "google" ? "checkmark" : "")
-                    }
-
-                    Button {
-                        preferredNavApp = "apple";
-                    } label: {
-                        Label("Apple Maps", systemImage: preferredNavApp == "apple" ? "checkmark" : "")
-                    }
-
-                    Divider()
-
-                    Button {
-                        preferredNavApp = "";
-                    } label: {
-                        Label("Ask Every Time".localized(), systemImage: preferredNavApp == "" ? "checkmark" : "")
-                    }
-                } label: {
-                    Image(systemName: "gearshape.fill")
+            // Directions button - Primary action (unified with Call)
+            Button(action: onRoute) {
+                HStack(spacing: 8) {
+                    Image(systemName: "point.bottomleft.forward.to.arrow.triangle.scurvepath.fill")
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 50, height: 50)
-                        .background(Color(red: 0.0, green: 0.48, blue: 1.0))  // iOS Blue #007AFF
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    Text("Directions".localized())
+                        .font(.system(size: 17, weight: .semibold))
                 }
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(Color(red: 0.0, green: 0.66, blue: 0.59))  // Teal #00A896
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .frame(maxWidth: .infinity)
+
+            // Settings menu - Secondary/subtle
+            Menu {
+                Button {
+                    preferredNavApp = "kakao";
+                } label: {
+                    Label("KakaoMap", systemImage: preferredNavApp == "kakao" ? "checkmark" : "")
+                }
+
+                Button {
+                    preferredNavApp = "naver";
+                } label: {
+                    Label("Naver Map", systemImage: preferredNavApp == "naver" ? "checkmark" : "")
+                }
+
+                Button {
+                    preferredNavApp = "google";
+                } label: {
+                    Label("Google Maps", systemImage: preferredNavApp == "google" ? "checkmark" : "")
+                }
+
+                Button {
+                    preferredNavApp = "apple";
+                } label: {
+                    Label("Apple Maps", systemImage: preferredNavApp == "apple" ? "checkmark" : "")
+                }
+
+                Divider()
+
+                Button {
+                    preferredNavApp = "";
+                } label: {
+                    Label("Ask Every Time".localized(), systemImage: preferredNavApp == "" ? "checkmark" : "")
+                }
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.gray)
+                    .frame(width: 50, height: 50)
+                    .background(Color.gray.opacity(0.15))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
         }
     }
 
