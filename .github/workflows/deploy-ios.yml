@@ -90,7 +90,7 @@ jobs:
         run: |
           sudo gem install fastlane  
       
-          - name: Export Fastlane App Store Key
+      - name: Export Fastlane App Store Key
         env:
           API_KEY_PATH_BASE64: $IOS_KEY_PATH.base64
         run: |
