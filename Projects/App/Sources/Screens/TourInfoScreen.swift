@@ -152,10 +152,10 @@ struct TourInfoScreen: View {
                     // Case 2: No photo - gradient with category icon
                     categoryGradientBackground
                         .overlay(
-                            // Large category icon
+                            // Large category icon - reduced size and opacity for better balance
                             Image(systemName: categoryIcon(for: resolvedInfo?.type))
-                                .font(.system(size: 140, weight: .light))
-                                .foregroundStyle(.white.opacity(0.25))
+                                .font(.system(size: 100, weight: .ultraLight))
+                                .foregroundStyle(.white.opacity(0.18))
                         )
                 }
 
@@ -166,21 +166,23 @@ struct TourInfoScreen: View {
                     endPoint: .bottom
                 )
 
-                // Title overlay
-                VStack(alignment: .leading, spacing: 4) {
+                // Title overlay - improved spacing and shadow
+                VStack(alignment: .leading, spacing: 12) {
                     Text(resolvedInfo?.title ?? "")
                         .font(.system(size: 32, weight: .bold))
                         .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 8)
+                        .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
+                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
 
                     if let type = resolvedInfo?.type {
                         Text(type.stringValue.localized())
                             .font(.system(size: 17, weight: .medium))
-                            .foregroundStyle(.white.opacity(0.9))
-                            .shadow(color: .black.opacity(0.3), radius: 4)
+                            .foregroundStyle(.white.opacity(0.95))
+                            .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
                     }
                 }
-                .padding(20)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 28)
                 .allowsHitTesting(false)
             }
         }
