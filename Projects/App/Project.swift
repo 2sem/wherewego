@@ -60,7 +60,6 @@ let project = Project(
             name: "App",
             destinations: [.iPhone, .iPad],
             product: .app,
-            productName: "WhereWeGo",
             bundleId: "com.y2k.wherewego",
             deploymentTargets: .iOS("18.0"),
             infoPlist: .extendingDefault(
