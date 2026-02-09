@@ -349,17 +349,6 @@ struct TourInfoScreen: View {
                 .font(.system(size: 17))
                 .foregroundStyle(.primary)
                 .lineSpacing(4)
-
-            if let tel = resolvedInfo?.tel, !tel.isEmpty {
-                HStack(spacing: 6) {
-                    Image(systemName: "phone.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                    Text(tel)
-                        .font(.system(size: 15))
-                        .foregroundStyle(.secondary)
-                }
-            }
         }
         .padding(20)
         .background(Color(UIColor.secondarySystemBackground))
