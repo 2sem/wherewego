@@ -149,34 +149,36 @@ struct TourInfoScreen: View {
                     }
                     .buttonStyle(.plain)
                 } else {
-                    // Case 2: No photo - gradient with category icon
-                    categoryGradientBackground
-                        .overlay(
-                            // Large category icon - reduced size and opacity for better balance
-                            Image(systemName: categoryIcon(for: resolvedInfo?.type))
-                                .font(.system(size: 100, weight: .ultraLight))
-                                .foregroundStyle(.white.opacity(0.18))
-                        )
+                    // Case 2: No photo - gradient with category icon positioned higher
+                    ZStack(alignment: .center) {
+                        categoryGradientBackground
+                        
+                        // Large category icon - positioned higher for better balance
+                        Image(systemName: categoryIcon(for: resolvedInfo?.type))
+                            .font(.system(size: 100, weight: .ultraLight))
+                            .foregroundStyle(.white.opacity(0.15))
+                            .offset(y: -30)
+                    }
                 }
 
                 // Gradient overlay for title readability
                 LinearGradient(
-                    colors: [.clear, .black.opacity(0.7)],
+                    colors: [.clear, .black.opacity(0.75)],
                     startPoint: .center,
                     endPoint: .bottom
                 )
 
-                // Title overlay - improved spacing and shadow
+                // Title overlay - enhanced size and weight for dominance
                 VStack(alignment: .leading, spacing: 12) {
                     Text(resolvedInfo?.title ?? "")
-                        .font(.system(size: 32, weight: .bold))
+                        .font(.system(size: 36, weight: .bold))
                         .foregroundStyle(.white)
                         .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
                         .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
 
                     if let type = resolvedInfo?.type {
                         Text(type.stringValue.localized())
-                            .font(.system(size: 17, weight: .medium))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(.white.opacity(0.95))
                             .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
                     }
