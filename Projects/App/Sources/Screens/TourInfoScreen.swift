@@ -319,7 +319,7 @@ struct TourInfoScreen: View {
     }
 
     private var bannerAdSlot: some View {
-        BannerAdView()
+        BannerAdView(unitName: isMapFullScreen ? .mapBanner : .detailBanner)
             .frame(height: 50)
             .frame(maxWidth: .infinity)
     }

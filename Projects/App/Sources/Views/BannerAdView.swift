@@ -2,6 +2,8 @@ import SwiftUI
 import GoogleMobileAds
 
 struct BannerAdView: View {
+    let unitName: SwiftUIAdManager.GADUnitName
+
     @EnvironmentObject private var adManager: SwiftUIAdManager
     @State private var coordinator = BannerAdCoordinator()
 
@@ -19,13 +21,13 @@ struct BannerAdView: View {
                 print("[BannerAdView] Manager is not ready")
                 return
             }
-            coordinator.load(withAdManager: adManager)
+            coordinator.load(withAdManager: adManager, unitName: unitName)
         }.task {
             guard adManager.isReady else {
                 return
             }
-            
-            coordinator.load(withAdManager: adManager)
+
+            coordinator.load(withAdManager: adManager, unitName: unitName)
         }
     }
 }
@@ -35,12 +37,12 @@ final class BannerAdCoordinator: NSObject, BannerViewDelegate {
     var bannerView: BannerView?
     private var hasLoaded = false
 
-    func load(withAdManager manager: SwiftUIAdManager) {
+    func load(withAdManager manager: SwiftUIAdManager, unitName: SwiftUIAdManager.GADUnitName) {
         guard !hasLoaded else { return }
 
-        print("[BannerAdCoordinator] Creating banner view...")
+        print("[BannerAdCoordinator] Creating banner view for \(unitName.rawValue)...")
 
-        if let banner = manager.createBannerAdView(withAdSize: AdSizeBanner, forUnit: .bottomBanner) {
+        if let banner = manager.createBannerAdView(withAdSize: AdSizeBanner, forUnit: unitName) {
             print("[BannerAdCoordinator] Banner created, setting delegate and loading...")
             banner.delegate = self
             self.bannerView = banner
