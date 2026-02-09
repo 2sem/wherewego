@@ -17,6 +17,9 @@ concurrency:
   group: ${{ github.ref }}/ios/deploy
   cancel-in-progress: true
 
+permissions: 
+  id-token: write
+
 jobs:
   deploy:
     runs-on: macos-26
