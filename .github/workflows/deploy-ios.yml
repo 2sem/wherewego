@@ -63,6 +63,10 @@ jobs:
         run: |
           tuist auth login
 
+      - name: Generate Xcode Project
+        run: |
+          tuist generate --cache-profile none    
+
       - name: Import signing certificate
         env:
           IOS_CERT_BASE64: $IOS_CERT_PATH.base64
@@ -84,9 +88,9 @@ jobs:
 
       - name: Upgrade fastlane
         run: |
-          sudo gem install fastlane
-
-      - name: Export Fastlane App Store Key
+          sudo gem install fastlane  
+      
+          - name: Export Fastlane App Store Key
         env:
           API_KEY_PATH_BASE64: $IOS_KEY_PATH.base64
         run: |
@@ -103,10 +107,6 @@ jobs:
           IOS_KEY_PATH: ${{ env.IOS_KEY_PATH }}
         run: |
           fastlane ios setup
-
-      - name: Generate Xcode Project
-        run: |
-          tuist generate --cache-profile none
 
       - name: Create export options plist
         env:
