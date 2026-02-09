@@ -180,7 +180,7 @@ struct TourListScreen: View {
     }
 
     private var bannerAdView: some View {
-        BannerAdView()
+        BannerAdView(unitName: .homeBanner)
             .frame(height: 50)
             .frame(maxWidth: .infinity);
     }

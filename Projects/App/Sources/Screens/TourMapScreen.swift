@@ -326,7 +326,7 @@ struct TourMapScreen: View {
     }
 
     private var bannerAdView: some View {
-        BannerAdView()
+        BannerAdView(unitName: .homeBanner)
             .frame(height: 50)
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
