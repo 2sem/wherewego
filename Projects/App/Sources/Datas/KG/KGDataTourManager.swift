@@ -52,12 +52,13 @@ class KGDataTourManager: NSObject {
                     tourInfos.append(KGDataTourInfo(item));
                 }
                 
-                print("tour infos - \(tourInfos.count) - response[\(response)] body[\(body)] container[\(container)] items[\(items)]");
-                
-                //pageNo : received page number
-                //totalCount : total record count
-                
-                completion(Int(header.page), tourInfos, Int(header.total), nil);
+                // pageNo and totalCount are in body, not header
+                let pageNo = (body["pageNo"] as? NSNumber)?.intValue ?? 0;
+                let totalCount = (body["totalCount"] as? NSNumber)?.intValue ?? 0;
+
+                print("tour infos - \(tourInfos.count) - pageNo[\(pageNo)] totalCount[\(totalCount)]");
+
+                completion(pageNo, tourInfos, totalCount, nil);
             }catch let error{
                 print("json error - \(error)");
                 completion(0, [], 5, error as NSError);
