@@ -13,6 +13,7 @@ struct TourMapScreen: View {
     @State private var showRangeSheet = false
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
+    @State private var savedCameraPosition: MapCameraPosition? = nil
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -102,12 +103,23 @@ struct TourMapScreen: View {
             }
         }
         .onChange(of: selectedTour?.id) { _, id in
-            guard let loc = selectedTour?.location else { return };
-            withAnimation(.easeInOut(duration: 0.5)) {
-                mapCameraPosition = .region(MKCoordinateRegion(
-                    center: centeredCoordinate(for: loc),
-                    span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
-                ));
+            if let loc = selectedTour?.location {
+                // Save current position before zooming in
+                savedCameraPosition = mapCameraPosition;
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    mapCameraPosition = .region(MKCoordinateRegion(
+                        center: centeredCoordinate(for: loc),
+                        span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
+                    ));
+                }
+            } else {
+                // Restore previous position on deselect
+                if let saved = savedCameraPosition {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        mapCameraPosition = saved;
+                    }
+                    savedCameraPosition = nil;
+                }
             }
         }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
