@@ -13,6 +13,7 @@ struct TourMapScreen: View {
     @State private var showRangeSheet = false
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
+    @State private var savedCameraPosition: MapCameraPosition? = nil
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -101,6 +102,26 @@ struct TourMapScreen: View {
                 viewModel.fetchAllPages();
             }
         }
+        .onChange(of: selectedTour?.id) { _, id in
+            if let loc = selectedTour?.location {
+                // Save current position before zooming in
+                savedCameraPosition = mapCameraPosition;
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    mapCameraPosition = .region(MKCoordinateRegion(
+                        center: centeredCoordinate(for: loc),
+                        span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
+                    ));
+                }
+            } else {
+                // Restore previous position on deselect
+                if let saved = savedCameraPosition {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        mapCameraPosition = saved;
+                    }
+                    savedCameraPosition = nil;
+                }
+            }
+        }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
             handleDeepLink(newId);
         }
@@ -172,6 +193,11 @@ struct TourMapScreen: View {
         .mapControls {
             MapUserLocationButton()
             MapCompass()
+        }
+        .onTapGesture {
+            withAnimation {
+                selectedTour = nil;
+            }
         }
     }
 
@@ -493,6 +519,28 @@ struct TourMapScreen: View {
 
     private func navigateToDetail(info: KGDataTourInfo) {
         navPath.append(.tourInfo(info, viewModel.location));
+    }
+
+    /// Shifts the center coordinate downward so the place appears visually
+    /// centered in the map area above the floating info card.
+    private func centeredCoordinate(for loc: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        let span: Double = 0.015;
+        let screenHeight = UIScreen.main.bounds.height;
+
+        // Approximate height of: card (~160pt) + bottom padding (60pt) + banner (50pt)
+        let cardClearance: CGFloat = 270;
+        let visibleHeight = screenHeight - cardClearance;
+
+        // How far the visible center is below the map center, in points
+        let offsetPoints = (screenHeight - visibleHeight) / 2;
+
+        // Convert points to degrees
+        let latOffset = Double(offsetPoints / screenHeight) * span;
+
+        return CLLocationCoordinate2D(
+            latitude: loc.latitude - latOffset,
+            longitude: loc.longitude
+        );
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
