@@ -182,6 +182,11 @@ struct TourMapScreen: View {
             MapUserLocationButton()
             MapCompass()
         }
+        .onTapGesture {
+            withAnimation {
+                selectedTour = nil;
+            }
+        }
     }
 
     private func markerView(for info: KGDataTourInfo, isSelected: Bool) -> some View {
