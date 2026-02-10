@@ -92,9 +92,13 @@ struct TourMapScreen: View {
             if viewModel.location != nil { viewModel.fetchList(); }
         }
         .onChange(of: viewModel.isLoading) { oldValue, newValue in
-            // Show alert when loading finishes and no data found
-            if oldValue && !newValue && viewModel.infos.isEmpty && viewModel.location != nil {
+            print("[TourMapScreen] isLoading changed: \(oldValue) → \(newValue), infos: \(viewModel.infos.count), total: \(viewModel.totalCount)");
+            guard oldValue && !newValue else { return };
+            if viewModel.infos.isEmpty && viewModel.location != nil {
                 showNoDataAlert = true;
+            } else {
+                // First page loaded — auto-fetch remaining pages
+                viewModel.fetchAllPages();
             }
         }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
@@ -115,8 +119,15 @@ struct TourMapScreen: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
+            if viewModel.hasMorePages {
+                loadingMoreBadge
+                    .padding(.bottom, selectedTour != nil ? 200 : 60)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
             bannerAdView
         }
+        .animation(.easeInOut(duration: 0.3), value: viewModel.hasMorePages)
     }
 
     // MARK: - Map View
@@ -161,10 +172,6 @@ struct TourMapScreen: View {
         .mapControls {
             MapUserLocationButton()
             MapCompass()
-        }
-        .onMapCameraChange { context in
-            // Fetch more when user pans/zooms to edge of loaded data
-            checkAndLoadMore(region: context.region)
         }
     }
 
@@ -325,6 +332,19 @@ struct TourMapScreen: View {
         }
     }
 
+    private var loadingMoreBadge: some View {
+        HStack(spacing: 6) {
+            ProgressView()
+                .scaleEffect(0.8)
+            Text("\(viewModel.infos.count) / \(viewModel.totalCount)")
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
     private var bannerAdView: some View {
         BannerAdView(unitName: .homeBanner)
             .frame(height: 50)
@@ -473,17 +493,6 @@ struct TourMapScreen: View {
 
     private func navigateToDetail(info: KGDataTourInfo) {
         navPath.append(.tourInfo(info, viewModel.location));
-    }
-
-    private func checkAndLoadMore(region: MKCoordinateRegion) {
-        // Load next page when user explores the map
-        // Simple heuristic: if we have tours and user moved significantly
-        guard !viewModel.infos.isEmpty, !viewModel.isLoading else { return }
-
-        // Fetch next page in background
-        Task {
-            viewModel.fetchNextPage();
-        }
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
