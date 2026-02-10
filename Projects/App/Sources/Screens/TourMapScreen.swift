@@ -14,6 +14,8 @@ struct TourMapScreen: View {
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
     @State private var savedCameraPosition: MapCameraPosition? = nil
+    @State private var currentRegion: MKCoordinateRegion? = nil
+    @State private var requestedSpan: Double = 0.05
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -154,50 +156,61 @@ struct TourMapScreen: View {
     // MARK: - Map View
 
     private var mapView: some View {
-        Map(position: $mapCameraPosition) {
-            // User location
-            if let userLoc = viewModel.location {
-                Annotation("Here", coordinate: userLoc) {
-                    Circle()
-                        .fill(.blue)
-                        .frame(width: 12, height: 12)
-                        .overlay(
-                            Circle()
-                                .stroke(.white, lineWidth: 2)
-                        )
+        ZStack(alignment: .leading) {
+            Map(position: $mapCameraPosition) {
+                // User location
+                if let userLoc = viewModel.location {
+                    Annotation("Here", coordinate: userLoc) {
+                        Circle()
+                            .fill(.blue)
+                            .frame(width: 12, height: 12)
+                            .overlay(
+                                Circle()
+                                    .stroke(.white, lineWidth: 2)
+                            )
+                    }
                 }
-            }
 
-            // Range circle (only show while adjusting)
-            if showRangeSheet, let center = viewModel.location {
-                MapCircle(center: center, radius: CLLocationDistance(tempRadius))
-                    .foregroundStyle(Color.blue.opacity(0.15))
-                    .stroke(Color.blue.opacity(0.5), lineWidth: 2)
-            }
+                // Range circle (only show while adjusting)
+                if showRangeSheet, let center = viewModel.location {
+                    MapCircle(center: center, radius: CLLocationDistance(tempRadius))
+                        .foregroundStyle(Color.blue.opacity(0.15))
+                        .stroke(Color.blue.opacity(0.5), lineWidth: 2)
+                }
 
-            // Tour markers
-            ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
-                if let title = info.title, let location = info.location {
-                    let isSelected = selectedTour?.id == info.id;
-                    Annotation(title, coordinate: location) {
-                        markerView(for: info, isSelected: isSelected)
-                            .onTapGesture {
-                                withAnimation {
-                                    selectedTour = info;
+                // Tour markers
+                ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
+                    if let title = info.title, let location = info.location {
+                        let isSelected = selectedTour?.id == info.id;
+                        Annotation(title, coordinate: location) {
+                            markerView(for: info, isSelected: isSelected)
+                                .onTapGesture {
+                                    withAnimation {
+                                        selectedTour = info;
+                                    }
                                 }
-                            }
+                        }
                     }
                 }
             }
-        }
-        .mapControls {
-            MapUserLocationButton()
-            MapCompass()
-        }
-        .onTapGesture {
-            withAnimation {
-                selectedTour = nil;
+            .mapControls {
+                MapUserLocationButton()
+                MapCompass()
             }
+            .onMapCameraChange { context in
+                currentRegion = context.region;
+                requestedSpan = context.region.span.latitudeDelta;
+            }
+            .onTapGesture {
+                withAnimation {
+                    selectedTour = nil;
+                }
+            }
+
+            // Zoom buttons on the left side
+            zoomControls
+                .padding(.leading, 12)
+                .padding(.top, 60)
         }
     }
 
@@ -356,6 +369,33 @@ struct TourMapScreen: View {
         .onTapGesture {
             navigateToDetail(info: tour);
         }
+    }
+
+    private var zoomControls: some View {
+        let atMin = requestedSpan <= 0.002;
+        let atMax = requestedSpan >= 2.0;
+
+        return VStack(spacing: 0) {
+            Button(action: zoomIn) {
+                Image(systemName: "plus")
+                    .font(.system(size: 18, weight: .medium))
+                    .frame(width: 44, height: 44)
+                    .opacity(atMin ? 0.3 : 1.0)
+            }
+            .disabled(atMin)
+            Divider()
+                .frame(width: 44)
+            Button(action: zoomOut) {
+                Image(systemName: "minus")
+                    .font(.system(size: 18, weight: .medium))
+                    .frame(width: 44, height: 44)
+                    .opacity(atMax ? 0.3 : 1.0)
+            }
+            .disabled(atMax)
+        }
+        .foregroundStyle(.primary)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
     }
 
     private var loadingMoreBadge: some View {
@@ -541,6 +581,30 @@ struct TourMapScreen: View {
             latitude: loc.latitude - latOffset,
             longitude: loc.longitude
         );
+    }
+
+    private func zoomIn() {
+        guard let region = currentRegion else { return };
+        let newDelta = max(0.002, region.span.latitudeDelta / 2);
+        requestedSpan = newDelta;
+        withAnimation(.easeInOut(duration: 0.3)) {
+            mapCameraPosition = .region(MKCoordinateRegion(
+                center: region.center,
+                span: MKCoordinateSpan(latitudeDelta: newDelta, longitudeDelta: newDelta)
+            ));
+        }
+    }
+
+    private func zoomOut() {
+        guard let region = currentRegion else { return };
+        let newDelta = min(2.0, region.span.latitudeDelta * 2);
+        requestedSpan = newDelta;
+        withAnimation(.easeInOut(duration: 0.3)) {
+            mapCameraPosition = .region(MKCoordinateRegion(
+                center: region.center,
+                span: MKCoordinateSpan(latitudeDelta: newDelta, longitudeDelta: newDelta)
+            ));
+        }
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
