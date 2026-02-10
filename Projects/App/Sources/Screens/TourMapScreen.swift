@@ -105,7 +105,7 @@ struct TourMapScreen: View {
             guard let loc = selectedTour?.location else { return };
             withAnimation(.easeInOut(duration: 0.5)) {
                 mapCameraPosition = .region(MKCoordinateRegion(
-                    center: loc,
+                    center: centeredCoordinate(for: loc),
                     span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
                 ));
             }
@@ -507,6 +507,28 @@ struct TourMapScreen: View {
 
     private func navigateToDetail(info: KGDataTourInfo) {
         navPath.append(.tourInfo(info, viewModel.location));
+    }
+
+    /// Shifts the center coordinate downward so the place appears visually
+    /// centered in the map area above the floating info card.
+    private func centeredCoordinate(for loc: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        let span: Double = 0.015;
+        let screenHeight = UIScreen.main.bounds.height;
+
+        // Approximate height of: card (~160pt) + bottom padding (60pt) + banner (50pt)
+        let cardClearance: CGFloat = 270;
+        let visibleHeight = screenHeight - cardClearance;
+
+        // How far the visible center is below the map center, in points
+        let offsetPoints = (screenHeight - visibleHeight) / 2;
+
+        // Convert points to degrees
+        let latOffset = Double(offsetPoints / screenHeight) * span;
+
+        return CLLocationCoordinate2D(
+            latitude: loc.latitude - latOffset,
+            longitude: loc.longitude
+        );
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
