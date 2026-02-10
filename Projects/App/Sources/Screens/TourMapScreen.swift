@@ -101,6 +101,15 @@ struct TourMapScreen: View {
                 viewModel.fetchAllPages();
             }
         }
+        .onChange(of: selectedTour?.id) { _, id in
+            guard let loc = selectedTour?.location else { return };
+            withAnimation(.easeInOut(duration: 0.5)) {
+                mapCameraPosition = .region(MKCoordinateRegion(
+                    center: loc,
+                    span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
+                ));
+            }
+        }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
             handleDeepLink(newId);
         }
