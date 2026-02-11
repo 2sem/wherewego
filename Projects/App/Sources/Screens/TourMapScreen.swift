@@ -42,7 +42,6 @@ struct TourMapScreen: View {
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarItems }
                 .toolbarBackground(.ultraThinMaterial, for: .navigationBar)
-//                .toolbarColorScheme(themeColorScheme(), for: .navigationBar)
         }
         .alert("\"WhereWeGo\" needs to use your location".localized(), isPresented: $showLocationAlert) {
             Button("Settings".localized()) {
@@ -502,13 +501,13 @@ struct TourMapScreen: View {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 10, weight: .semibold))
                 }
-                .foregroundStyle(themeBarTintColor())
+                .foregroundStyle(.primary)
             }
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {
                 Image(systemName: "location.fill")
-                    .foregroundStyle(themeBarTintColor())
+                    .foregroundStyle(.primary)
             }
         }
         ToolbarItem(placement: .navigationBarLeading) {
@@ -517,7 +516,7 @@ struct TourMapScreen: View {
                 showRangeSheet = true;
             } label: {
                 Text(viewModel.radius.stringForDistance())
-                    .foregroundStyle(themeBarTintColor())
+                    .foregroundStyle(.primary)
                     .font(.system(size: 14))
             }
         }
@@ -624,19 +623,4 @@ struct TourMapScreen: View {
         DeepLinkManager.shared.consume();
     }
 
-    // MARK: - Theme colors
-
-    private func themeColorScheme() -> ColorScheme? {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .dark;
-        default:             return nil;
-        }
-    }
-
-    private func themeBarTintColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
 }

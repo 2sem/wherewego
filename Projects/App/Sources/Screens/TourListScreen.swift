@@ -90,7 +90,6 @@ struct TourListScreen: View {
                 }
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar { toolbarItems }
-                .toolbarBackground(themeNavBarColor(), for: .navigationBar)
         }
         // Location denied alert
         .alert("\"WhereWeGo\" needs to use your location".localized(), isPresented: $showLocationAlert) {
@@ -147,7 +146,6 @@ struct TourListScreen: View {
             // Banner ad
             bannerAdView
         }
-        .background(themeNavBarColor())
     }
 
     private var tourList: some View {
@@ -215,13 +213,13 @@ struct TourListScreen: View {
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {
                 Image(systemName: "location.fill")
-                    .foregroundStyle(themeBarTintColor())
+                    .foregroundStyle(Color.accentColor)
             }
         }
         ToolbarItem(placement: .navigationBarLeading) {
             Button { navPath.append(.rangePicker) } label: {
                 Text(viewModel.radius.stringForDistance())
-                    .foregroundStyle(themeBarTintColor())
+                    .foregroundStyle(Color.accentColor)
                     .font(.system(size: 14))
             }
         }
@@ -265,20 +263,4 @@ struct TourListScreen: View {
         navPath.append(.tourInfo(info, viewModel.location));
     }
 
-    // MARK: - Theme colors
-
-    private func themeNavBarColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
-        }
-    }
-
-    private func themeBarTintColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
 }
