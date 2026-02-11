@@ -15,6 +15,7 @@ class KGDataTourListRequest : KGDataTourRequest{
     var location : CLLocationCoordinate2D;
     var radius : UInt = 3000;
     var page = 1;
+    var numOfRows = 100;
     
     init(locale : Locale = Locale.current, type : KGDataTourInfo.ContentType? = nil, location : CLLocationCoordinate2D, radius : UInt) {
         self.locale = locale;
@@ -37,6 +38,7 @@ class KGDataTourListRequest : KGDataTourRequest{
             //"lWH3TH9hXhNio7cYKzu0MaGzl3lO3o8BP+bRpSOgubUXipVjY6Y1gmnIxIRKK3GJMJir1/dL72xt8WGc11mQ3Q%3D%3D"
             //.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
             
+            queries.append(URLQueryItem(name: "numOfRows", value: "\(self.numOfRows)"));
             queries.append(URLQueryItem(name: "pageNo", value: "\(self.page)"));
             queries.append(URLQueryItem(name: "_type", value: "json"));
             //
@@ -74,6 +76,7 @@ class KGDataTourListRequest : KGDataTourRequest{
             let req = KGDataTourListRequest.init(locale: self.locale, type: self.type, location: self.location, radius: self.radius);
             
             req.page = page + 1;
+            req.numOfRows = numOfRows;
             
             return req;
         }
