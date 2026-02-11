@@ -59,13 +59,13 @@ struct RangePickerScreen: View {
                     } label: {
                         Image(systemName: "minus.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(themeButtonColor())
+                            .foregroundStyle(Color.accentColor)
                     }
                     .disabled(localRadiusKm <= minKm)
 
                     // Slider
                     Slider(value: sliderValue, in: Double(minKm)...Double(maxKm), step: 1.0)
-                        .tint(themeSliderColor())
+                        .tint(Color.accentColor)
 
                     // Plus
                     Button {
@@ -73,7 +73,7 @@ struct RangePickerScreen: View {
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundStyle(themeButtonColor())
+                            .foregroundStyle(Color.accentColor)
                     }
                     .disabled(localRadiusKm >= maxKm)
                 }
@@ -82,19 +82,16 @@ struct RangePickerScreen: View {
                 // Distance label
                 Text(localRadiusMeters.stringForDistance())
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(themeLabelColor())
                     .padding(.bottom, 8)
             }
-            .background(themeBackground())
         }
         .navigationTitle("Search Range".localized())
         .navigationBarBackButtonHidden()
-        .toolbarBackground(themeNavBarColor(), for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button { dismiss() } label: {
                     Image(systemName: "chevron.backward")
-                        .foregroundStyle(themeBarTintColor())
+                        .foregroundStyle(Color.accentColor)
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -103,7 +100,7 @@ struct RangePickerScreen: View {
                     radius = localRadiusMeters;
                     dismiss();
                 }
-                .foregroundStyle(themeBarTintColor())
+                .foregroundStyle(Color.accentColor)
             }
         }
     }
@@ -146,46 +143,4 @@ struct RangePickerScreen: View {
         return MKCoordinateRegion(center: center, span: MKCoordinateSpan(latitudeDelta: latDelta, longitudeDelta: lonDelta));
     }
 
-    // MARK: - Theme
-
-    private func themeNavBarColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.NavigationBarBackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
-        }
-    }
-    private func themeBarTintColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
-    private func themeBackground() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.BackgroundColors.red ?? .systemBackground);
-        case .summer: return Color(uiColor: LSThemeManager.BackgroundColors.lightBlue ?? .systemBackground);
-        default:     return .init(UIColor.systemBackground);
-        }
-    }
-    private func themeLabelColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas, .summer: return .white;
-        default:             return .init(UIColor.label);
-        }
-    }
-    private func themeButtonColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.MaterialColors.red.red400 ?? .systemBlue);
-        case .summer: return Color(uiColor: LSThemeManager.MaterialColors.lightBlue._400 ?? .systemBlue);
-        default:     return .accentColor;
-        }
-    }
-    private func themeSliderColor() -> Color {
-        switch LSThemeManager.shared.theme {
-        case .xmas:  return Color(uiColor: LSThemeManager.MaterialColors.red.red100 ?? .systemBlue);
-        case .summer: return Color(uiColor: LSThemeManager.MaterialColors.lightBlue._100 ?? .systemBlue);
-        default:     return .accentColor;
-        }
-    }
 }
