@@ -14,6 +14,8 @@ struct WhereWeGoApp: App {
 
     @State private var isSplashDone = false
     @State private var isSetupDone = false
+    @State private var isLaunched = false
+    @State private var isFromBackground = false
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var adManager = SwiftUIAdManager()
 
@@ -69,22 +71,32 @@ struct WhereWeGoApp: App {
 
     private func handleScenePhaseChange(_ phase: ScenePhase) {
         switch phase {
+        case .background:
+            isFromBackground = true;
         case .active:
-            handleAppDidBecomeActive()
+            handleAppDidBecomeActive();
         default:
             break
         }
     }
 
     private func handleAppDidBecomeActive() {
-        let mgr = adManager
+        let mgr = adManager;
         Task { @MainActor in
-            defer { WWGDefaults.increaseLaunchCount() }
-            await mgr.requestAppTrackingIfNeed()
-            await mgr.show(unit: .launch)
+            // Increase launch count only once per cold launch (not on return from system alerts)
+            if !isLaunched {
+                WWGDefaults.increaseLaunchCount();
+                isLaunched = true;
+                if WWGDefaults.LaunchCount > 0 && WWGDefaults.LaunchCount % 90 == 0 {
+                    SKStoreReviewController.requestReview();
+                }
+            }
 
-            if WWGDefaults.LaunchCount > 0 && WWGDefaults.LaunchCount % 90 == 0 {
-                SKStoreReviewController.requestReview()
+            // Show launch ad only when returning from true background (not system alerts)
+            if isFromBackground {
+                await mgr.requestAppTrackingIfNeed();
+                await mgr.show(unit: .launch);
+                isFromBackground = false;
             }
         }
     }
