@@ -73,6 +73,7 @@ let project = Project(
                                            "MapBanner" : "ca-app-pub-9684378399371172/6185560275",
                                            "RewardAd" : "ca-app-pub-9684378399371172/2568071527"],
                     "Itunes App Id": "1241856636",
+                    "NSLocationWhenInUseUsageDescription": "WhereWeGo uses your location to find nearby attractions.",
                     "NSUserTrackingUsageDescription": "Use location information to explore nearby attractions.",
                     "SKAdNetworkItems": .array(skAdNetworks),
                     "ITSAppUsesNonExemptEncryption": "NO",
