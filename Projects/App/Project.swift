@@ -82,17 +82,6 @@ let project = Project(
                     "NSAppTransportSecurity": [
                         "NSAllowsArbitraryLoads": true
                     ],
-                    "MKDirectionsApplicationSupportedModes": [
-                        "MKDirectionsModeBike",
-                        "MKDirectionsModeBus",
-                        "MKDirectionsModeCar",
-                        "MKDirectionsModePedestrian",
-                        "MKDirectionsModeSubway",
-                        "MKDirectionsModeTransit",
-                        "MKDirectionsModeTaxi",
-                        "MKDirectionsModeRideShare",
-                        "MKDirectionsModeStreetCar"
-                    ],
                     "LSApplicationQueriesSchemes": [
                         "nmap",
                         "kakaomap",
