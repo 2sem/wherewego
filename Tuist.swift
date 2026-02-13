@@ -8,10 +8,14 @@
 import ProjectDescription
 
 let tuist = Tuist(
-    project: .tuist(compatibleXcodeVersions: .upToNextMajor("26.0")
+    fullHandle: "gamehelper/wherewego",
+    project: .tuist(
+        compatibleXcodeVersions: .upToNextMajor("26.0"),
 //                    swiftVersion: "",
 //                    plugins: <#T##[PluginLocation]#>,
-//                    generationOptions: <#T##Tuist.GenerationOptions#>,
+        generationOptions: .options(
+            enableCaching: true
+        )
 //                    installOptions: <#T##Tuist.InstallOptions#>)
     )
 )
