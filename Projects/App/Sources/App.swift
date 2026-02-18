@@ -88,7 +88,9 @@ struct WhereWeGoApp: App {
                 WWGDefaults.increaseLaunchCount();
                 isLaunched = true;
                 if WWGDefaults.LaunchCount > 0 && WWGDefaults.LaunchCount % 90 == 0 {
-                    SKStoreReviewController.requestReview();
+                    if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+                        AppStore.requestReview(in: scene);
+                    }
                 }
             }
 
