@@ -23,6 +23,8 @@ struct TourInfoScreen: View {
     @State private var naverWebURL: URL?;
     @AppStorage("PreferredNavigationApp") private var preferredNavApp: String = "";
     @State private var isMapFullScreen = false;
+    @State private var additionalImages: [URL] = [];
+    @State private var selectedImageIndex: Int = 0;
 
     enum TransportType {
         case fastest
@@ -44,6 +46,13 @@ struct TourInfoScreen: View {
 
     private var resolvedInfo: KGDataTourInfo? { detailInfo ?? info; }
     private var resolvedId: Int { info?.id ?? infoId; }
+
+    private var allGalleryImages: [URL] {
+        var images: [URL] = [];
+        if let hero = resolvedInfo?.image { images.append(hero); }
+        for url in additionalImages where url != images.first { images.append(url); }
+        return images;
+    }
 
     var body: some View {
         ZStack {
@@ -119,6 +128,7 @@ struct TourInfoScreen: View {
         }
         .task {
             fetchDetail();
+            await fetchDetailImages();
         }
     }
 
@@ -126,66 +136,101 @@ struct TourInfoScreen: View {
 
     private var heroSection: some View {
         GeometryReader { geometry in
-            ZStack(alignment: .bottomLeading) {
-                // Background: Photo or gradient fallback
-                if let imgUrl = resolvedInfo?.image {
-                    // Case 1: Photo exists
-                    NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
-                        AsyncImage(url: imgUrl) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            case .failure, .empty:
-                                // Fallback to gradient if image fails to load
-                                categoryGradientBackground
-                            @unknown default:
-                                categoryGradientBackground
+            if allGalleryImages.count > 1 {
+                TabView(selection: $selectedImageIndex) {
+                    ForEach(Array(allGalleryImages.enumerated()), id: \.offset) { index, imgUrl in
+                        ZStack(alignment: .bottomLeading) {
+                            NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
+                                AsyncImage(url: imgUrl) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image.resizable().aspectRatio(contentMode: .fill)
+                                    case .failure, .empty:
+                                        categoryGradientBackground
+                                    @unknown default:
+                                        categoryGradientBackground
+                                    }
+                                }
+                                .frame(width: geometry.size.width, height: geometry.size.height)
+                                .clipped()
                             }
+                            .buttonStyle(.plain)
+                            LinearGradient(
+                                colors: [.clear, .black.opacity(0.75)],
+                                startPoint: .center,
+                                endPoint: .bottom
+                            )
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text(resolvedInfo?.title ?? "")
+                                    .font(.system(size: 36, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
+                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                                if let type = resolvedInfo?.type {
+                                    Text(type.stringValue.localized())
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundStyle(.white.opacity(0.95))
+                                        .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 44)
+                            .allowsHitTesting(false)
                         }
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-                    }
-                    .buttonStyle(.plain)
-                } else {
-                    // Case 2: No photo - gradient with category icon positioned higher
-                    ZStack(alignment: .center) {
-                        categoryGradientBackground
-                        
-                        // Large category icon - positioned higher for better balance
-                        Image(systemName: categoryIcon(for: resolvedInfo?.type))
-                            .font(.system(size: 100, weight: .ultraLight))
-                            .foregroundStyle(.white.opacity(0.15))
-                            .offset(y: -30)
+                        .tag(index)
                     }
                 }
-
-                // Gradient overlay for title readability
-                LinearGradient(
-                    colors: [.clear, .black.opacity(0.75)],
-                    startPoint: .center,
-                    endPoint: .bottom
-                )
-
-                // Title overlay - enhanced size and weight for dominance
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(resolvedInfo?.title ?? "")
-                        .font(.system(size: 36, weight: .bold))
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
-                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-
-                    if let type = resolvedInfo?.type {
-                        Text(type.stringValue.localized())
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(.white.opacity(0.95))
-                            .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
+                .tabViewStyle(.page(indexDisplayMode: .always))
+                .frame(width: geometry.size.width, height: geometry.size.height)
+            } else {
+                ZStack(alignment: .bottomLeading) {
+                    if let imgUrl = resolvedInfo?.image {
+                        NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
+                            AsyncImage(url: imgUrl) { phase in
+                                switch phase {
+                                case .success(let image):
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                case .failure, .empty:
+                                    categoryGradientBackground
+                                @unknown default:
+                                    categoryGradientBackground
+                                }
+                            }
+                            .frame(width: geometry.size.width, height: geometry.size.height)
+                            .clipped()
+                        }
+                        .buttonStyle(.plain)
+                    } else {
+                        ZStack(alignment: .center) {
+                            categoryGradientBackground
+                            Image(systemName: categoryIcon(for: resolvedInfo?.type))
+                                .font(.system(size: 100, weight: .ultraLight))
+                                .foregroundStyle(.white.opacity(0.15))
+                                .offset(y: -30)
+                        }
                     }
+                    LinearGradient(
+                        colors: [.clear, .black.opacity(0.75)],
+                        startPoint: .center,
+                        endPoint: .bottom
+                    )
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(resolvedInfo?.title ?? "")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                        if let type = resolvedInfo?.type {
+                            Text(type.stringValue.localized())
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.95))
+                                .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 28)
+                    .allowsHitTesting(false)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 28)
-                .allowsHitTesting(false)
             }
         }
         .frame(height: UIScreen.main.bounds.height * 0.45)
@@ -580,6 +625,15 @@ struct TourInfoScreen: View {
                 }
             }
         };
+    }
+
+    private func fetchDetailImages() async {
+        do {
+            let urls = try await KGDataTourManager.shared.requestDetailImages(contentId: resolvedId);
+            additionalImages = urls;
+        } catch {
+            print("detail images error: \(error)");
+        }
     }
 
     // MARK: - Actions

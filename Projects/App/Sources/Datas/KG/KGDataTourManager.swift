@@ -172,9 +172,24 @@ class KGDataTourManager: NSObject {
     func requestDetail(locale : Locale = Locale.current, contentId: Int, needDefault: Bool = false, completion:  @escaping TourDetailCompletionHandler) -> KGDataTourDetailRequest?{
         var req = KGDataTourDetailRequest(locale: locale, id : contentId);
         req.needDefault = needDefault;
-        
+
         self.requestDetail(request: req, completion: completion);
-        
+
         return req;
+    }
+
+    func requestDetailImages(locale: Locale = Locale.current, contentId: Int) async throws -> [URL] {
+        let req = KGDataTourDetailImageRequest(locale: locale, contentId: contentId);
+        print("request \(req.urlRequest)");
+        let (data, _) = try await URLSession.shared.data(for: req.urlRequest);
+        var json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: AnyObject] ?? [:];
+        let body = (json["response"] as? [String: AnyObject] ?? [:])["body"] as? [String: AnyObject] ?? [:];
+        let itemArray = (body["items"] as? [String: AnyObject] ?? [:])["item"] as? [[String: AnyObject]] ?? [];
+        let urls: [URL] = itemArray.compactMap {
+            guard let str = $0["originimgurl"] as? String else { return nil };
+            return URL(string: str);
+        };
+        print("detail images count - \(urls.count)");
+        return urls;
     }
 }
