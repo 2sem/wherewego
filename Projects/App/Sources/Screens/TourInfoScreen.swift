@@ -50,7 +50,9 @@ struct TourInfoScreen: View {
     private var allGalleryImages: [KGDataTourImage] {
         var images: [KGDataTourImage] = [];
         if let hero = resolvedInfo?.image { images.append(KGDataTourImage(url: hero, name: nil)); }
-        for item in additionalImages where !images.contains(where: { $0.url == item.url }) { images.append(item); }
+        let newImages = additionalImages.filter{ !images.contains($0) }
+        images.append(contentsOf: newImages)
+        for tourImage in additionalImages where !images.contains(tourImage) { images.append(tourImage); }
         return images;
     }
 
@@ -139,10 +141,10 @@ struct TourInfoScreen: View {
         GeometryReader { geometry in
             if allGalleryImages.count > 1 {
                 TabView(selection: $selectedImageID) {
-                    ForEach(allGalleryImages) { item in
+                    ForEach(allGalleryImages) { tourImage in
                         ZStack {
-                            NavigationLink(value: TourNavDestination.imageViewer(item.url)) {
-                                AsyncImage(url: item.url) { phase in
+                            NavigationLink(value: TourNavDestination.imageViewer(tourImage.url)) {
+                                AsyncImage(url: tourImage.url) { phase in
                                     switch phase {
                                     case .success(let image):
                                         image.resizable().aspectRatio(contentMode: .fill)
@@ -157,7 +159,7 @@ struct TourInfoScreen: View {
                             }
                             .buttonStyle(.plain)
 
-                            if let caption = item.name {
+                            if let caption = tourImage.name {
                                 // Sub image: blur-pill caption, bottom-trailing
                                 VStack {
                                     Spacer()
@@ -206,7 +208,7 @@ struct TourInfoScreen: View {
                                 .allowsHitTesting(false)
                             }
                         }
-                        .tag(item.id)
+                        .tag(tourImage.id)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
