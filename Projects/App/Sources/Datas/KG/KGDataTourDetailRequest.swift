@@ -32,8 +32,7 @@ struct KGDataTourDetailRequest{
             queries.append(URLQueryItem(name: "MobileOS", value: "IOS"));
             queries.append(URLQueryItem(name: "MobileApp", value: "wherewego"));
             queries.append(URLQueryItem(name: "contentId", value: "\(self.id)"));
-            queries.append(URLQueryItem(name: "overviewYN", value: "Y"));
-            
+
             if self.needDefault{
                 queries.append(URLQueryItem(name: "firstImageYN", value: "Y"));
                 queries.append(URLQueryItem(name: "addrinfoYN", value: "Y"));
