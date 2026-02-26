@@ -23,8 +23,8 @@ struct TourInfoScreen: View {
     @State private var naverWebURL: URL?;
     @AppStorage("PreferredNavigationApp") private var preferredNavApp: String = "";
     @State private var isMapFullScreen = false;
-    @State private var additionalImages: [URL] = [];
-    @State private var selectedImageIndex: Int = 0;
+    @State private var additionalImages: [KGDataTourImage] = [];
+    @State private var selectedImageID: URL?;
 
     enum TransportType {
         case fastest
@@ -47,10 +47,10 @@ struct TourInfoScreen: View {
     private var resolvedInfo: KGDataTourInfo? { detailInfo ?? info; }
     private var resolvedId: Int { info?.id ?? infoId; }
 
-    private var allGalleryImages: [URL] {
-        var images: [URL] = [];
-        if let hero = resolvedInfo?.image { images.append(hero); }
-        for url in additionalImages where url != images.first { images.append(url); }
+    private var allGalleryImages: [KGDataTourImage] {
+        var images: [KGDataTourImage] = [];
+        if let hero = resolvedInfo?.image { images.append(KGDataTourImage(url: hero, name: nil)); }
+        for item in additionalImages where !images.contains(where: { $0.url == item.url }) { images.append(item); }
         return images;
     }
 
@@ -127,6 +127,7 @@ struct TourInfoScreen: View {
             }
         }
         .task {
+            selectedImageID = nil;
             fetchDetail();
             await fetchDetailImages();
         }
@@ -137,11 +138,11 @@ struct TourInfoScreen: View {
     private var heroSection: some View {
         GeometryReader { geometry in
             if allGalleryImages.count > 1 {
-                TabView(selection: $selectedImageIndex) {
-                    ForEach(Array(allGalleryImages.enumerated()), id: \.offset) { index, imgUrl in
-                        ZStack(alignment: .bottomLeading) {
-                            NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
-                                AsyncImage(url: imgUrl) { phase in
+                TabView(selection: $selectedImageID) {
+                    ForEach(allGalleryImages) { item in
+                        ZStack {
+                            NavigationLink(value: TourNavDestination.imageViewer(item.url)) {
+                                AsyncImage(url: item.url) { phase in
                                     switch phase {
                                     case .success(let image):
                                         image.resizable().aspectRatio(contentMode: .fill)
@@ -155,29 +156,57 @@ struct TourInfoScreen: View {
                                 .clipped()
                             }
                             .buttonStyle(.plain)
-                            LinearGradient(
-                                colors: [.clear, .black.opacity(0.75)],
-                                startPoint: .center,
-                                endPoint: .bottom
-                            )
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text(resolvedInfo?.title ?? "")
-                                    .font(.system(size: 36, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
-                                    .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                                if let type = resolvedInfo?.type {
-                                    Text(type.stringValue.localized())
-                                        .font(.system(size: 18, weight: .semibold))
-                                        .foregroundStyle(.white.opacity(0.95))
-                                        .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
+
+                            if let caption = item.name {
+                                // Sub image: blur-pill caption, bottom-trailing
+                                VStack {
+                                    Spacer()
+                                    HStack {
+                                        Spacer()
+                                        Text(caption)
+                                            .font(.system(size: 13, weight: .medium))
+                                            .foregroundStyle(.white)
+                                            .lineLimit(2)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 6)
+                                            .background(.ultraThinMaterial, in: Capsule())
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.bottom, 44)
                                 }
+                                .allowsHitTesting(false)
+                            } else {
+                                // Hero image: gradient + large title
+                                VStack {
+                                    Spacer()
+                                    LinearGradient(
+                                        colors: [.clear, .black.opacity(0.75)],
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                    .frame(height: geometry.size.height * 0.5)
+                                }
+                                VStack(alignment: .leading, spacing: 12) {
+                                    Spacer()
+                                    Text(resolvedInfo?.title ?? "")
+                                        .font(.system(size: 36, weight: .bold))
+                                        .foregroundStyle(.white)
+                                        .shadow(color: .black.opacity(0.6), radius: 10, x: 0, y: 2)
+                                        .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
+                                    if let type = resolvedInfo?.type {
+                                        Text(type.stringValue.localized())
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundStyle(.white.opacity(0.95))
+                                            .shadow(color: .black.opacity(0.5), radius: 6, x: 0, y: 1)
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 44)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .allowsHitTesting(false)
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 44)
-                            .allowsHitTesting(false)
                         }
-                        .tag(index)
+                        .tag(item.id)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .always))
@@ -629,8 +658,8 @@ struct TourInfoScreen: View {
 
     private func fetchDetailImages() async {
         do {
-            let urls = try await KGDataTourManager.shared.requestDetailImages(contentId: resolvedId);
-            additionalImages = urls;
+            let images = try await KGDataTourManager.shared.requestDetailImages(contentId: resolvedId);
+            additionalImages = images;
         } catch {
             print("detail images error: \(error)");
         }

@@ -178,18 +178,26 @@ class KGDataTourManager: NSObject {
         return req;
     }
 
-    func requestDetailImages(locale: Locale = Locale.current, contentId: Int) async throws -> [URL] {
+    func requestDetailImages(locale: Locale = Locale.current, contentId: Int) async throws -> [KGDataTourImage] {
         let req = KGDataTourDetailImageRequest(locale: locale, contentId: contentId);
         print("request \(req.urlRequest)");
         let (data, _) = try await URLSession.shared.data(for: req.urlRequest);
-        var json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: AnyObject] ?? [:];
+        let json = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String: AnyObject] ?? [:];
         let body = (json["response"] as? [String: AnyObject] ?? [:])["body"] as? [String: AnyObject] ?? [:];
-        let itemArray = (body["items"] as? [String: AnyObject] ?? [:])["item"] as? [[String: AnyObject]] ?? [];
-        let urls: [URL] = itemArray.compactMap {
-            guard let str = $0["originimgurl"] as? String else { return nil };
-            return URL(string: str);
+        let itemsContainer = (body["items"] as? [String: AnyObject] ?? [:]);
+        // KTO API returns a single object instead of array when there is exactly one item
+        var itemArray: [[String: AnyObject]] = [];
+        if let arr = itemsContainer["item"] as? [[String: AnyObject]] {
+            itemArray = arr;
+        } else if let single = itemsContainer["item"] as? [String: AnyObject] {
+            itemArray = [single];
+        }
+        let images: [KGDataTourImage] = itemArray.compactMap {
+            guard let str = $0["originimgurl"] as? String, let url = URL(string: str) else { return nil };
+            let name = $0["imgname"] as? String;
+            return KGDataTourImage(url: url, name: name);
         };
-        print("detail images count - \(urls.count)");
-        return urls;
+        print("detail images count - \(images.count)");
+        return images;
     }
 }

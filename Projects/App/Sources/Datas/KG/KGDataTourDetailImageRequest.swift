@@ -24,7 +24,6 @@ struct KGDataTourDetailImageRequest {
             queries.append(URLQueryItem(name: "MobileApp", value: "wherewego"));
             queries.append(URLQueryItem(name: "contentId", value: "\(self.contentId)"));
             queries.append(URLQueryItem(name: "imageYN", value: "Y"));
-            queries.append(URLQueryItem(name: "subImageYN", value: "Y"));
             urlComponents?.queryItems = queries;
             var url = urlComponents?.url;
             //do not use queryitem for ServiceKey. / will be escaped not be encoded if it contains in
