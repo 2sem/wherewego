@@ -14,7 +14,8 @@ let tuist = Tuist(
 //                    swiftVersion: "",
 //                    plugins: <#T##[PluginLocation]#>,
         generationOptions: .options(
-            enableCaching: true
+            enableCaching: true,
+            registryEnabled: true
         )
 //                    installOptions: <#T##Tuist.InstallOptions#>)
     )
