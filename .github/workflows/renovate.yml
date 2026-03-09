@@ -1,9 +1,8 @@
 name: Renovate
 
 on:
-  # Disabled until tested — uncomment after confirming the workflow runs correctly
-  # schedule:
-  #   - cron: '0 0 * * 1'  # Every Monday at 00:00 UTC (before 9am KST)
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at 00:00 UTC (09:00 KST)
   workflow_dispatch:
 
 permissions:
