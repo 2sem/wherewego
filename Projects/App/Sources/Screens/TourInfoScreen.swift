@@ -936,12 +936,6 @@ struct SafariView: UIViewControllerRepresentable {
 
 // MARK: - Helper: present SFSafariViewController
 
-class SFSafariViewControllerPresenter {
-    func present(url: URL) {
-        let safari = SFSafariViewController(url: url);
-        UIApplication.shared.keyWindow?.rootViewController?.present(safari, animated: true);
-    }
-}
 
 // MARK: - Helper: Share sheet wrapper
 
