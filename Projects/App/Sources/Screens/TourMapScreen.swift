@@ -486,8 +486,8 @@ struct TourMapScreen: View {
         ToolbarItem(placement: .principal) {
             Menu {
                 Picker("Type", selection: $typeIndex) {
-                    ForEach(typeOptions.indices) { i in
-                        Label(typeOptions[i].0, systemImage: pickerIcon(for: typeOptions[i].1))
+                    ForEach(Array(typeOptions.enumerated()), id: \.offset) { i, option in
+                        Label(option.0, systemImage: pickerIcon(for: option.1))
                             .tag(i);
                     }
                 }

@@ -204,8 +204,8 @@ struct TourListScreen: View {
     private var toolbarItems: some ToolbarContent {
         ToolbarItem(placement: .principal) {
             Picker("Type", selection: $typeIndex) {
-                ForEach(typeOptions.indices) { i in
-                    Text(typeOptions[i].0).tag(i);
+                ForEach(Array(typeOptions.enumerated()), id: \.offset) { i, option in
+                    Text(option.0).tag(i);
                 }
             }
             .pickerStyle(.menu)
