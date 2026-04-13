@@ -3,11 +3,11 @@ import ProjectDescription
 let project = Project(
     name: "ThirdParty",
     packages: [
-        .package(id: "kakao.kakao-ios-sdk", from: "2.22.2"),
+        .package(id: "kakao.kakao-ios-sdk", from: "2.27.2"),
         .remote(url: "https://github.com/jdg/MBProgressHUD.git",
                 requirement: .upToNextMajor(from: "1.2.0")),
         .remote(url: "https://github.com/2sem/LSExtensions",
-                               requirement: .exact("0.1.22")),
+                               requirement: .exact("0.1.24")),
         .remote(url: "https://github.com/2sem/StringLogger",
                 requirement: .upToNextMajor(from: "0.7.0")),
         .remote(url: "https://github.com/2sem/DownPicker",
