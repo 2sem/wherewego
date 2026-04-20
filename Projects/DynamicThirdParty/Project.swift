@@ -3,7 +3,7 @@ import ProjectDescription
 let project = Project(
     name: "DynamicThirdParty",
     packages: [.package(id: "SDWebImage.SDWebImage", from: "5.21.7"),
-               .package(id: "firebase.firebase-ios-sdk", from: "12.12.0"),
+               .package(id: "firebase.firebase-ios-sdk", from: "12.12.1"),
     ],
     targets: [
         .target(
