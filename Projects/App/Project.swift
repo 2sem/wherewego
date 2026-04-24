@@ -60,7 +60,28 @@ let project = Project(
                             name: "Merge SKAdNetworkItems",
                             inputPaths: ["$(SRCROOT)/Resources/InfoPlist/skNetworks.plist"],
                             outputPaths: []),
-                      .post(script: "CRASHLYTICS_RUN=$(find \"${BUILD_DIR%/Build/*}/SourcePackages\" -name run -path \"*/Crashlytics/run\" | head -1); \"$CRASHLYTICS_RUN\"",
+                      .post(script: """
+                    SOURCE_PACKAGES_ROOT="${SOURCE_PACKAGES_DIR_PATH:-${BUILD_DIR%/Build/*}/SourcePackages}"
+                    CRASHLYTICS_RUN_SCRIPT=""
+
+                    for candidate in \
+                      "$SOURCE_PACKAGES_ROOT/checkouts/firebase-ios-sdk/Crashlytics/run" \
+                      "$SOURCE_PACKAGES_ROOT/registry/downloads/firebase/firebase-ios-sdk/Crashlytics/run" \
+                      "$SOURCE_PACKAGES_ROOT"/registry/downloads/firebase/firebase-ios-sdk/*/Crashlytics/run
+                    do
+                      if [ -f "$candidate" ]; then
+                        CRASHLYTICS_RUN_SCRIPT="$candidate"
+                        break
+                      fi
+                    done
+
+                    if [ -z "$CRASHLYTICS_RUN_SCRIPT" ]; then
+                      echo "error: Firebase Crashlytics run script not found under $SOURCE_PACKAGES_ROOT"
+                      exit 1
+                    fi
+
+                    "$CRASHLYTICS_RUN_SCRIPT"
+                    """,
                             name: "Upload dSYM for Crashlytics",
                             inputPaths: ["${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}",
                                          "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Resources/DWARF/${PRODUCT_NAME}",
