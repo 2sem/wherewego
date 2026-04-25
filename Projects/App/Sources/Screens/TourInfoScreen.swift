@@ -81,6 +81,12 @@ struct TourInfoScreen: View {
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
 
+                        if let overview = resolvedInfo?.overview, !overview.isEmpty {
+                            overviewCard(overview)
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
+                        }
+
                         // Map section (30-40% of screen)
                         mapSection
                             .padding(.top, 24)
@@ -433,6 +439,23 @@ struct TourInfoScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
+    private func overviewCard(_ overview: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Overview".localized())
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.secondary)
+
+            Text(overview)
+                .font(.system(size: 17))
+                .foregroundStyle(.primary)
+                .lineSpacing(4)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(Color(UIColor.secondarySystemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
     private var mapSection: some View {
         VStack(spacing: 0) {
             if let dest = resolvedInfo?.location, let src = currentLocation {
@@ -644,18 +667,26 @@ struct TourInfoScreen: View {
     // MARK: - Data
 
     private func fetchDetail() {
-        let needDefault = (info == nil);
-        KGDataTourManager.shared.requestDetail(contentId: resolvedId, needDefault: needDefault) { detail, error in
+        KGDataTourManager.shared.requestDetail(contentId: resolvedId, needDefault: true) { detail, error in
             DispatchQueue.main.async {
-                if self.info == nil {
-                    self.detailInfo = detail;
-                } else {
-                    // Merge overview into existing info
-                    self.info?.overview = detail?.overview;
-                    self.detailInfo = self.info;
-                }
+                self.detailInfo = self.mergeDetailInfo(detail);
             }
         };
+    }
+
+    private func mergeDetailInfo(_ detail: KGDataTourInfo?) -> KGDataTourInfo? {
+        guard let detail = detail else { return info; }
+        guard let info = info else { return detail; }
+
+        let merged = KGDataTourInfo(info.fields);
+        for (key, value) in detail.fields {
+            if let stringValue = value as? String, stringValue.isEmpty {
+                continue;
+            }
+            merged.fields[key] = value;
+        }
+
+        return merged;
     }
 
     private func fetchDetailImages() async {
