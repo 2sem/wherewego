@@ -71,9 +71,8 @@ struct TourInfoScreen: View {
                 fullScreenMapView
             } else {
                 // Normal scroll view
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        VStack(spacing: 0) {
+                ScrollView {
+                    VStack(spacing: 0) {
                             // Hero section: Large image with title overlay (40-50% of screen)
                         heroSection
 
@@ -90,48 +89,25 @@ struct TourInfoScreen: View {
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
 
-                        if let overview = overviewText, !showFullOverview {
-                            overviewPreviewCard(overview, onToggle: {
+                        if let overview = overviewText {
+                            overviewCard(overview, isExpanded: showFullOverview, onToggle: {
                                 withAnimation(.easeInOut) {
-                                    showFullOverview = true;
-                                }
-                                DispatchQueue.main.async {
-                                    withAnimation(.easeInOut) {
-                                        proxy.scrollTo("overview-detail", anchor: .top)
-                                    }
+                                    showFullOverview.toggle();
                                 }
                             })
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
-                                .id("overview-preview")
                         }
 
                         // Map section (30-40% of screen)
                         mapSection
                             .padding(.top, 24)
 
-                        if let overview = overviewText, showFullOverview {
-                            overviewDetailCard(overview, onCollapse: {
-                                withAnimation(.easeInOut) {
-                                    showFullOverview = false;
-                                }
-                                DispatchQueue.main.async {
-                                    withAnimation(.easeInOut) {
-                                        proxy.scrollTo("overview-preview", anchor: .top)
-                                    }
-                                }
-                            })
-                                .padding(.horizontal, 16)
-                                .padding(.top, 16)
-                                .id("overview-detail")
-                        }
-
                         // Bottom padding
                         Color.clear.frame(height: 20)
                     }
                 }
                 .background(Color(UIColor.systemBackground))
-                }
             }
         }
         .navigationBarBackButtonHidden()
@@ -476,7 +452,7 @@ struct TourInfoScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func overviewPreviewCard(_ overview: String, onToggle: @escaping () -> Void) -> some View {
+    private func overviewCard(_ overview: String, isExpanded: Bool, onToggle: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Overview".localized())
                 .font(.system(size: 15, weight: .semibold))
@@ -486,44 +462,18 @@ struct TourInfoScreen: View {
                 .font(.system(size: 17))
                 .foregroundStyle(.primary)
                 .lineSpacing(4)
-                .lineLimit(shouldCollapseOverview ? 4 : nil)
+                .lineLimit(isExpanded ? nil : (shouldCollapseOverview ? 4 : nil))
 
             if shouldCollapseOverview {
                 Button {
                     onToggle();
                 } label: {
-                    Label(showFullOverview ? "Less".localized() : "More".localized(), systemImage: showFullOverview ? "chevron.up" : "chevron.down")
+                    Label(isExpanded ? "Less".localized() : "More".localized(), systemImage: isExpanded ? "chevron.up" : "chevron.down")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(Color(UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func overviewDetailCard(_ overview: String, onCollapse: @escaping () -> Void) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Overview".localized())
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.secondary)
-
-            Text(overview)
-                .font(.system(size: 17))
-                .foregroundStyle(.primary)
-                .lineSpacing(4)
-
-            Button {
-                onCollapse();
-            } label: {
-                Label("Less".localized(), systemImage: "chevron.up")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-            }
-            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
