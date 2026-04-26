@@ -1,0 +1,3 @@
+Richer place details with more official travel information.
+New Overview section on detail screens for a quicker summary.
+Overview text can now expand or collapse above the map, plus reliability and stability improvements.

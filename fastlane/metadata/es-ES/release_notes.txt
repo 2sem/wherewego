@@ -1,0 +1,3 @@
+Información más completa en las fichas de lugares con más datos oficiales de viaje.
+Nueva sección de resumen en la pantalla de detalles.
+Ahora puedes ampliar o contraer el resumen sobre el mapa, con mejoras de estabilidad y fiabilidad.
