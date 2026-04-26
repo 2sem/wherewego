@@ -90,36 +90,20 @@ struct TourInfoScreen: View {
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
 
-                        if let overview = overviewText {
-                            if showFullOverview {
-                                overviewCollapsedHeader(onCollapse: {
+                        if let overview = overviewText, !showFullOverview {
+                            overviewPreviewCard(overview, onToggle: {
+                                withAnimation(.easeInOut) {
+                                    showFullOverview = true;
+                                }
+                                DispatchQueue.main.async {
                                     withAnimation(.easeInOut) {
-                                        showFullOverview = false;
+                                        proxy.scrollTo("overview-detail", anchor: .top)
                                     }
-                                    DispatchQueue.main.async {
-                                        withAnimation(.easeInOut) {
-                                            proxy.scrollTo("overview-preview", anchor: .top)
-                                        }
-                                    }
-                                })
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, 12)
-                                    .id("overview-preview")
-                            } else {
-                                overviewPreviewCard(overview, onToggle: {
-                                    withAnimation(.easeInOut) {
-                                        showFullOverview = true;
-                                    }
-                                    DispatchQueue.main.async {
-                                        withAnimation(.easeInOut) {
-                                            proxy.scrollTo("overview-detail", anchor: .top)
-                                        }
-                                    }
-                                })
-                                    .padding(.horizontal, 16)
-                                    .padding(.top, 12)
-                                    .id("overview-preview")
-                            }
+                                }
+                            })
+                                .padding(.horizontal, 16)
+                                .padding(.top, 12)
+                                .id("overview-preview")
                         }
 
                         // Map section (30-40% of screen)
@@ -488,29 +472,6 @@ struct TourInfoScreen: View {
                 .lineSpacing(4)
         }
         .padding(20)
-        .background(Color(UIColor.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func overviewCollapsedHeader(onCollapse: @escaping () -> Void) -> some View {
-        HStack {
-            Text("Overview".localized())
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            Button {
-                onCollapse();
-            } label: {
-                Label("Less".localized(), systemImage: "chevron.up")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color.accentColor)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 18)
         .background(Color(UIColor.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
