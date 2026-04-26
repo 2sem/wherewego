@@ -33,12 +33,9 @@ struct KGDataTourDetailRequest{
             queries.append(URLQueryItem(name: "MobileApp", value: "wherewego"));
             queries.append(URLQueryItem(name: "contentId", value: "\(self.id)"));
 
-            if self.needDefault{
-                queries.append(URLQueryItem(name: "firstImageYN", value: "Y"));
-                queries.append(URLQueryItem(name: "addrinfoYN", value: "Y"));
-                queries.append(URLQueryItem(name: "defaultYN", value: "Y"));
-                queries.append(URLQueryItem(name: "mapinfoYN", value: "Y"));
-            }
+            // KorService2 detailCommon2 already returns overview, address, images, and map fields
+            // for a valid contentId. Legacy *YN flags now cause INVALID_REQUEST_PARAMETER_ERROR,
+            // so keep the request to the required baseline parameters only.
             
             urlComponents?.queryItems = queries;
             
