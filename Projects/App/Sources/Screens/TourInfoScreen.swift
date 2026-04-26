@@ -23,6 +23,7 @@ struct TourInfoScreen: View {
     @State private var naverWebURL: URL?;
     @AppStorage("PreferredNavigationApp") private var preferredNavApp: String = "";
     @State private var isMapFullScreen = false;
+    @State private var showFullOverview = false;
     @State private var additionalImages: [KGDataTourImage] = [];
     @State private var selectedImageID: URL?;
 
@@ -46,6 +47,13 @@ struct TourInfoScreen: View {
 
     private var resolvedInfo: KGDataTourInfo? { detailInfo ?? info; }
     private var resolvedId: Int { info?.id ?? infoId; }
+    private var overviewText: String? {
+        guard let overview = resolvedInfo?.overview, !overview.isEmpty else { return nil; }
+        return overview;
+    }
+    private var shouldCollapseOverview: Bool {
+        (overviewText?.count ?? 0) > 180;
+    }
 
     private var allGalleryImages: [KGDataTourImage] {
         var images: [KGDataTourImage] = [];
@@ -65,7 +73,7 @@ struct TourInfoScreen: View {
                 // Normal scroll view
                 ScrollView {
                     VStack(spacing: 0) {
-                        // Hero section: Large image with title overlay (40-50% of screen)
+                            // Hero section: Large image with title overlay (40-50% of screen)
                         heroSection
 
                         // Action button bar
@@ -81,8 +89,12 @@ struct TourInfoScreen: View {
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
 
-                        if let overview = resolvedInfo?.overview, !overview.isEmpty {
-                            overviewCard(overview)
+                        if let overview = overviewText {
+                            overviewCard(overview, isExpanded: showFullOverview, onToggle: {
+                                withAnimation(.easeInOut) {
+                                    showFullOverview.toggle();
+                                }
+                            })
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
                         }
@@ -134,8 +146,9 @@ struct TourInfoScreen: View {
                     .ignoresSafeArea()
             }
         }
-        .task {
+.task {
             selectedImageID = nil;
+            showFullOverview = false;
             fetchDetail();
             await fetchDetailImages();
         }
@@ -439,7 +452,7 @@ struct TourInfoScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func overviewCard(_ overview: String) -> some View {
+    private func overviewCard(_ overview: String, isExpanded: Bool, onToggle: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Overview".localized())
                 .font(.system(size: 15, weight: .semibold))
@@ -449,6 +462,18 @@ struct TourInfoScreen: View {
                 .font(.system(size: 17))
                 .foregroundStyle(.primary)
                 .lineSpacing(4)
+                .lineLimit(isExpanded ? nil : (shouldCollapseOverview ? 4 : nil))
+
+            if shouldCollapseOverview {
+                Button {
+                    onToggle();
+                } label: {
+                    Label(isExpanded ? "Less".localized() : "More".localized(), systemImage: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
