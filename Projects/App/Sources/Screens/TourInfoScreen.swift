@@ -71,9 +71,10 @@ struct TourInfoScreen: View {
                 fullScreenMapView
             } else {
                 // Normal scroll view
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // Hero section: Large image with title overlay (40-50% of screen)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            // Hero section: Large image with title overlay (40-50% of screen)
                         heroSection
 
                         // Action button bar
@@ -90,9 +91,21 @@ struct TourInfoScreen: View {
                             .padding(.top, 12)
 
                         if let overview = overviewText {
-                            overviewPreviewCard(overview)
+                            overviewPreviewCard(overview, onToggle: {
+                                withAnimation(.easeInOut) {
+                                    showFullOverview.toggle();
+                                }
+                                if showFullOverview {
+                                    DispatchQueue.main.async {
+                                        withAnimation(.easeInOut) {
+                                            proxy.scrollTo("overview-detail", anchor: .top)
+                                        }
+                                    }
+                                }
+                            })
                                 .padding(.horizontal, 16)
                                 .padding(.top, 12)
+                                .id("overview-preview")
                         }
 
                         // Map section (30-40% of screen)
@@ -100,9 +113,19 @@ struct TourInfoScreen: View {
                             .padding(.top, 24)
 
                         if let overview = overviewText, showFullOverview {
-                            overviewDetailCard(overview)
+                            overviewDetailCard(overview, onCollapse: {
+                                withAnimation(.easeInOut) {
+                                    showFullOverview = false;
+                                }
+                                DispatchQueue.main.async {
+                                    withAnimation(.easeInOut) {
+                                        proxy.scrollTo("overview-preview", anchor: .top)
+                                    }
+                                }
+                            })
                                 .padding(.horizontal, 16)
                                 .padding(.top, 16)
+                                .id("overview-detail")
                         }
 
                         // Bottom padding
@@ -110,6 +133,7 @@ struct TourInfoScreen: View {
                     }
                 }
                 .background(Color(UIColor.systemBackground))
+                }
             }
         }
         .navigationBarBackButtonHidden()
@@ -454,7 +478,7 @@ struct TourInfoScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func overviewPreviewCard(_ overview: String) -> some View {
+    private func overviewPreviewCard(_ overview: String, onToggle: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Overview".localized())
                 .font(.system(size: 15, weight: .semibold))
@@ -468,9 +492,7 @@ struct TourInfoScreen: View {
 
             if shouldCollapseOverview {
                 Button {
-                    withAnimation(.easeInOut) {
-                        showFullOverview.toggle();
-                    }
+                    onToggle();
                 } label: {
                     Label(showFullOverview ? "Less".localized() : "More".localized(), systemImage: showFullOverview ? "chevron.up" : "chevron.down")
                         .font(.system(size: 15, weight: .semibold))
@@ -485,7 +507,7 @@ struct TourInfoScreen: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func overviewDetailCard(_ overview: String) -> some View {
+    private func overviewDetailCard(_ overview: String, onCollapse: @escaping () -> Void) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Overview".localized())
                 .font(.system(size: 15, weight: .semibold))
@@ -497,9 +519,7 @@ struct TourInfoScreen: View {
                 .lineSpacing(4)
 
             Button {
-                withAnimation(.easeInOut) {
-                    showFullOverview = false;
-                }
+                onCollapse();
             } label: {
                 Label("Less".localized(), systemImage: "chevron.up")
                     .font(.system(size: 15, weight: .semibold))
