@@ -57,15 +57,23 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          tuist install
+          mise x -- tuist install
 
       - name: Log in Tuist
         run: |
-          tuist auth login
+          mise x -- tuist auth login
+
+      - name: Set up Tuist Cache
+        run: |
+          mise x -- tuist setup cache
+
+      - name: Setup Tuist Registry
+        run: |
+          mise x -- tuist registry setup
 
       - name: Generate Xcode Project
         run: |
-          tuist generate --cache-profile none    
+          mise x -- tuist generate --cache-profile none
 
       - name: Import signing certificate
         env:
@@ -149,7 +157,7 @@ jobs:
           echo "ARCHIVE_PATH: $ARCHIVE_PATH"
 
           # Build archive
-          tuist xcodebuild archive \
+          mise x -- tuist xcodebuild archive \
             -workspace $WORKSPACE \
             -scheme "$SCHEME" \
             -configuration Release \
