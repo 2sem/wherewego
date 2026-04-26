@@ -1,0 +1,3 @@
+Mehr Details zu Orten mit zusätzlichen offiziellen Reiseinformationen.
+Neuer Übersichtsbereich auf den Detailseiten für einen schnelleren Überblick.
+Die Übersicht lässt sich jetzt oberhalb der Karte ein- und ausklappen, außerdem wurde die Zuverlässigkeit verbessert.
