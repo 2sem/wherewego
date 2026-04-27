@@ -1,0 +1,3 @@
+Sekarang lebih mudah merencanakan tujuan berikutnya.
+Layar detail tempat kini menampilkan informasi perjalanan yang lebih lengkap serta bagian ringkasan baru.
+Ringkasan dapat dibuka atau ditutup tepat di atas peta agar lebih nyaman dibaca.
