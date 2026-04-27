@@ -126,7 +126,6 @@ platform :ios do
           app_identifier: @package_name,
           submit_for_review: true,
           force: true,
-          skip_app_version_update: true,
           skip_screenshots: true,
           run_precheck_before_submit: false,
         )
