@@ -11,6 +11,7 @@ let project = Project(
             destinations: .iOS,
             product: .framework,
             bundleId: "com.y2k.wherewego.thirdparty.dynamic",
+            deploymentTargets: .iOS("18.0"),
             dependencies: [.package(product: "SDWebImage", type: .runtime),
                            .package(product: "FirebaseCrashlytics", type: .runtime),
                            .package(product: "FirebaseAnalytics", type: .runtime),
