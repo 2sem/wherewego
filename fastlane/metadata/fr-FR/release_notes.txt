@@ -1,3 +1,1 @@
-Des fiches lieux plus riches grâce à davantage d’informations officielles de voyage.
-Nouvelle section Aperçu sur les écrans de détail pour voir l’essentiel plus vite.
-L’aperçu peut désormais être développé ou réduit au-dessus de la carte, avec des améliorations de fiabilité et de stabilité.
+Améliorations internes pour une expérience plus stable et plus fluide.
