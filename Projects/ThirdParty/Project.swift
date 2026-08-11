@@ -20,6 +20,7 @@ let project = Project(
             destinations: .iOS,
             product: .staticFramework,
             bundleId: "com.y2k.wherewego.thirdparty",
+            deploymentTargets: .iOS("18.0"),
             dependencies: [.package(product: "KakaoSDK", type: .runtime),
                            .package(product: "MBProgressHUD", type: .runtime),
                            .package(product: "LSExtensions", type: .runtime),
