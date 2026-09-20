@@ -10,6 +10,10 @@ struct SDWebImageSwiftUIView: UIViewRepresentable {
         let imageView = UIImageView();
         imageView.contentMode = .scaleAspectFill;
         imageView.clipsToBounds = true;
+        imageView.setContentHuggingPriority(.defaultLow, for: .horizontal);
+        imageView.setContentHuggingPriority(.defaultLow, for: .vertical);
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal);
+        imageView.setContentCompressionResistancePriority(.defaultLow, for: .vertical);
         return imageView;
     }
 
