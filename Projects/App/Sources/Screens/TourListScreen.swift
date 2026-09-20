@@ -79,6 +79,11 @@ struct TourListScreen: View {
         for t in types {
             options.append((t.stringValue.localized(), t));
         }
+        // Favorite is a local pseudo-type — it has no Korea Tourism API type id, so it is
+        // appended here directly instead of coming from `values`/`values_foreign` (which
+        // enumerate real API content types shared with TourMapScreen). This keeps it out of
+        // every other screen/switch that iterates those arrays.
+        options.append((KGDataTourInfo.ContentType.Favorite.stringValue.localized(), .Favorite));
         return options;
     }
 
@@ -127,7 +132,8 @@ struct TourListScreen: View {
         }
         .onChange(of: typeIndex) { _, _ in
             viewModel.selectedType = typeOptions[typeIndex].1;
-            if viewModel.location != nil { viewModel.fetchList(); }
+            // Favorite doesn't need a location fix to load — it reads WWGDefaults directly.
+            if viewModel.location != nil || viewModel.isFavoriteFilter { viewModel.fetchList(); }
         }
         // Deep link
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
@@ -169,12 +175,19 @@ struct TourListScreen: View {
         }
         .overlay {
             if viewModel.infos.isEmpty && !viewModel.isLoading {
-                Text("No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized())
+                Text(emptyStateText)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding()
             }
         }
+    }
+
+    private var emptyStateText: String {
+        if viewModel.isFavoriteFilter {
+            return "No favorite places yet.\nTap the heart icon on a place's detail screen to save it here.".localized();
+        }
+        return "No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized();
     }
 
     private var bannerAdView: some View {

@@ -59,11 +59,21 @@ class TourListViewModel {
 
     var hasMorePages: Bool { totalCount > 0 && infos.count < totalCount; }
 
+    // Favorite is a local pseudo-type (no Korea Tourism API type id) — when selected,
+    // the list is read straight from WWGDefaults instead of calling KGDataTourManager,
+    // and pagination/API refresh are disabled entirely.
+    var isFavoriteFilter: Bool { selectedType?.rawValue == KGDataTourInfo.ContentType.Favorite.rawValue; }
+
     private var lastRequest: KGDataTourListRequest? = nil;
     private var isFetchingNext: Bool = false;
     private var placeStores: [PlaceStoreKey: PlaceStore] = [:];
 
     func fetchList() {
+        if isFavoriteFilter {
+            loadFavorites();
+            return;
+        }
+
         guard let loc = location else { return };
 
         let storeKey = PlaceStoreKey(location: loc, type: selectedType);
@@ -104,7 +114,16 @@ class TourListViewModel {
         };
     }
 
+    private func loadFavorites() {
+        infos          = WWGDefaults.FavoritePlaces;
+        totalCount     = infos.count;   // hasMorePages = false → load-more disabled
+        isLoading      = false;
+        lastRequest    = nil;
+        isFetchingNext = false;
+    }
+
     func fetchNextPage() {
+        guard !isFavoriteFilter else { return };
         guard !isFetchingNext, let next = lastRequest?.next else { return };
         isFetchingNext = true;
         lastRequest = next;
@@ -119,6 +138,7 @@ class TourListViewModel {
     }
 
     func fetchAllPages() {
+        guard !isFavoriteFilter else { return };
         print("[TourListVM] fetchAllPages() called — isFetchingNext: \(isFetchingNext), hasMorePages: \(hasMorePages), lastRequest.page: \(lastRequest?.page ?? -1)");
         guard !isFetchingNext, hasMorePages, let next = lastRequest?.next else {
             print("[TourListVM] fetchAllPages() guard failed — isFetchingNext: \(isFetchingNext), hasMorePages: \(hasMorePages), lastRequest: \(lastRequest == nil ? "nil" : "page \(lastRequest!.page)")");
@@ -149,6 +169,11 @@ class TourListViewModel {
     }
 
     func refresh() async {
+        if isFavoriteFilter {
+            loadFavorites();
+            return;
+        }
+
         guard let loc = location else { return };
         let storeKey = PlaceStoreKey(location: loc, type: selectedType);
         placeStores.removeValue(forKey: storeKey);

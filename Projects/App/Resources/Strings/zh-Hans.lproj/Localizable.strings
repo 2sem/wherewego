@@ -16,6 +16,8 @@
 "Shopping" = "购物";
 "Food" = "餐饮";
 "Travel" = "旅行";
+"Favorite" = "收藏";
+"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "还没有收藏的地点。\n在详情页面点击心形图标即可保存到这里。";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" 需要使用您的位置";
 "This app will not work without the location permission" = "如果没有位置许可，此应用将无法正常工作";
 "Ok" = "好";

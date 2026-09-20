@@ -251,6 +251,7 @@ struct TourMapScreen: View {
         case .Shopping, .Shopping_Foreign:   return "cart.fill"
         case .Food, .Food_Foreign:           return "fork.knife"
         case .Travel, .Travel_Foreign:       return "airplane"
+        case .Favorite:                      return "heart.fill" // local pseudo-type, never a real map item's type
         }
     }
 
@@ -265,6 +266,7 @@ struct TourMapScreen: View {
         case .Shopping, .Shopping_Foreign:   return "cart.fill"                // 쇼핑
         case .Food, .Food_Foreign:           return "fork.knife"               // 음식점
         case .Travel, .Travel_Foreign:       return "airplane"                 // 여행
+        case .Favorite:                      return "heart.fill"               // local pseudo-type, never a real map item's type
         }
     }
 
@@ -279,6 +281,7 @@ struct TourMapScreen: View {
         case .Shopping, .Shopping_Foreign:   return Color("ShoppingMarkerColor")   // 쇼핑
         case .Food, .Food_Foreign:           return Color("FoodMarkerColor")       // 음식점
         case .Travel, .Travel_Foreign:       return Color("TravelMarkerColor")     // 여행
+        case .Favorite:                      return .red                           // local pseudo-type, never a real map item's type
         }
     }
 

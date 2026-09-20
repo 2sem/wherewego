@@ -16,6 +16,8 @@
 "Shopping" = "購物";
 "Food" = "餐飲";
 "Travel" = "旅行";
+"Favorite" = "收藏";
+"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "還沒有收藏的地點。\n在詳情頁面點擊愛心圖示即可保存到這裡。";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" 需要使用您的位置";
 "This app will not work without the location permission" = "如果沒有位置許可，此應用程序將無法正常工作";
 "Ok" = "好";

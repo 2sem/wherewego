@@ -16,6 +16,8 @@
 "Shopping" = "Shopping";
 "Food" = "Food";
 "Travel" = "Travel";
+"Favorite" = "Favorite";
+"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "No favorite places yet.\nTap the heart icon on a place's detail screen to save it here.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" needs to use your location";
 "This app will not work without the location permission" = "This app will not work without the location permission";
 "Ok" = "Ok";

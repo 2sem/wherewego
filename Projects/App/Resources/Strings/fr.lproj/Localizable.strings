@@ -16,6 +16,8 @@
 "Shopping" = "Achats";
 "Food" = "Aliments";
 "Travel" = "Voyage";
+"Favorite" = "Favori";
+"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "Aucun lieu favori pour le moment.\nAppuyez sur l'icône cœur dans l'écran de détail d'un lieu pour l'enregistrer ici.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" doit utiliser votre emplacement";
 "This app will not work without the location permission" = "Cette application ne fonctionnera pas sans l'autorisation d'emplacement";
 "Ok" = "D'accord";

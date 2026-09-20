@@ -90,7 +90,13 @@ class KGDataTourInfo : KGDataTourObject {
         case Shopping_Foreign = 79
         case Food_Foreign = 82 //restaurant
         case Travel_Foreign = 77
-        
+
+        // Local pseudo-type: no Korea Tourism API type id. Not part of `values`/`values_foreign`
+        // (those enumerate real API content types), so it never reaches an API request and never
+        // appears as an actual item's `type`. Added only so the segmented filter in TourListScreen
+        // can carry it alongside the real content types.
+        case Favorite = -1
+
         var stringValue : String{
             get{
                 var value = self;

@@ -26,6 +26,7 @@ struct TourInfoScreen: View {
     @State private var showFullOverview = false;
     @State private var additionalImages: [KGDataTourImage] = [];
     @State private var selectedImageID: URL?;
+    @State private var isFavorited = false;
 
     enum TransportType {
         case fastest
@@ -126,6 +127,12 @@ struct TourInfoScreen: View {
                 }
             }
             ToolbarItem(placement: .navigationBarTrailing) {
+                Button { onToggleFavorite() } label: {
+                    Image(systemName: isFavorited ? "heart.fill" : "heart")
+                        .foregroundStyle(favoriteTintColor(isFavorited: isFavorited))
+                }
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button { onShare() } label: {
                     Image(systemName: "square.and.arrow.up")
                         .foregroundStyle(.primary)
@@ -149,9 +156,21 @@ struct TourInfoScreen: View {
 .task {
             selectedImageID = nil;
             showFullOverview = false;
+            isFavorited = WWGDefaults.isFavorite(id: resolvedId);
             fetchDetail();
             await fetchDetailImages();
         }
+    }
+
+    // MARK: - Theme
+
+    // TourInfoScreen has no LSThemeManager color helpers (the class no longer exists after
+    // the SwiftUI migration — screens now use semantic SwiftUI colors / named asset colors
+    // instead, e.g. TourMapScreen's markerColor(for:)). This mirrors that convention rather
+    // than a hardcoded RGB value, and keeps favorited/unfavorited in step with the other
+    // toolbar icons (back/share use `.primary`).
+    private func favoriteTintColor(isFavorited: Bool) -> Color {
+        isFavorited ? .red : .primary;
     }
 
     // MARK: - Sub-views
@@ -318,6 +337,8 @@ struct TourInfoScreen: View {
             return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // Teal to blue
         case .Travel, .Travel_Foreign:
             return [Color(red: 0.5, green: 0.7, blue: 0.9), Color(red: 0.3, green: 0.5, blue: 0.7)]  // Sky blue
+        case .Favorite:
+            return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // local pseudo-type, never a real item's type — default teal to blue
         }
     }
 
@@ -334,6 +355,7 @@ struct TourInfoScreen: View {
         case .Shopping, .Shopping_Foreign:   return "cart.fill"
         case .Food, .Food_Foreign:           return "fork.knife"
         case .Travel, .Travel_Foreign:       return "airplane"
+        case .Favorite:                      return "heart.fill" // local pseudo-type, never a real item's type
         }
     }
 
@@ -724,6 +746,11 @@ struct TourInfoScreen: View {
     }
 
     // MARK: - Actions
+
+    private func onToggleFavorite() {
+        guard let target = resolvedInfo else { return };
+        isFavorited = WWGDefaults.toggleFavorite(target);
+    }
 
     private func onPhone() {
         guard let tel = resolvedInfo?.tel, !tel.isEmpty else { return };
