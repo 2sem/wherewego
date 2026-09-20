@@ -479,10 +479,9 @@ struct TourMapScreen: View {
             RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
                 .onDisappear { onRangePickerDone(); }
         case .favorites:
-            // TourMapScreen has no heart entry point of its own (see FavoritesScreen /
-            // TourListScreen's toolbar) — this branch exists only because `.favorites` is a
-            // case of the TourNavDestination enum shared with TourListScreen, so this switch
-            // must stay exhaustive.
+            // Reached via the heart button in toolbarItems (navigationBarTrailing, before
+            // location.fill) since TourMapScreen — not TourListScreen — is the live root
+            // (see App.swift / MainScreen).
             FavoritesScreen(currentLocation: locationManager.currentLocation, navPath: $navPath)
         }
     }
@@ -509,6 +508,16 @@ struct TourMapScreen: View {
                 }
                 .foregroundStyle(.primary)
             }
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { navPath.append(.favorites) } label: {
+                Image(systemName: "heart")
+                    .foregroundStyle(.primary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("Favorite".localized())
+            .accessibilityHint("Opens your saved places".localized())
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {

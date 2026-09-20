@@ -90,7 +90,7 @@ class KGDataTourInfo : KGDataTourObject {
         case Shopping_Foreign = 79
         case Food_Foreign = 82 //restaurant
         case Travel_Foreign = 77
-
+        
         var stringValue : String{
             get{
                 var value = self;
