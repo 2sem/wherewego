@@ -337,8 +337,6 @@ struct TourInfoScreen: View {
             return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // Teal to blue
         case .Travel, .Travel_Foreign:
             return [Color(red: 0.5, green: 0.7, blue: 0.9), Color(red: 0.3, green: 0.5, blue: 0.7)]  // Sky blue
-        case .Favorite:
-            return [Color(red: 0.0, green: 0.66, blue: 0.59), Color(red: 0.0, green: 0.48, blue: 1.0)]  // local pseudo-type, never a real item's type — default teal to blue
         }
     }
 
@@ -355,7 +353,6 @@ struct TourInfoScreen: View {
         case .Shopping, .Shopping_Foreign:   return "cart.fill"
         case .Food, .Food_Foreign:           return "fork.knife"
         case .Travel, .Travel_Foreign:       return "airplane"
-        case .Favorite:                      return "heart.fill" // local pseudo-type, never a real item's type
         }
     }
 

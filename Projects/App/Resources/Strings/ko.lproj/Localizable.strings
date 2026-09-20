@@ -17,7 +17,13 @@
 "Food" = "음식점";
 "Travel" = "교통";
 "Favorite" = "즐겨찾기";
-"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "즐겨찾기한 장소가 없습니다.\n장소 상세 화면에서 하트 아이콘을 눌러 저장해보세요.";
+"Opens your saved places" = "저장한 장소를 엽니다";
+"No Favorites Yet" = "즐겨찾기한 장소가 없어요";
+"Tap the heart icon on any place to save it here." = "장소의 하트 아이콘을 눌러 이곳에 저장하세요.";
+"Explore Nearby Places" = "주변 장소 둘러보기";
+"Remove" = "삭제";
+"Remove from Favorites" = "즐겨찾기에서 삭제";
+"Double tap to view details." = "두 번 탭하여 상세 정보를 봅니다.";
 "\"WhereWeGo\" needs to use your location" = "\"우리어디가\"에서 사용자의 위치를 필요로합니다.";
 "This app will not work without the location permission" = "이앱은 위치 권한 없이 사용할 수 없습니다.";
 "Ok" = "확인";

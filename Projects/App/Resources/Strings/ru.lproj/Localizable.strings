@@ -17,7 +17,13 @@
 "Food" = "питание";
 "Travel" = "Путешествовать";
 "Favorite" = "Избранное";
-"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "Пока нет избранных мест.\nНажмите на значок сердца на экране сведений о месте, чтобы сохранить его здесь.";
+"Opens your saved places" = "Открывает сохранённые места";
+"No Favorites Yet" = "Пока нет избранного";
+"Tap the heart icon on any place to save it here." = "Нажмите на значок сердца у места, чтобы сохранить его здесь.";
+"Explore Nearby Places" = "Изучить места рядом";
+"Remove" = "Удалить";
+"Remove from Favorites" = "Удалить из избранного";
+"Double tap to view details." = "Дважды нажмите, чтобы посмотреть подробности.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" необходимо использовать ваше местоположение";
 "This app will not work without the location permission" = "Это приложение не будет работать без разрешения на размещение";
 "Ok" = "ОК";

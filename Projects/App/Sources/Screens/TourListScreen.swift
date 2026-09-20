@@ -8,6 +8,7 @@ enum TourNavDestination: Hashable {
     case tourInfoById(Int, CLLocationCoordinate2D?)
     case imageViewer(URL)
     case rangePicker
+    case favorites
 
     // Hashable conformance — CLLocationCoordinate2D is not Hashable by default
     static func == (lhs: TourNavDestination, rhs: TourNavDestination) -> Bool {
@@ -19,6 +20,8 @@ enum TourNavDestination: Hashable {
         case (.imageViewer(let a), .imageViewer(let b)):
             return a == b;
         case (.rangePicker, .rangePicker):
+            return true;
+        case (.favorites, .favorites):
             return true;
         default:
             return false;
@@ -35,6 +38,8 @@ enum TourNavDestination: Hashable {
             hasher.combine(2); hasher.combine(url);
         case .rangePicker:
             hasher.combine(3);
+        case .favorites:
+            hasher.combine(4);
         }
     }
 }
@@ -79,11 +84,6 @@ struct TourListScreen: View {
         for t in types {
             options.append((t.stringValue.localized(), t));
         }
-        // Favorite is a local pseudo-type — it has no Korea Tourism API type id, so it is
-        // appended here directly instead of coming from `values`/`values_foreign` (which
-        // enumerate real API content types shared with TourMapScreen). This keeps it out of
-        // every other screen/switch that iterates those arrays.
-        options.append((KGDataTourInfo.ContentType.Favorite.stringValue.localized(), .Favorite));
         return options;
     }
 
@@ -132,8 +132,7 @@ struct TourListScreen: View {
         }
         .onChange(of: typeIndex) { _, _ in
             viewModel.selectedType = typeOptions[typeIndex].1;
-            // Favorite doesn't need a location fix to load — it reads WWGDefaults directly.
-            if viewModel.location != nil || viewModel.isFavoriteFilter { viewModel.fetchList(); }
+            if viewModel.location != nil { viewModel.fetchList(); }
         }
         // Deep link
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
@@ -175,19 +174,12 @@ struct TourListScreen: View {
         }
         .overlay {
             if viewModel.infos.isEmpty && !viewModel.isLoading {
-                Text(emptyStateText)
+                Text("No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized())
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding()
             }
         }
-    }
-
-    private var emptyStateText: String {
-        if viewModel.isFavoriteFilter {
-            return "No favorite places yet.\nTap the heart icon on a place's detail screen to save it here.".localized();
-        }
-        return "No data available in a current range.\nIncrease range or move the marker to another place.\nCheck if the marker or you are in Korea.".localized();
     }
 
     private var bannerAdView: some View {
@@ -210,6 +202,8 @@ struct TourListScreen: View {
         case .rangePicker:
             RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
                 .onDisappear { onRangePickerDone(); }
+        case .favorites:
+            FavoritesScreen(currentLocation: locationManager.currentLocation, navPath: $navPath)
         }
     }
 
@@ -222,6 +216,16 @@ struct TourListScreen: View {
                 }
             }
             .pickerStyle(.menu)
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { navPath.append(.favorites) } label: {
+                Image(systemName: "heart")
+                    .foregroundStyle(Color.accentColor)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("Favorite".localized())
+            .accessibilityHint("Opens your saved places".localized())
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {

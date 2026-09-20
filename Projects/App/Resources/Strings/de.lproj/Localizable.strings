@@ -16,8 +16,14 @@
 "Shopping" = "Einkaufen";
 "Food" = "Essen";
 "Travel" = "Reise";
-"Favorite" = "Favorit";
-"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "Noch keine Favoriten.\nTippen Sie auf das Herz-Symbol in der Detailansicht eines Ortes, um ihn hier zu speichern.";
+"Favorite" = "Favoriten";
+"Opens your saved places" = "Öffnet deine gespeicherten Orte";
+"No Favorites Yet" = "Noch keine Favoriten";
+"Tap the heart icon on any place to save it here." = "Tippe auf das Herz-Symbol eines Ortes, um ihn hier zu speichern.";
+"Explore Nearby Places" = "Orte in der Nähe entdecken";
+"Remove" = "Entfernen";
+"Remove from Favorites" = "Aus Favoriten entfernen";
+"Double tap to view details." = "Doppeltippen, um Details anzuzeigen.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" muss Ihren Standort nutzen";
 "This app will not work without the location permission" = "Diese App funktioniert nicht ohne die Standortberechtigung";
 "Ok" = "Ok";

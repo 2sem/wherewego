@@ -16,8 +16,14 @@
 "Shopping" = "Shopping";
 "Food" = "Food";
 "Travel" = "Travel";
-"Favorite" = "Favorite";
-"No favorite places yet.\nTap the heart icon on a place's detail screen to save it here." = "No favorite places yet.\nTap the heart icon on a place's detail screen to save it here.";
+"Favorite" = "Favorites";
+"Opens your saved places" = "Opens your saved places";
+"No Favorites Yet" = "No Favorites Yet";
+"Tap the heart icon on any place to save it here." = "Tap the heart icon on any place to save it here.";
+"Explore Nearby Places" = "Explore Nearby Places";
+"Remove" = "Remove";
+"Remove from Favorites" = "Remove from Favorites";
+"Double tap to view details." = "Double tap to view details.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" needs to use your location";
 "This app will not work without the location permission" = "This app will not work without the location permission";
 "Ok" = "Ok";
