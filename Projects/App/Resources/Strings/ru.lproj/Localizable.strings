@@ -24,6 +24,10 @@
 "Remove" = "Удалить";
 "Remove from Favorites" = "Удалить из избранного";
 "Double tap to view details." = "Дважды нажмите, чтобы посмотреть подробности.";
+"My Location" = "Мое местоположение";
+"Centers the map on your current location" = "Центрирует карту по вашему текущему местоположению";
+"Couldn't Get Your Location" = "Не удалось определить ваше местоположение";
+"We couldn't determine your location. Please try again." = "Не удалось определить ваше местоположение. Попробуйте еще раз.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" необходимо использовать ваше местоположение";
 "This app will not work without the location permission" = "Это приложение не будет работать без разрешения на размещение";
 "Ok" = "ОК";

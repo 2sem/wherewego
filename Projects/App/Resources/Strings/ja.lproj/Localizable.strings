@@ -24,6 +24,10 @@
 "Remove" = "削除";
 "Remove from Favorites" = "お気に入りから削除";
 "Double tap to view details." = "ダブルタップして詳細を表示します。";
+"My Location" = "現在地";
+"Centers the map on your current location" = "現在地に地図を移動します";
+"Couldn't Get Your Location" = "現在地を取得できませんでした";
+"We couldn't determine your location. Please try again." = "現在地を確認できませんでした。もう一度お試しください。";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" はあなたの場所を使用する必要があります";
 "This app will not work without the location permission" = "このアプリは場所の許可なしでは動作しません";
 "Ok" = "OK";

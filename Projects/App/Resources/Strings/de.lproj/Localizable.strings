@@ -24,6 +24,10 @@
 "Remove" = "Entfernen";
 "Remove from Favorites" = "Aus Favoriten entfernen";
 "Double tap to view details." = "Doppeltippen, um Details anzuzeigen.";
+"My Location" = "Mein Standort";
+"Centers the map on your current location" = "Zentriert die Karte auf deinen aktuellen Standort";
+"Couldn't Get Your Location" = "Standort konnte nicht ermittelt werden";
+"We couldn't determine your location. Please try again." = "Dein Standort konnte nicht ermittelt werden. Bitte versuche es erneut.";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" muss Ihren Standort nutzen";
 "This app will not work without the location permission" = "Diese App funktioniert nicht ohne die Standortberechtigung";
 "Ok" = "Ok";

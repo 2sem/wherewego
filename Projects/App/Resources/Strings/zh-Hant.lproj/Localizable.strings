@@ -24,6 +24,10 @@
 "Remove" = "刪除";
 "Remove from Favorites" = "從收藏中刪除";
 "Double tap to view details." = "點兩下查看詳細資訊。";
+"My Location" = "我的位置";
+"Centers the map on your current location" = "將地圖定位到您目前的位置";
+"Couldn't Get Your Location" = "無法取得您的位置";
+"We couldn't determine your location. Please try again." = "無法確定您的位置，請再試一次。";
 "\"WhereWeGo\" needs to use your location" = "\"WhereWeGo\" 需要使用您的位置";
 "This app will not work without the location permission" = "如果沒有位置許可，此應用程序將無法正常工作";
 "Ok" = "好";
