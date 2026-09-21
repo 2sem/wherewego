@@ -11,8 +11,6 @@ struct TourMapScreen: View {
     @State private var showLocationErrorAlert = false
     @State private var showReviewAlert = false
     @State private var showNoDataAlert = false
-    @State private var suppressNextLocationFetch = false
-    @State private var showRangeSheet = false
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
     @State private var savedCameraPosition: MapCameraPosition? = nil
@@ -21,10 +19,35 @@ struct TourMapScreen: View {
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
-    // Range picker bindings
-    @State private var pickerLocation: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.5866076, longitude: 126.974811);
-    @State private var pickerRadius: Int = 3000;
-    @State private var tempRadius: Int = 3000;  // Temporary while adjusting slider
+    // MARK: - Fetch-on-drop state
+
+    /// A short settle-grace `Task` started once `.onEnd` decides a fetch is
+    /// needed; cancelled by the `.continuous` handler the instant the camera
+    /// moves again, so only the drag/pinch the user actually stops on costs
+    /// a network call.
+    @State private var fetchTask: Task<Void, Never>? = nil
+    /// True while the required radius for the visible region exceeds the API
+    /// max — shown as a non-modal "zoom in" hint instead of fetching.
+    @State private var showZoomInHint = false
+    /// Gates all fetch/hint evaluation from camera movement until either the
+    /// first GPS fix has been applied or authorization is denied/restricted.
+    /// Without this, the initial wide `.automatic` camera settling before a
+    /// fix arrives briefly flashes the "zoom in" hint at launch.
+    @State private var canEvaluateCamera = false
+    /// True after a map-driven fetch (drag/zoom/location button) comes back
+    /// empty — a non-modal badge, never the blocking alert.
+    @State private var showNoPlacesBadge = false
+    /// True only for fetches triggered by an explicit user action (type
+    /// filter change) — the only case that still shows the blocking alert.
+    @State private var pendingFetchIsExplicit = false
+    /// True while a location fix is pending specifically because the user
+    /// tapped the location button — gates the error alert so it never fires
+    /// for the silent, automatic launch-time location request.
+    @State private var isLocationButtonTap = false
+
+    private let minSearchRadius = 500
+    private let maxSearchRadius = 20_000
+    private let defaultSpan = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
         var options: [(String, KGDataTourInfo.ContentType?)] = [("All Tour Informations".localized(), nil)];
@@ -76,51 +99,62 @@ struct TourMapScreen: View {
         } message: {
             Text("We couldn't determine your location. Please try again.".localized())
         }
-        .sheet(isPresented: $showRangeSheet, onDismiss: {
-            // Apply the new radius and fetch when sheet is dismissed
-            if tempRadius != viewModel.radius {
-                viewModel.radius = tempRadius;
-                pickerRadius = tempRadius;
-                WWGDefaults.Range = tempRadius;
-                viewModel.fetchList();
-            }
-        }) {
-            rangeSliderSheet
-                .presentationDetents([.height(200)])
-                .presentationDragIndicator(.visible)
-        }
         .onAppear { onScreenAppear(); }
         .onChange(of: locationManager.currentLocation) { _, newLoc in
+            isLocationButtonTap = false;
             handleLocationChange(newLoc);
         }
-        .onChange(of: locationManager.isLocating) { wasLocating, isLocating in
-            // A request cycle just finished. If the fresh fix matched the
-            // coordinate we already had (CLLocationCoordinate2D's Equatable
-            // conformance means `currentLocation` didn't change), the
-            // onChange above never fired to consume the suppression flag —
-            // clear it here so a later, genuinely new coordinate isn't
-            // silently swallowed.
-            if wasLocating && !isLocating { suppressNextLocationFetch = false; }
-        }
         .onChange(of: locationManager.locationErrorCount) { old, new in
-            if new > old { showLocationErrorAlert = true; }
+            guard new > old else { return };
+            if isLocationButtonTap { showLocationErrorAlert = true; }
+            isLocationButtonTap = false;
+        }
+        .onChange(of: locationManager.isLocating) { wasLocating, isLocating in
+            // Belt-and-suspenders clear: if the fresh fix matched the
+            // coordinate we already had, `currentLocation`'s onChange never
+            // fires and never clears the flag. A request cycle ending is the
+            // one event that always fires either way, so clear it here too —
+            // this flag has no fetch side effects, so clearing it twice (or
+            // redundantly) is harmless, unlike the old suppression flag.
+            if wasLocating && !isLocating { isLocationButtonTap = false; }
         }
         .onChange(of: locationManager.authorizationStatus) { _, status in
             if status == .denied { showLocationAlert = true; }
+            if status == .denied || status == .restricted { canEvaluateCamera = true; }
         }
         .onChange(of: typeIndex) { _, _ in
             viewModel.selectedType = typeOptions[typeIndex].1;
-            if viewModel.location != nil { viewModel.fetchList(); }
+            if viewModel.location != nil {
+                pendingFetchIsExplicit = true;
+                viewModel.fetchList();
+            }
         }
         .onChange(of: viewModel.isLoading) { oldValue, newValue in
-            print("[TourMapScreen] isLoading changed: \(oldValue) → \(newValue), infos: \(viewModel.infos.count), total: \(viewModel.totalCount)");
+            if !oldValue && newValue {
+                // A fetch just started — clear any stale "no places" badge.
+                showNoPlacesBadge = false;
+                return;
+            }
             guard oldValue && !newValue else { return };
-            if viewModel.infos.isEmpty && viewModel.location != nil {
-                showNoDataAlert = true;
+            print("[TourMapScreen] isLoading changed: \(oldValue) → \(newValue), infos: \(viewModel.infos.count), total: \(viewModel.totalCount)");
+            if viewModel.infos.isEmpty {
+                if pendingFetchIsExplicit {
+                    showNoDataAlert = true;
+                } else {
+                    showNoPlacesBadge = true;
+                }
             } else {
                 // First page loaded — auto-fetch remaining pages
                 viewModel.fetchAllPages();
             }
+            if let selected = selectedTour, !viewModel.infos.contains(where: { $0.id == selected.id }) {
+                // The selected place fell out of the new results (e.g. an
+                // area fetch replaced it) — clear the saved camera too, so a
+                // later deselect doesn't restore a now-irrelevant position.
+                selectedTour = nil;
+                savedCameraPosition = nil;
+            }
+            pendingFetchIsExplicit = false;
         }
         .onChange(of: selectedTour?.id) { _, id in
             if let loc = selectedTour?.location {
@@ -132,14 +166,12 @@ struct TourMapScreen: View {
                         span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
                     ));
                 }
-            } else {
+            } else if let saved = savedCameraPosition {
                 // Restore previous position on deselect
-                if let saved = savedCameraPosition {
-                    withAnimation(.easeInOut(duration: 0.4)) {
-                        mapCameraPosition = saved;
-                    }
-                    savedCameraPosition = nil;
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    mapCameraPosition = saved;
                 }
+                savedCameraPosition = nil;
             }
         }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
@@ -160,15 +192,14 @@ struct TourMapScreen: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
 
-            if viewModel.hasMorePages {
-                loadingMoreBadge
-                    .padding(.bottom, selectedTour != nil ? 200 : 60)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
+            statusBadges
+                .padding(.bottom, selectedTour != nil ? 200 : 60)
 
             bannerAdView
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.hasMorePages)
+        .animation(.easeInOut(duration: 0.3), value: showZoomInHint)
+        .animation(.easeInOut(duration: 0.3), value: showNoPlacesBadge)
     }
 
     // MARK: - Map View
@@ -176,8 +207,9 @@ struct TourMapScreen: View {
     private var mapView: some View {
         ZStack(alignment: .leading) {
             Map(position: $mapCameraPosition) {
-                // User location
-                if let userLoc = viewModel.location {
+                // User's GPS location (blue dot) — "near me" home base,
+                // independent of wherever the map has been dragged to search.
+                if let userLoc = locationManager.currentLocation {
                     Annotation("Here", coordinate: userLoc) {
                         Circle()
                             .fill(.blue)
@@ -187,13 +219,6 @@ struct TourMapScreen: View {
                                     .stroke(.white, lineWidth: 2)
                             )
                     }
-                }
-
-                // Range circle (only show while adjusting)
-                if showRangeSheet, let center = viewModel.location {
-                    MapCircle(center: center, radius: CLLocationDistance(tempRadius))
-                        .foregroundStyle(Color.blue.opacity(0.15))
-                        .stroke(Color.blue.opacity(0.5), lineWidth: 2)
                 }
 
                 // Tour markers
@@ -214,9 +239,24 @@ struct TourMapScreen: View {
             .mapControls {
                 MapCompass()
             }
-            .onMapCameraChange { context in
+            .onMapCameraChange(frequency: .continuous) { _ in
+                // Fires every frame during a drag/pinch — stay allocation-free
+                // and only touch @State when something is actually pending,
+                // so this doesn't cause a SwiftUI re-render on every frame.
+                // `currentRegion`/`requestedSpan` (for the zoom buttons) are
+                // only updated in the `.onEnd` handler below, on purpose.
+                if fetchTask != nil {
+                    fetchTask?.cancel();
+                    fetchTask = nil;
+                }
+                if showNoPlacesBadge {
+                    showNoPlacesBadge = false;
+                }
+            }
+            .onMapCameraChange(frequency: .onEnd) { context in
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
+                handleCameraSettled(context.region);
             }
             .onTapGesture {
                 withAnimation {
@@ -366,8 +406,9 @@ struct TourMapScreen: View {
                     }
                 }
 
-                // Distance
-                if let distance = tour.distance {
+                // Distance from the user's GPS position (falls back to the
+                // API's query-point distance only when GPS is unavailable).
+                if let distance = tour.distance(from: locationManager.currentLocation) {
                     HStack(spacing: 4) {
                         Image(systemName: "location.fill")
                             .font(.system(size: 12))
@@ -451,58 +492,67 @@ struct TourMapScreen: View {
         .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
     }
 
+    private var areaLoadingBadge: some View {
+        ProgressView()
+            .scaleEffect(0.8)
+            .padding(10)
+            .background(.ultraThinMaterial, in: Circle())
+            .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
+    private var zoomInHintBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "plus.magnifyingglass")
+                .font(.system(size: 13))
+            Text("Zoom in to see places".localized())
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
+    private var noPlacesBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "mappin.slash")
+                .font(.system(size: 13))
+            Text("No places here".localized())
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
+    private var statusBadges: some View {
+        VStack(spacing: 8) {
+            if showZoomInHint {
+                zoomInHintBadge
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            if showNoPlacesBadge {
+                noPlacesBadge
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+            if viewModel.isLoading {
+                areaLoadingBadge
+                    .transition(.opacity)
+            }
+            if viewModel.hasMorePages {
+                loadingMoreBadge
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+    }
+
     private var bannerAdView: some View {
         BannerAdView(unitName: .homeBanner)
             .frame(height: 50)
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
             .shadow(color: .black.opacity(0.1), radius: 5, y: -2)
-    }
-
-    private var rangeSliderSheet: some View {
-        VStack(spacing: 16) {
-            Text("Search Range".localized())
-                .font(.headline)
-                .padding(.top, 8)
-
-            HStack(spacing: 12) {
-                // Minus button
-                Button {
-                    tempRadius = max(1000, tempRadius - 1000);
-                } label: {
-                    Image(systemName: "minus.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.blue)
-                }
-                .disabled(tempRadius <= 1000)
-
-                // Slider
-                Slider(value: Binding(
-                    get: { Double(tempRadius) },
-                    set: { tempRadius = Int($0.rounded()) }
-                ), in: 1000...20000, step: 1000)
-                    .tint(.blue)
-
-                // Plus button
-                Button {
-                    tempRadius = min(20000, tempRadius + 1000);
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.blue)
-                }
-                .disabled(tempRadius >= 20000)
-            }
-            .padding(.horizontal)
-
-            // Distance label
-            Text(tempRadius.stringForDistance())
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(.primary)
-
-            Spacer()
-        }
-        .padding()
     }
 
     @ViewBuilder
@@ -517,8 +567,10 @@ struct TourMapScreen: View {
         case .imageViewer(let url):
             ImageViewerScreen(imageUrl: url)
         case .rangePicker:
-            RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
-                .onDisappear { onRangePickerDone(); }
+            // Unreachable from this screen — TourMapScreen no longer offers
+            // a range picker. The case stays in `TourNavDestination` because
+            // the legacy (unreachable) TourListScreen still uses it.
+            EmptyView()
         case .favorites:
             // Reached via the heart button in toolbarItems (navigationBarTrailing)
             // since TourMapScreen — not TourListScreen — is the live root
@@ -560,16 +612,6 @@ struct TourMapScreen: View {
             .accessibilityLabel("Favorite".localized())
             .accessibilityHint("Opens your saved places".localized())
         }
-        ToolbarItem(placement: .navigationBarLeading) {
-            Button {
-                tempRadius = viewModel.radius;
-                showRangeSheet = true;
-            } label: {
-                Text(viewModel.radius.stringForDistance())
-                    .foregroundStyle(.primary)
-                    .font(.system(size: 14))
-            }
-        }
     }
 
     // MARK: - Helpers
@@ -578,23 +620,11 @@ struct TourMapScreen: View {
         locationManager.requestAuthorization();
         locationManager.requestLocation();
 
-        // Restore persisted radius
-        viewModel.radius = WWGDefaults.Range;
-        pickerRadius = viewModel.radius;
-        tempRadius = viewModel.radius;
-
         // Handle deep link that arrived before screen was ready
         if let id = DeepLinkManager.shared.contentId {
             navPath.append(.tourInfoById(id, DeepLinkManager.shared.srcLocation));
             DeepLinkManager.shared.consume();
         }
-    }
-
-    private func onRangePickerDone() {
-        viewModel.location = pickerLocation;
-        viewModel.radius = pickerRadius;
-        WWGDefaults.Range = pickerRadius;
-        viewModel.fetchList();
     }
 
     private func onDetailDismiss() {
@@ -607,7 +637,9 @@ struct TourMapScreen: View {
     }
 
     private func navigateToDetail(info: KGDataTourInfo) {
-        navPath.append(.tourInfo(info, viewModel.location));
+        // Route/share source is GPS first — the search center (wherever the
+        // map has been dragged to) is only a fallback when GPS is nil.
+        navPath.append(.tourInfo(info, locationManager.currentLocation ?? viewModel.location));
     }
 
     /// Shifts the center coordinate downward so the place appears visually
@@ -656,13 +688,11 @@ struct TourMapScreen: View {
         }
     }
 
-    /// The location button's tap handler. Unlike `handleLocationChange`
-    /// (driven by `.onChange(of: locationManager.currentLocation)`), this
-    /// does not depend on the coordinate actually changing — `.onChange`
-    /// never fires when `didUpdateLocations` reports the same coordinate
-    /// (CLLocationCoordinate2D is Equatable), which otherwise leaves the
-    /// button looking dead when the user hasn't moved or a cached fix comes
-    /// back unchanged.
+    /// The location button's tap handler. Always does something visible:
+    /// if a GPS fix already exists, recenters + fetches immediately with it
+    /// (never a silent no-op even if the map doesn't end up moving), then
+    /// still asks for a fresh fix — if that fix turns out to differ, the
+    /// `currentLocation` onChange recenters + fetches again.
     private func handleLocationButtonTap() {
         guard locationManager.authorizationStatus != .denied,
               locationManager.authorizationStatus != .restricted else {
@@ -672,41 +702,38 @@ struct TourMapScreen: View {
             return;
         }
 
+        isLocationButtonTap = true;
         if let loc = locationManager.currentLocation {
-            // Act immediately on the last-known fix so the tap always does
-            // something, then still ask for a fresh one below.
             recenterAndFetch(loc);
-            suppressNextLocationFetch = true;
         }
         locationManager.requestLocation();
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
         guard let loc = newLoc else { return };
-        if suppressNextLocationFetch {
-            // The fresh fix that triggered this change already had its
-            // recenter + fetchList performed synchronously by the button
-            // tap above; just sync the (possibly slightly updated)
-            // coordinate without fetching a second time.
-            suppressNextLocationFetch = false;
-            viewModel.location = loc;
-            pickerLocation = loc;
-            mapCameraPosition = .region(MKCoordinateRegion(
-                center: loc,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            ));
-            return;
-        }
         recenterAndFetch(loc);
     }
 
+    /// Recenters the camera on `loc` at the default ~3 km view and fetches
+    /// that visible area. Used for the initial GPS fix, every subsequent GPS
+    /// update, and the location button.
     private func recenterAndFetch(_ loc: CLLocationCoordinate2D) {
+        // Clear the saved camera BEFORE deselecting — `.onChange(of:
+        // selectedTour?.id)` runs after this function returns, and if a
+        // saved position were still around it would restore it and override
+        // the recenter we're about to do below.
+        savedCameraPosition = nil;
+        selectedTour = nil;
+        canEvaluateCamera = true;
+        fetchTask?.cancel();
+        showZoomInHint = false;
+        pendingFetchIsExplicit = false;
+
+        let region = MKCoordinateRegion(center: loc, span: defaultSpan);
+        mapCameraPosition = .region(region);
+
         viewModel.location = loc;
-        pickerLocation = loc;
-        mapCameraPosition = .region(MKCoordinateRegion(
-            center: loc,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        ));
+        viewModel.radius = fetchRadius(forVisibleRadius: visibleRadiusMeters(for: region));
         viewModel.fetchList();
     }
 
@@ -714,6 +741,102 @@ struct TourMapScreen: View {
         guard let id = newId else { return };
         navPath.append(.tourInfoById(id, DeepLinkManager.shared.srcLocation));
         DeepLinkManager.shared.consume();
+    }
+
+    // MARK: - Fetch-on-drop
+
+    /// Called every time the map camera settles (`.onEnd` — drag/pinch end,
+    /// or a programmatic animation like zoom +/- or marker select
+    /// finishing). `.onEnd` already means "dropped": it fires once after
+    /// the finger lifts and momentum settles, never mid-drag, so there's no
+    /// extra debounce needed here — just a short settle grace before the
+    /// network call (see `scheduleAreaFetch`).
+    private func handleCameraSettled(_ region: MKCoordinateRegion) {
+        // Before the first GPS fix (or a denial), the initial wide
+        // `.automatic` camera settling would otherwise flash the zoom-in
+        // hint. `recenterAndFetch` flips this true on the first fix; the
+        // authorization onChange flips it true on denial/restriction so
+        // denied users can still browse by dragging/zooming.
+        guard canEvaluateCamera else { return; }
+        guard selectedTour == nil else { return; } // don't pull the rug while a card is open
+
+        let visibleRadius = visibleRadiusMeters(for: region);
+        guard visibleRadius <= maxSearchRadius else {
+            showZoomInHint = true;
+            fetchTask?.cancel();
+            return;
+        }
+        showZoomInHint = false;
+
+        // Coverage test: only fetch when the visible area is no longer
+        // fully inside the circle we last fetched. This alone handles
+        // drag, zoom-out and zoom-in with no separate threshold constants —
+        // zoom-in shrinks `visibleRadius` while the center barely moves, so
+        // it always stays covered and never hits the network.
+        guard !isCoveredByCurrentFetch(center: region.center, visibleRadius: visibleRadius) else { return; }
+
+        scheduleAreaFetch(for: region, radius: fetchRadius(forVisibleRadius: visibleRadius));
+    }
+
+    /// True when every corner of the visible region at `center` is still
+    /// inside the circle (search center + `coveredRadius`) we've actually
+    /// *loaded* data for — i.e. we already have data covering what's on
+    /// screen, so no network call is needed.
+    ///
+    /// Deliberately compares against `viewModel.coveredRadius`, not
+    /// `viewModel.radius`: the latter is only what was *requested*, and in
+    /// a dense area (e.g. Seoul) a fetch commonly gets capped at 300 places
+    /// well short of a 15-20km requested radius. Comparing against the
+    /// requested radius there would pass this test on a normal drag even
+    /// though the newly-revealed area has no loaded data — exactly the
+    /// false "nothing here" this whole feature exists to prevent.
+    private func isCoveredByCurrentFetch(center: CLLocationCoordinate2D, visibleRadius: Int) -> Bool {
+        guard let searchCenter = viewModel.location else { return false; };
+        let shift = CLLocation(latitude: searchCenter.latitude, longitude: searchCenter.longitude)
+            .distance(from: CLLocation(latitude: center.latitude, longitude: center.longitude));
+        return shift + Double(visibleRadius) <= Double(viewModel.coveredRadius);
+    }
+
+    /// Over-fetches by a 1.5x margin beyond the visible half-diagonal, so a
+    /// moderate drag still lands inside the already-fetched circle instead
+    /// of leaving the newly-revealed corners empty. Clamped to the API's
+    /// [500, 20000] range.
+    private func fetchRadius(forVisibleRadius visibleRadius: Int) -> Int {
+        min(maxSearchRadius, max(minSearchRadius, Int((Double(visibleRadius) * 1.5).rounded())));
+    }
+
+    /// Starts a short settle-grace `Task`, then fetches. The grace period
+    /// is short (not a "debounce" against repeated `.onEnd` calls — `.onEnd`
+    /// itself already only fires once per settle) — it exists purely so a
+    /// fetch that's about to start can still be cancelled by the
+    /// `.continuous` handler if the user immediately starts a new drag
+    /// before this one's data would even be useful.
+    private func scheduleAreaFetch(for region: MKCoordinateRegion, radius: Int) {
+        fetchTask?.cancel();
+        let center = region.center;
+        fetchTask = Task {
+            try? await Task.sleep(nanoseconds: 250_000_000);
+            guard !Task.isCancelled else { return };
+
+            pendingFetchIsExplicit = false;
+            viewModel.location = center;
+            viewModel.radius = radius;
+            viewModel.fetchList();
+            fetchTask = nil;
+        };
+    }
+
+    /// Half the diagonal of the visible region, in meters, so a fetch built
+    /// from it covers every corner of what's on screen.
+    private func visibleRadiusMeters(for region: MKCoordinateRegion) -> Int {
+        let halfLat = region.span.latitudeDelta / 2;
+        let halfLng = region.span.longitudeDelta / 2;
+        let center = CLLocation(latitude: region.center.latitude, longitude: region.center.longitude);
+        let corner = CLLocation(
+            latitude: region.center.latitude + halfLat,
+            longitude: region.center.longitude + halfLng
+        );
+        return Int(center.distance(from: corner).rounded());
     }
 
 }

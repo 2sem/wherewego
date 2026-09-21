@@ -245,10 +245,24 @@ class KGDataTourInfo : KGDataTourObject {
         get{
             return self.parseToInt(self.fields[fieldNames.distance]);
         }
-        
+
         set(value){
             self.fields[fieldNames.distance] = value as AnyObject?;
         }
+    }
+
+    /// Distance from `location` in meters, computed client-side with
+    /// `CLLocation` when a coordinate is supplied (typically the user's GPS
+    /// fix). Falls back to the API's `dist` field — the distance from the
+    /// original query point, not the user — only when `location` is nil or
+    /// this item has no coordinate of its own.
+    func distance(from location: CLLocationCoordinate2D?) -> Int?{
+        if let location = location, let coord = self.location {
+            let from = CLLocation(latitude: location.latitude, longitude: location.longitude);
+            let to = CLLocation(latitude: coord.latitude, longitude: coord.longitude);
+            return Int(from.distance(from: to).rounded());
+        }
+        return self.distance;
     }
 
     var image : URL?{

@@ -1,7 +1,11 @@
 import SwiftUI
+import CoreLocation
 
 struct TourCellView: View {
     let info: KGDataTourInfo
+    /// GPS fix used to compute the displayed distance client-side. When nil,
+    /// falls back to the API's query-point-based `dist` field.
+    var currentLocation: CLLocationCoordinate2D? = nil
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -18,7 +22,7 @@ struct TourCellView: View {
                     .foregroundStyle(.white)
                     .lineLimit(2)
 
-                if let dist = info.distance {
+                if let dist = info.distance(from: currentLocation) {
                     Text(dist.stringForDistance())
                         .font(.system(size: 13))
                         .foregroundStyle(.white.opacity(0.9))
