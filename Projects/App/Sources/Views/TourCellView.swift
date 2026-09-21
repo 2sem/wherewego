@@ -9,6 +9,7 @@ struct TourCellView: View {
             SDWebImageSwiftUIView(url: info.thumbnail, placeholder: WWGImages.noImage)
                 .frame(maxWidth: .infinity)
                 .frame(height: 140)
+                .clipped()
                 .overlay(Color.black.opacity(0.3))
 
             VStack(alignment: .leading, spacing: 4) {

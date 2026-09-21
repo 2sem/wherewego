@@ -8,6 +8,7 @@ enum TourNavDestination: Hashable {
     case tourInfoById(Int, CLLocationCoordinate2D?)
     case imageViewer(URL)
     case rangePicker
+    case favorites
 
     // Hashable conformance — CLLocationCoordinate2D is not Hashable by default
     static func == (lhs: TourNavDestination, rhs: TourNavDestination) -> Bool {
@@ -19,6 +20,8 @@ enum TourNavDestination: Hashable {
         case (.imageViewer(let a), .imageViewer(let b)):
             return a == b;
         case (.rangePicker, .rangePicker):
+            return true;
+        case (.favorites, .favorites):
             return true;
         default:
             return false;
@@ -35,6 +38,8 @@ enum TourNavDestination: Hashable {
             hasher.combine(2); hasher.combine(url);
         case .rangePicker:
             hasher.combine(3);
+        case .favorites:
+            hasher.combine(4);
         }
     }
 }
@@ -197,6 +202,8 @@ struct TourListScreen: View {
         case .rangePicker:
             RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
                 .onDisappear { onRangePickerDone(); }
+        case .favorites:
+            FavoritesScreen(currentLocation: locationManager.currentLocation, navPath: $navPath)
         }
     }
 
@@ -209,6 +216,16 @@ struct TourListScreen: View {
                 }
             }
             .pickerStyle(.menu)
+        }
+        ToolbarItem(placement: .navigationBarTrailing) {
+            Button { navPath.append(.favorites) } label: {
+                Image(systemName: "heart")
+                    .foregroundStyle(Color.accentColor)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("Favorite".localized())
+            .accessibilityHint("Opens your saved places".localized())
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             Button { locationManager.requestLocation() } label: {

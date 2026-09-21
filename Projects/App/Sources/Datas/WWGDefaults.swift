@@ -24,11 +24,13 @@ class WWGDefaults{
         static let LastOpeningAdPrepared = "LastOpeningAdPrepared";
 
         static let Range = "Range";
-        
+
         static let LaunchCount = "LaunchCount";
 
         static let AdsShownCount = "AdsShownCount";
         static let AdsTrackingRequested = "AdsTrackingRequested";
+
+        static let FavoritePlaces = "FavoritePlaces";
     }
     
     static var LastFullADShown : Date{
@@ -150,5 +152,90 @@ extension WWGDefaults{
     }
     
     // ATT permission is now handled by SwiftUIAdManager.requestAppTrackingIfNeed()
+}
+
+
+// MARK: - Favorite Places
+//
+// No Codable in the data layer — favorites are persisted as a plain array of
+// [String: AnyObject] dictionaries (property-list compatible) via UserDefaults,
+// and rehydrated into KGDataTourInfo through its existing field-dictionary
+// initializer, matching the KGDataTourObject convention used everywhere else.
+extension WWGDefaults{
+    // Only the fields needed to render a list row and re-open the detail screen
+    // without a network round-trip are persisted.
+    private static let favoriteFieldKeys : [String] = [
+        KGDataTourInfo.fieldNames.id,
+        KGDataTourInfo.fieldNames.type,
+        KGDataTourInfo.fieldNames.title,
+        KGDataTourInfo.fieldNames.thumbnail,
+        KGDataTourInfo.fieldNames.image,
+        KGDataTourInfo.fieldNames.primaryAddr,
+        KGDataTourInfo.fieldNames.detailAddr,
+        KGDataTourInfo.fieldNames.longitude,
+        KGDataTourInfo.fieldNames.latitude,
+    ];
+
+    static var FavoritePlaces : [KGDataTourInfo]{
+        get{
+            let raw = Defaults.array(forKey: Keys.FavoritePlaces) as? [[String : Any]] ?? [];
+            return raw.map { entry in
+                let fields = entry.mapValues { $0 as AnyObject };
+                return KGDataTourInfo(fields);
+            };
+        }
+    }
+
+    private static func favoriteEntry(from info : KGDataTourInfo) -> [String : AnyObject]{
+        var entry : [String : AnyObject] = [:];
+
+        for key in favoriteFieldKeys{
+            if let value = info.fields[key]{
+                entry[key] = value;
+            }
+        }
+
+        return entry;
+    }
+
+    static func isFavorite(id : Int) -> Bool{
+        return FavoritePlaces.contains { $0.id == id; };
+    }
+
+    static func addFavorite(_ info : KGDataTourInfo){
+        guard let id = info.id else{ return; }
+
+        var raw = Defaults.array(forKey: Keys.FavoritePlaces) as? [[String : Any]] ?? [];
+        raw.removeAll { entry in
+            let entryFields = entry.mapValues { $0 as AnyObject };
+            return KGDataTourInfo(entryFields).id == id;
+        };
+        raw.append(favoriteEntry(from: info));
+
+        Defaults.set(raw, forKey: Keys.FavoritePlaces);
+    }
+
+    static func removeFavorite(id : Int){
+        var raw = Defaults.array(forKey: Keys.FavoritePlaces) as? [[String : Any]] ?? [];
+        raw.removeAll { entry in
+            let entryFields = entry.mapValues { $0 as AnyObject };
+            return KGDataTourInfo(entryFields).id == id;
+        };
+
+        Defaults.set(raw, forKey: Keys.FavoritePlaces);
+    }
+
+    @discardableResult
+    static func toggleFavorite(_ info : KGDataTourInfo) -> Bool{
+        guard let id = info.id else{ return false; }
+
+        if isFavorite(id: id){
+            removeFavorite(id: id);
+            return false;
+        }else{
+            addFavorite(info);
+            return true;
+        }
+    }
 }
 
