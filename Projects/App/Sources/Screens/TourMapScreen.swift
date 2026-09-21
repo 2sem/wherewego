@@ -8,8 +8,10 @@ struct TourMapScreen: View {
     @State private var navPath: [TourNavDestination] = []
     @State private var typeIndex: Int = 0
     @State private var showLocationAlert = false
+    @State private var showLocationErrorAlert = false
     @State private var showReviewAlert = false
     @State private var showNoDataAlert = false
+    @State private var suppressNextLocationFetch = false
     @State private var showRangeSheet = false
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
@@ -69,6 +71,11 @@ struct TourMapScreen: View {
         } message: {
             Text("No locations found for the selected type.\nTry selecting a different type or adjusting your search range.".localized())
         }
+        .alert("Couldn't Get Your Location".localized(), isPresented: $showLocationErrorAlert) {
+            Button("OK".localized()) {}
+        } message: {
+            Text("We couldn't determine your location. Please try again.".localized())
+        }
         .sheet(isPresented: $showRangeSheet, onDismiss: {
             // Apply the new radius and fetch when sheet is dismissed
             if tempRadius != viewModel.radius {
@@ -85,6 +92,18 @@ struct TourMapScreen: View {
         .onAppear { onScreenAppear(); }
         .onChange(of: locationManager.currentLocation) { _, newLoc in
             handleLocationChange(newLoc);
+        }
+        .onChange(of: locationManager.isLocating) { wasLocating, isLocating in
+            // A request cycle just finished. If the fresh fix matched the
+            // coordinate we already had (CLLocationCoordinate2D's Equatable
+            // conformance means `currentLocation` didn't change), the
+            // onChange above never fired to consume the suppression flag —
+            // clear it here so a later, genuinely new coordinate isn't
+            // silently swallowed.
+            if wasLocating && !isLocating { suppressNextLocationFetch = false; }
+        }
+        .onChange(of: locationManager.locationErrorCount) { old, new in
+            if new > old { showLocationErrorAlert = true; }
         }
         .onChange(of: locationManager.authorizationStatus) { _, status in
             if status == .denied { showLocationAlert = true; }
@@ -193,7 +212,6 @@ struct TourMapScreen: View {
                 }
             }
             .mapControls {
-                MapUserLocationButton()
                 MapCompass()
             }
             .onMapCameraChange { context in
@@ -206,10 +224,13 @@ struct TourMapScreen: View {
                 }
             }
 
-            // Zoom buttons on the left side
-            zoomControls
-                .padding(.leading, 12)
-                .padding(.top, 60)
+            // Zoom + location controls on the left side
+            VStack(spacing: 8) {
+                zoomControls
+                locationButton
+            }
+            .padding(.leading, 12)
+            .padding(.top, 60)
         }
     }
 
@@ -397,6 +418,26 @@ struct TourMapScreen: View {
         .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
     }
 
+    private var locationButton: some View {
+        Button(action: handleLocationButtonTap) {
+            Group {
+                if locationManager.isLocating {
+                    ProgressView()
+                } else {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 18, weight: .medium))
+                }
+            }
+            .frame(width: 44, height: 44)
+        }
+        .disabled(locationManager.isLocating)
+        .foregroundStyle(.primary)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+        .accessibilityLabel("My Location".localized())
+        .accessibilityHint("Centers the map on your current location".localized())
+    }
+
     private var loadingMoreBadge: some View {
         HStack(spacing: 6) {
             ProgressView()
@@ -479,8 +520,8 @@ struct TourMapScreen: View {
             RangePickerScreen(location: $pickerLocation, radius: $pickerRadius)
                 .onDisappear { onRangePickerDone(); }
         case .favorites:
-            // Reached via the heart button in toolbarItems (navigationBarTrailing, before
-            // location.fill) since TourMapScreen — not TourListScreen — is the live root
+            // Reached via the heart button in toolbarItems (navigationBarTrailing)
+            // since TourMapScreen — not TourListScreen — is the live root
             // (see App.swift / MainScreen).
             FavoritesScreen(currentLocation: locationManager.currentLocation, navPath: $navPath)
         }
@@ -518,12 +559,6 @@ struct TourMapScreen: View {
             }
             .accessibilityLabel("Favorite".localized())
             .accessibilityHint("Opens your saved places".localized())
-        }
-        ToolbarItem(placement: .navigationBarTrailing) {
-            Button { locationManager.requestLocation() } label: {
-                Image(systemName: "location.fill")
-                    .foregroundStyle(.primary)
-            }
         }
         ToolbarItem(placement: .navigationBarLeading) {
             Button {
@@ -621,8 +656,51 @@ struct TourMapScreen: View {
         }
     }
 
+    /// The location button's tap handler. Unlike `handleLocationChange`
+    /// (driven by `.onChange(of: locationManager.currentLocation)`), this
+    /// does not depend on the coordinate actually changing — `.onChange`
+    /// never fires when `didUpdateLocations` reports the same coordinate
+    /// (CLLocationCoordinate2D is Equatable), which otherwise leaves the
+    /// button looking dead when the user hasn't moved or a cached fix comes
+    /// back unchanged.
+    private func handleLocationButtonTap() {
+        guard locationManager.authorizationStatus != .denied,
+              locationManager.authorizationStatus != .restricted else {
+            // Already denied — asking again silently does nothing; surface
+            // the same alert used for the deny transition instead.
+            showLocationAlert = true;
+            return;
+        }
+
+        if let loc = locationManager.currentLocation {
+            // Act immediately on the last-known fix so the tap always does
+            // something, then still ask for a fresh one below.
+            recenterAndFetch(loc);
+            suppressNextLocationFetch = true;
+        }
+        locationManager.requestLocation();
+    }
+
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
         guard let loc = newLoc else { return };
+        if suppressNextLocationFetch {
+            // The fresh fix that triggered this change already had its
+            // recenter + fetchList performed synchronously by the button
+            // tap above; just sync the (possibly slightly updated)
+            // coordinate without fetching a second time.
+            suppressNextLocationFetch = false;
+            viewModel.location = loc;
+            pickerLocation = loc;
+            mapCameraPosition = .region(MKCoordinateRegion(
+                center: loc,
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            ));
+            return;
+        }
+        recenterAndFetch(loc);
+    }
+
+    private func recenterAndFetch(_ loc: CLLocationCoordinate2D) {
         viewModel.location = loc;
         pickerLocation = loc;
         mapCameraPosition = .region(MKCoordinateRegion(
