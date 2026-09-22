@@ -1,5 +1,4 @@
 import ProjectDescription
-import ProjectDescriptionHelpers
 
 let project = Project(
     name: "App",
@@ -83,7 +82,6 @@ let project = Project(
                             basedOnDependencyAnalysis: false,
                             runForInstallBuildsOnly: true)],
             dependencies: [
-                .Projects.ThirdParty,
                 .package(product: "GADManager", type: .runtime),
                 // Firebase links directly into App rather than through an intermediate
                 // dynamic wrapper framework: Tuist's SPM integration doesn't reliably
@@ -103,6 +101,7 @@ let project = Project(
                 .external(name: "KakaoSDKShare"),
                 .external(name: "KakaoSDKTemplate"),
                 .external(name: "LSExtensions"),
+                .external(name: "StringLogger"),
             ],
             settings: .settings(
                 base: [
