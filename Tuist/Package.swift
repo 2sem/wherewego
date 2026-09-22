@@ -96,5 +96,6 @@ let package = Package(
         .package(id: "kakao.kakao-ios-sdk", from: "2.27.3"),
         // Not published on the Tuist Registry, so resolved by URL.
         .package(url: "https://github.com/2sem/LSExtensions", exact: "0.1.24"),
+        .package(url: "https://github.com/2sem/StringLogger", exact: "0.7.1"),
     ]
 )
