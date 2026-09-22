@@ -5,7 +5,7 @@ Korea tourism helper app for travelers. Discovers nearby attractions using user 
 
 ## Tech Stack
 - **Language**: Swift (SwiftUI)
-- **Project generator**: Tuist v4.38.2 (via `mise`)
+- **Project generator**: Tuist v4.207.0 (via `mise`)
 - **Dependencies**: SPM
 - **Key SDKs**: Google Maps, KakaoSDK, Firebase (Crashlytics/Analytics/Messaging/RemoteConfig), SDWebImage, Google Ads (GADManager)
 

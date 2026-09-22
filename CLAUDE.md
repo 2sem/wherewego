@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Build & Development Commands
 
-This project uses **Tuist** (v4.38.2, managed via `mise`) as the project generator, with SPM for dependencies.
+This project uses **Tuist** (v4.207.0, managed via `mise`) as the project generator, with SPM for dependencies.
 
 ```bash
 # Install tool versions (tuist via mise)
