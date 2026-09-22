@@ -18,6 +18,13 @@ struct TourMapScreen: View {
     @State private var savedCameraPosition: MapCameraPosition? = nil
     @State private var currentRegion: MKCoordinateRegion? = nil
     @State private var requestedSpan: Double = 0.05
+    // Viewport-driven fetch: shows what's actually visible on the map, not
+    // just a fixed radius around "here". `showZoomInHint` covers the
+    // zoomed-way-out case where computing a request radius would exceed the
+    // TourAPI's 20km cap; `viewportFetchTask` is the ~250ms settle grace
+    // period before firing.
+    @State private var showZoomInHint = false
+    @State private var viewportFetchTask: Task<Void, Never>? = nil
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -166,9 +173,16 @@ struct TourMapScreen: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
 
+            if showZoomInHint {
+                zoomInHintBadge
+                    .padding(.bottom, selectedTour != nil ? 200 : 60)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
             bannerAdView
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.hasMorePages)
+        .animation(.easeInOut(duration: 0.3), value: showZoomInHint)
     }
 
     // MARK: - Map View
@@ -228,6 +242,9 @@ struct TourMapScreen: View {
             .onMapCameraChange { context in
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
+            }
+            .onMapCameraChange(frequency: .onEnd) { context in
+                handleMapSettled(context.region);
             }
             .onTapGesture {
                 withAnimation {
@@ -459,6 +476,19 @@ struct TourMapScreen: View {
             ProgressView()
                 .scaleEffect(0.8)
             Text("\(viewModel.infos.count) / \(viewModel.totalCount)")
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
+    private var zoomInHintBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                .font(.system(size: 12, weight: .semibold))
+            Text("Zoom in to see places".localized())
                 .font(.system(size: 13, weight: .medium))
         }
         .padding(.horizontal, 12)
@@ -732,6 +762,76 @@ struct TourMapScreen: View {
         guard let id = newId else { return };
         navPath.append(.tourInfoById(id, DeepLinkManager.shared.srcLocation));
         DeepLinkManager.shared.consume();
+    }
+
+    // MARK: - Viewport fetch
+
+    /// True once the first GPS fix has landed, or authorization has resolved
+    /// to denied/restricted. Gates handleMapSettled so a "Zoom in" flash
+    /// can't appear before launch's own location flow has had a chance to
+    /// run, while denied/restricted users — who never get a fix — can still
+    /// browse by dragging the map.
+    private var isLocationResolved: Bool {
+        locationManager.currentLocation != nil
+            || locationManager.authorizationStatus == .denied
+            || locationManager.authorizationStatus == .restricted;
+    }
+
+    private func distanceMeters(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> Double {
+        CLLocation(latitude: a.latitude, longitude: a.longitude)
+            .distance(from: CLLocation(latitude: b.latitude, longitude: b.longitude));
+    }
+
+    /// Half the diagonal of `region`, in meters — the radius of the smallest
+    /// circle centered on the region that still covers every visible corner.
+    private func halfDiagonalMeters(of region: MKCoordinateRegion) -> Double {
+        let center = region.center;
+        let corner = CLLocationCoordinate2D(
+            latitude: center.latitude + region.span.latitudeDelta / 2,
+            longitude: center.longitude + region.span.longitudeDelta / 2
+        );
+        return distanceMeters(center, corner);
+    }
+
+    /// Called when the map camera settles (`.onMapCameraChange(frequency:
+    /// .onEnd)`). Fetches whatever is now visible, after a short grace
+    /// period, unless: the view is zoomed out past the TourAPI's 20km
+    /// radius cap (shows a "zoom in" hint instead), a card is open, or the
+    /// visible area is already inside what's been fetched — recentering or
+    /// deselecting moves the camera back over already-covered ground, so
+    /// this coverage check is what keeps those from re-fetching without
+    /// needing a separate "was this programmatic" flag.
+    private func handleMapSettled(_ region: MKCoordinateRegion) {
+        guard isLocationResolved else { return };
+        guard selectedTour == nil else { return };
+
+        let visibleRadius = halfDiagonalMeters(of: region);
+
+        guard visibleRadius <= 20000 else {
+            showZoomInHint = true;
+            return;
+        }
+        showZoomInHint = false;
+
+        let newCenter = region.center;
+        // TODO(step 5): coveredRadius will come from viewModel.coveredRadius.
+        if let center = viewModel.location {
+            let coveredRadius = Double(viewModel.radius);
+            if distanceMeters(center, newCenter) + visibleRadius <= coveredRadius {
+                return;
+            }
+        }
+
+        let candidateRadius = min(20000, max(500, Int((visibleRadius * 1.5).rounded())));
+
+        viewportFetchTask?.cancel();
+        viewportFetchTask = Task {
+            try? await Task.sleep(nanoseconds: 250_000_000);
+            guard !Task.isCancelled else { return };
+            viewModel.location = newCenter;
+            viewModel.radius   = candidateRadius;
+            viewModel.fetchList();
+        }
     }
 
 }
