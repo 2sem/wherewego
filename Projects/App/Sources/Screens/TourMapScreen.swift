@@ -38,11 +38,17 @@ struct TourMapScreen: View {
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
-    // Current camera span (degrees latitude/longitude delta, used equally
-    // for both — see recenterAndFetch), remembered across launches via
-    // WWGDefaults.LastMapSpan. Tracks the last settled user zoom (updated in
-    // handleMapSettled); no range control drives this anymore.
-    @State private var mapSpan: Double = 0.05
+    // Current camera span — both lat/lon deltas, not just one. A recenter
+    // used to request a square span (latitudeDelta == longitudeDelta), but
+    // MapKit refits that asymmetrically to a portrait screen (~1.4x at
+    // Korea's latitude), so every recenter silently zoomed out; keeping both
+    // deltas preserves the aspect ratio the map actually settled on instead.
+    // Remembered across launches via WWGDefaults.LastMapSpan (latitudeDelta
+    // only). Tracks the user's live zoom — updated from the
+    // .onMapCameraChange handlers on the map (not handleMapSettled, so it
+    // stays current through a drag/zoom gesture and even before the first
+    // location fix resolves); no range control drives this anymore.
+    @State private var mapSpan: MKCoordinateSpan = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
         var options: [(String, KGDataTourInfo.ContentType?)] = [("All Tour Informations".localized(), nil)];
@@ -264,9 +270,24 @@ struct TourMapScreen: View {
             .onMapCameraChange { context in
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
+                // Card-selection camera moves (fixed 0.015 span) must not
+                // become the user's remembered zoom.
+                if selectedTour == nil {
+                    mapSpan = context.region.span;
+                }
             }
-            .onMapCameraChange(frequency: .continuous) { _ in
+            .onMapCameraChange(frequency: .continuous) { context in
                 handleMapMoving();
+                // Keep mapSpan current through an in-progress drag/pinch too
+                // (not just on settle) so a location-button tap right after
+                // a gesture, before it settles, still uses the live zoom
+                // instead of a stale one. Skip the @State write when nothing
+                // actually changed.
+                if selectedTour == nil,
+                   mapSpan.latitudeDelta != context.region.span.latitudeDelta
+                    || mapSpan.longitudeDelta != context.region.span.longitudeDelta {
+                    mapSpan = context.region.span;
+                }
             }
             .onMapCameraChange(frequency: .onEnd) { context in
                 handleMapSettled(context.region);
@@ -610,7 +631,8 @@ struct TourMapScreen: View {
         locationManager.requestAuthorization();
         locationManager.requestLocation();
 
-        mapSpan = initialMapSpan();
+        let initialSpan = initialMapSpan();
+        mapSpan = MKCoordinateSpan(latitudeDelta: initialSpan, longitudeDelta: initialSpan);
 
         // Handle deep link that arrived before screen was ready
         if let id = DeepLinkManager.shared.contentId {
@@ -737,12 +759,19 @@ struct TourMapScreen: View {
         viewModel.location = loc;
         // Clamp to the zoom-in hint cutoff so recentering never lands more
         // zoomed out than that — landing past it would immediately trigger
-        // the "zoom in" hint instead of showing results.
-        let span = min(mapSpan, spanForRadius(zoomInHintRadiusMeters));
-        mapCameraPosition = .region(MKCoordinateRegion(
-            center: loc,
-            span: MKCoordinateSpan(latitudeDelta: span, longitudeDelta: span)
-        ));
+        // the "zoom in" hint instead of showing results. Scale both deltas
+        // together (rather than forcing a square span) so the aspect ratio
+        // the map last settled on is preserved — see mapSpan's comment.
+        var span = mapSpan;
+        let maxLatDelta = spanForRadius(zoomInHintRadiusMeters);
+        if span.latitudeDelta > maxLatDelta {
+            let scale = maxLatDelta / span.latitudeDelta;
+            span = MKCoordinateSpan(
+                latitudeDelta: span.latitudeDelta * scale,
+                longitudeDelta: span.longitudeDelta * scale
+            );
+        }
+        mapCameraPosition = .region(MKCoordinateRegion(center: loc, span: span));
         viewModel.fetchList();
     }
 
@@ -832,12 +861,12 @@ struct TourMapScreen: View {
         guard isLocationResolved else { return };
         guard selectedTour == nil else { return };
 
-        // Remember this as the user's current zoom level regardless of what
+        // Persist this as the user's current zoom level regardless of what
         // happens below (hint vs. fetch vs. already-covered) — it's still a
         // real, deliberate camera position, just not always one that needs
-        // a network call.
+        // a network call. mapSpan itself is kept live by the
+        // .onMapCameraChange handlers on the map, not here.
         WWGDefaults.LastMapSpan = region.span.latitudeDelta;
-        mapSpan = region.span.latitudeDelta;
 
         let visibleRadius = halfDiagonalMeters(of: region);
 
