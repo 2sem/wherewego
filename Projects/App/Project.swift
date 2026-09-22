@@ -102,6 +102,7 @@ let project = Project(
                 .external(name: "KakaoSDKCommon"),
                 .external(name: "KakaoSDKShare"),
                 .external(name: "KakaoSDKTemplate"),
+                .external(name: "LSExtensions"),
             ],
             settings: .settings(
                 base: [

@@ -22,8 +22,8 @@ Projects/
       Extensions/    # Swift extensions
       Resources/     # Strings, assets, plists
     Tests/
-  ThirdParty/        # Static SPM deps (LSExtensions, StringLogger)
-Tuist/Package.swift  # Firebase + Kakao SDK (Tuist-integrated), linked by App via .external
+  ThirdParty/        # Static SPM deps (StringLogger)
+Tuist/Package.swift  # Firebase + Kakao SDK + LSExtensions (Tuist-integrated), linked by App via .external
 ```
 
 ## Screen Flow

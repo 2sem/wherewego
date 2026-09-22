@@ -36,11 +36,11 @@ The workspace (`Workspace.swift`) composes two Tuist projects under `Projects/`:
 | Project | Product | Role |
 |---|---|---|
 | **App** | `.app` | Main application target. SwiftUI screens, ViewModels, Views, data layer, extensions. |
-| **ThirdParty** | `.staticFramework` | Bundles static SPM deps: LSExtensions, StringLogger. |
+| **ThirdParty** | `.staticFramework` | Bundles static SPM deps: StringLogger. |
 
-App depends on ThirdParty as a framework dependency, plus GADManager (Google Ads wrapper) as a direct SPM package, and Firebase (Crashlytics, Analytics, Messaging, RemoteConfig) and Kakao SDK (Common, Share, Template) directly via `.external(name:)`.
+App depends on ThirdParty as a framework dependency, plus GADManager (Google Ads wrapper) as a direct SPM package, and Firebase (Crashlytics, Analytics, Messaging, RemoteConfig) Kakao SDK (Common, Share, Template) and LSExtensions directly via `.external(name:)`.
 
-Most packages are declared in each project's own `Project.swift` (Xcode-level SPM). The exceptions are **Kakao SDK** (registry `kakao.kakao-ios-sdk`, static, resolved via `Tuist/.swiftpm/configuration/registries.json`) and **Firebase**, Tuist-integrated dependencies declared in `Tuist/Package.swift`. Both are consumed by App via `.external(name:)`. Firebase (`.upToNextMinor(from: "12.18.0")`) is linked into App directly — not through an intermediate framework target, since binary XCFrameworks (GoogleAppMeasurement, nanopb, …) don't reliably propagate through an intermediate dynamic wrapper. `Tuist/Package.swift` also sets `PackageSettings`: Firebase source targets as dynamic `.framework`, binary-wrapper targets as `.staticFramework`, Release `dwarf-with-dsym`, and a `FirebaseSessions` force-link of `FirebaseCoreInternal`. Run `tuist install` after changing it; the Crashlytics dSYM script reads `Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run`.
+Most packages are declared in each project's own `Project.swift` (Xcode-level SPM). The exceptions are **Kakao SDK** (registry `kakao.kakao-ios-sdk`, static, resolved via `Tuist/.swiftpm/configuration/registries.json`), **LSExtensions** (GitHub URL, exact version) and **Firebase**, Tuist-integrated dependencies declared in `Tuist/Package.swift`. All are consumed by App via `.external(name:)`. Firebase (`.upToNextMinor(from: "12.18.0")`) is linked into App directly — not through an intermediate framework target, since binary XCFrameworks (GoogleAppMeasurement, nanopb, …) don't reliably propagate through an intermediate dynamic wrapper. `Tuist/Package.swift` also sets `PackageSettings`: Firebase source targets as dynamic `.framework`, binary-wrapper targets as `.staticFramework`, Release `dwarf-with-dsym`, and a `FirebaseSessions` force-link of `FirebaseCoreInternal`. Run `tuist install` after changing it; the Crashlytics dSYM script reads `Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run`.
 
 ---
 
