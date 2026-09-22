@@ -36,7 +36,7 @@ The workspace (`Workspace.swift`) composes two Tuist projects under `Projects/`:
 | Project | Product | Role |
 |---|---|---|
 | **App** | `.app` | Main application target. SwiftUI screens, ViewModels, Views, data layer, extensions. |
-| **ThirdParty** | `.staticFramework` | Bundles static SPM deps: GoogleMaps, KakaoSDK, MBProgressHUD, LSExtensions, StringLogger, DownPicker. |
+| **ThirdParty** | `.staticFramework` | Bundles static SPM deps: GoogleMaps, KakaoSDK, MBProgressHUD, LSExtensions, StringLogger. |
 
 App depends on ThirdParty as a framework dependency, plus GADManager (Google Ads wrapper) as a direct SPM package, and Firebase (Crashlytics, Analytics, Messaging, RemoteConfig) directly via `.external(name:)`.
 

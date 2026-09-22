@@ -10,9 +10,6 @@ let project = Project(
                                requirement: .exact("0.1.24")),
         .remote(url: "https://github.com/2sem/StringLogger",
                 requirement: .upToNextMajor(from: "0.7.0")),
-        .remote(url: "https://github.com/2sem/DownPicker",
-                requirement: .branch("spm")),
-//        .local(path: "../../../../../spms/DownPicker")
     ],
     targets: [
         .target(
@@ -25,7 +22,6 @@ let project = Project(
                            .package(product: "MBProgressHUD", type: .runtime),
                            .package(product: "LSExtensions", type: .runtime),
                            .package(product: "StringLogger", type: .runtime),
-                           .package(product: "DownPicker", type: .runtime),
             ]
         ),
     ]
