@@ -25,6 +25,14 @@ struct TourMapScreen: View {
     // period before firing.
     @State private var showZoomInHint = false
     @State private var viewportFetchTask: Task<Void, Never>? = nil
+    // Quiet browsing: an empty result only pops the modal alert when the
+    // user explicitly changed the type filter — a drag/zoom/location fetch
+    // landing empty is a normal, frequent part of exploring a map and gets
+    // a non-modal inline badge instead. Set right before the one fetchList()
+    // call that should alert, consumed (reset) the next time a fetch
+    // resolves either way.
+    @State private var expectingAlertOnEmpty = false
+    @State private var showNoPlacesHint = false
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -117,16 +125,40 @@ struct TourMapScreen: View {
         }
         .onChange(of: typeIndex) { _, _ in
             viewModel.selectedType = typeOptions[typeIndex].1;
-            if viewModel.location != nil { viewModel.fetchList(); }
+            if viewModel.location != nil {
+                // Only an explicit type-filter change warrants interrupting
+                // the user with a modal "No Results" alert — everything else
+                // (drag/zoom/location) is quiet, inline-only browsing.
+                expectingAlertOnEmpty = true;
+                viewModel.fetchList();
+            }
         }
         .onChange(of: viewModel.isLoading) { oldValue, newValue in
             print("[TourMapScreen] isLoading changed: \(oldValue) → \(newValue), infos: \(viewModel.infos.count), total: \(viewModel.totalCount)");
             guard oldValue && !newValue else { return };
             if viewModel.infos.isEmpty && viewModel.location != nil {
-                showNoDataAlert = true;
+                if expectingAlertOnEmpty {
+                    showNoDataAlert = true;
+                } else {
+                    showNoPlacesHint = true;
+                }
             } else {
+                showNoPlacesHint = false;
                 // First page loaded — auto-fetch remaining pages
                 viewModel.fetchAllPages();
+            }
+            expectingAlertOnEmpty = false;
+        }
+        .onChange(of: viewModel.infos.count) { _, _ in
+            // If the place behind an open floating card fell out of the
+            // current results (type filter changed, or the search center
+            // moved far enough that it's no longer nearby), drop the stale
+            // selection and its saved camera position rather than leaving
+            // the card open over content that no longer matches, or letting
+            // a later deselect snap back to a position from before the move.
+            if let selected = selectedTour, !viewModel.infos.contains(where: { $0.id == selected.id }) {
+                selectedTour = nil;
+                savedCameraPosition = nil;
             }
         }
         .onChange(of: selectedTour?.id) { _, id in
@@ -179,10 +211,17 @@ struct TourMapScreen: View {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
 
+            if showNoPlacesHint {
+                noPlacesHintBadge
+                    .padding(.bottom, selectedTour != nil ? 200 : 60)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+
             bannerAdView
         }
         .animation(.easeInOut(duration: 0.3), value: viewModel.hasMorePages)
         .animation(.easeInOut(duration: 0.3), value: showZoomInHint)
+        .animation(.easeInOut(duration: 0.3), value: showNoPlacesHint)
     }
 
     // MARK: - Map View
@@ -492,6 +531,19 @@ struct TourMapScreen: View {
             Image(systemName: "arrow.up.left.and.arrow.down.right")
                 .font(.system(size: 12, weight: .semibold))
             Text("Zoom in to see places".localized())
+                .font(.system(size: 13, weight: .medium))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
+    }
+
+    private var noPlacesHintBadge: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "mappin.slash")
+                .font(.system(size: 12, weight: .semibold))
+            Text("No places here".localized())
                 .font(.system(size: 13, weight: .medium))
         }
         .padding(.horizontal, 12)
@@ -817,6 +869,9 @@ struct TourMapScreen: View {
         }
         if showZoomInHint {
             showZoomInHint = false;
+        }
+        if showNoPlacesHint {
+            showNoPlacesHint = false;
         }
     }
 
