@@ -7,7 +7,7 @@ Korea tourism helper app for travelers. Discovers nearby attractions using user 
 - **Language**: Swift (SwiftUI)
 - **Project generator**: Tuist v4.207.0 (via `mise`)
 - **Dependencies**: SPM
-- **Key SDKs**: Google Maps, KakaoSDK, Firebase (Crashlytics/Analytics/Messaging/RemoteConfig), SDWebImage, Google Ads (GADManager)
+- **Key SDKs**: Google Maps, KakaoSDK, Firebase (Crashlytics/Analytics/Messaging/RemoteConfig), Google Ads (GADManager)
 
 ## Project Structure
 ```
@@ -23,7 +23,7 @@ Projects/
       Resources/     # Strings, assets, plists
     Tests/
   ThirdParty/        # Static SPM deps (GoogleMaps, KakaoSDK, MBProgressHUD, etc.)
-  DynamicThirdParty/ # Dynamic SPM deps (SDWebImage); Firebase lives in Tuist/Package.swift, linked by App via .external
+Tuist/Package.swift  # Firebase (Tuist-integrated), linked by App via .external
 ```
 
 ## Screen Flow

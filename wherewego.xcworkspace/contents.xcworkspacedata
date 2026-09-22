@@ -8,9 +8,6 @@
          location = "group:App/App.xcodeproj">
       </FileRef>
       <FileRef
-         location = "group:DynamicThirdParty/DynamicThirdParty.xcodeproj">
-      </FileRef>
-      <FileRef
          location = "group:ThirdParty/ThirdParty.xcodeproj">
       </FileRef>
    </Group>

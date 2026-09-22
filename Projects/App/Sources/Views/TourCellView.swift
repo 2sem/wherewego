@@ -32,17 +32,26 @@ struct TourCellView: View {
     }
 
     // Same category-colored gradient + icon placeholder as the detail screen, layered
-    // behind the thumbnail. The image view is transparent until SDWebImage loads it (and
-    // stays transparent on failure), so the placeholder shows through while loading/on
-    // failure — no more falling back to the old `WWGImages.noImage` asset.
+    // behind the thumbnail. AsyncImage shows the placeholder while loading, on failure,
+    // and when there's no thumbnail URL at all — no more falling back to the old
+    // `WWGImages.noImage` asset.
     private var thumbnail: some View {
         ZStack {
-            CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
-
-            if info.thumbnail != nil {
-                SDWebImageSwiftUIView(url: info.thumbnail, placeholder: nil)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 140)
+            if let url = info.thumbnail {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    case .empty, .failure:
+                        CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
+                    @unknown default:
+                        CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
+                    }
+                }
+            } else {
+                CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
             }
         }
         .frame(maxWidth: .infinity)

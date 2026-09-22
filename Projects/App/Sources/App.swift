@@ -9,6 +9,12 @@ struct WhereWeGoApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     init() {
+        // Replaces SDWebImage's disk/memory cache for AsyncImage. The Tourism API's
+        // image server sends Last-Modified + ETag but no Cache-Control, so URLCache's
+        // heuristic freshness (based on Last-Modified) still lets thumbnails be reused
+        // across launches without a network round trip. Set before anything loads images.
+        URLCache.shared = URLCache(memoryCapacity: 50 * 1024 * 1024, diskCapacity: 200 * 1024 * 1024);
+
         FirebaseApp.configure();
     }
 
