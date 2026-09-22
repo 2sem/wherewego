@@ -72,12 +72,24 @@ class TourListViewModel {
     var radius: Int = 3000;
     var location: CLLocationCoordinate2D? = nil;
     var totalCount: Int = 0;
+    // Best-known extent of *complete* data for the current search center/
+    // radius/type: the requested radius once a fetch finishes (or a cache
+    // hit already covers it), the farthest item actually loaded once capped
+    // at maxPlacesPerArea, or 0 while a network fetch is in flight. Callers
+    // doing a viewport coverage test should read this, not `radius` (which
+    // is only the last *requested* radius, not necessarily what's loaded).
+    var coveredRadius: Int = 0;
 
     var hasMorePages: Bool { totalCount > 0 && infos.count < totalCount; }
 
     private var lastRequest: KGDataTourListRequest? = nil;
     private var isFetchingNext: Bool = false;
     private var placeStores: [PlaceStoreKey: PlaceStore] = [:];
+    // Auto-loaded pages chain (fetchAllPages) stops here even if the API
+    // reports more — keeps a dense area from turning into a huge marker
+    // count that makes the map sluggish. The legacy TourListScreen's manual
+    // "load more" (fetchNextPage) is untouched by this cap.
+    private let maxPlacesPerArea = 300;
 
     // Bumped on every fetchList() call, network or cache-hit path alike.
     // Every in-flight callback captures the generation it was issued under
@@ -104,6 +116,7 @@ class TourListViewModel {
             let filtered = store.filtered(within: requestRadius, from: loc);
             infos          = filtered;
             totalCount     = filtered.count;   // hasMorePages = false → load-more disabled
+            coveredRadius  = store.maxFetchedRadius;
             lastRequest    = nil;
             isFetchingNext = false;
             print("[TourListVM] store hit — \(filtered.count) items (store has \(store.places.count), maxR: \(store.maxFetchedRadius))");
@@ -113,6 +126,7 @@ class TourListViewModel {
         isLoading      = true;
         // NOTE: infos NOT cleared — old results stay visible during network load
         totalCount     = 0;
+        coveredRadius  = 0;
         lastRequest    = nil;
         isFetchingNext = false;
 
@@ -141,9 +155,10 @@ class TourListViewModel {
             return;
         };
 
-        totalCount = total;
-        infos      = items;
-        isLoading  = false;
+        totalCount    = total;
+        infos         = items;
+        coveredRadius = store.maxFetchedRadius;
+        isLoading     = false;
         if complete { lastRequest = nil; }
         print("[TourListVM] page 1 loaded — items: \(items.count), total: \(total), hasMorePages: \(hasMorePages)");
     }
@@ -179,6 +194,7 @@ class TourListViewModel {
 
         infos.append(contentsOf: items);
         totalCount     = total;
+        coveredRadius  = store.maxFetchedRadius;
         isFetchingNext = false;
         if complete { lastRequest = nil; }
         print("[TourListVM] page loaded — items: \(items.count), infos: \(infos.count)/\(totalCount), hasMorePages: \(hasMorePages)");
@@ -228,7 +244,8 @@ class TourListViewModel {
 
         let newAccumulated = accumulated + items;
         let loadedSoFar = infos.count + newAccumulated.count;
-        let stillHasMore = total > loadedSoFar;
+        let reachedCap = loadedSoFar >= maxPlacesPerArea;
+        let stillHasMore = !reachedCap && total > loadedSoFar;
 
         if stillHasMore, let next = lastRequest?.next {
             fetchChainedPage(next, generation: gen, storeKey: storeKey, requestRadius: requestRadius, accumulated: newAccumulated);
@@ -237,13 +254,28 @@ class TourListViewModel {
             // since the last one (or ran out of a next page unexpectedly,
             // in which case we publish what we have rather than losing it).
             infos.append(contentsOf: newAccumulated);
-            totalCount     = total;
+            // Once capped, `total` (the API's true count) would leave
+            // hasMorePages permanently true — infos.count would never catch
+            // up — so the "N / total" badge would spin forever. Reporting
+            // what we actually loaded as the total makes hasMorePages settle
+            // to false like a normal completed fetch.
+            totalCount     = reachedCap ? infos.count : total;
             isFetchingNext = false;
             lastRequest    = nil;
-            var completedStore = placeStores[storeKey] ?? PlaceStore();
-            completedStore.recordCoverage(radius: requestRadius, complete: !stillHasMore);
-            placeStores[storeKey] = completedStore;
-            print("[TourListVM] chain complete — infos: \(infos.count)/\(totalCount), hasMorePages: \(hasMorePages)");
+            if !reachedCap {
+                // Genuinely fetched everything within requestRadius — safe
+                // to claim full radius coverage.
+                var completedStore = placeStores[storeKey] ?? PlaceStore();
+                completedStore.recordCoverage(radius: requestRadius, complete: true);
+                placeStores[storeKey] = completedStore;
+            }
+            // else: capped. Leave maxFetchedRadius at whatever the
+            // complete:false merge above already claimed (the farthest item
+            // actually loaded) — that's the honest coverage for a dense
+            // area we stopped fetching early, never the full requested
+            // radius we didn't really cover.
+            coveredRadius = placeStores[storeKey]?.maxFetchedRadius ?? 0;
+            print("[TourListVM] chain complete — infos: \(infos.count)/\(totalCount), capped: \(reachedCap), coveredRadius: \(coveredRadius)");
         }
     }
 

@@ -833,9 +833,8 @@ struct TourMapScreen: View {
         showZoomInHint = false;
 
         let newCenter = region.center;
-        // TODO(step 5): coveredRadius will come from viewModel.coveredRadius.
         if let center = viewModel.location {
-            let coveredRadius = Double(viewModel.radius);
+            let coveredRadius = Double(viewModel.coveredRadius);
             if distanceMeters(center, newCenter) + visibleRadius <= coveredRadius {
                 return;
             }
