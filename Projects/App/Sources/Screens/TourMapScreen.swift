@@ -11,7 +11,10 @@ struct TourMapScreen: View {
     @State private var showLocationErrorAlert = false
     @State private var showReviewAlert = false
     @State private var showNoDataAlert = false
-    @State private var suppressNextLocationFetch = false
+    // Gates the location-error alert to only user-tap-initiated requests
+    // (see handleLocationButtonTap) — the automatic launch-time location
+    // request failing shouldn't pop an alert the user never asked for.
+    @State private var isLocationButtonRequest = false
     @State private var showRangeSheet = false
     @State private var selectedTour: KGDataTourInfo? = nil
     @State private var mapCameraPosition: MapCameraPosition = .automatic
@@ -109,16 +112,16 @@ struct TourMapScreen: View {
             handleLocationChange(newLoc);
         }
         .onChange(of: locationManager.isLocating) { wasLocating, isLocating in
-            // A request cycle just finished. If the fresh fix matched the
-            // coordinate we already had (CLLocationCoordinate2D's Equatable
-            // conformance means `currentLocation` didn't change), the
-            // onChange above never fired to consume the suppression flag —
-            // clear it here so a later, genuinely new coordinate isn't
-            // silently swallowed.
-            if wasLocating && !isLocating { suppressNextLocationFetch = false; }
+            // A request cycle just ended (success or failure — LocationManager
+            // flips isLocating false in both didUpdateLocations and
+            // didFailWithError). Only a button-tap-initiated request should
+            // ever surface the error alert, so consume the flag here rather
+            // than leaving it set for whatever unrelated request comes next
+            // (e.g. the automatic launch-time fix).
+            if wasLocating && !isLocating { isLocationButtonRequest = false; }
         }
         .onChange(of: locationManager.locationErrorCount) { old, new in
-            if new > old { showLocationErrorAlert = true; }
+            if new > old && isLocationButtonRequest { showLocationErrorAlert = true; }
         }
         .onChange(of: locationManager.authorizationStatus) { _, status in
             if status == .denied { showLocationAlert = true; }
@@ -765,7 +768,10 @@ struct TourMapScreen: View {
     /// never fires when `didUpdateLocations` reports the same coordinate
     /// (CLLocationCoordinate2D is Equatable), which otherwise leaves the
     /// button looking dead when the user hasn't moved or a cached fix comes
-    /// back unchanged.
+    /// back unchanged. So this always recenters + fetches explicitly off
+    /// the last-known fix (never a silent no-op while stationary); if a
+    /// genuinely new fix lands afterward, handleLocationChange recenters +
+    /// fetches again for it.
     private func handleLocationButtonTap() {
         guard locationManager.authorizationStatus != .denied,
               locationManager.authorizationStatus != .restricted else {
@@ -775,31 +781,23 @@ struct TourMapScreen: View {
             return;
         }
 
+        isLocationButtonRequest = true;
+
+        // Clear the saved camera position BEFORE deselecting: the
+        // selectedTour?.id onChange below restores savedCameraPosition on
+        // deselect, and that stale restore would otherwise immediately
+        // clobber the recenter this tap is about to perform.
+        savedCameraPosition = nil;
+        selectedTour = nil;
+
         if let loc = locationManager.currentLocation {
-            // Act immediately on the last-known fix so the tap always does
-            // something, then still ask for a fresh one below.
             recenterAndFetch(loc);
-            suppressNextLocationFetch = true;
         }
         locationManager.requestLocation();
     }
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
         guard let loc = newLoc else { return };
-        if suppressNextLocationFetch {
-            // The fresh fix that triggered this change already had its
-            // recenter + fetchList performed synchronously by the button
-            // tap above; just sync the (possibly slightly updated)
-            // coordinate without fetching a second time.
-            suppressNextLocationFetch = false;
-            viewModel.location = loc;
-            pickerLocation = loc;
-            mapCameraPosition = .region(MKCoordinateRegion(
-                center: loc,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            ));
-            return;
-        }
         recenterAndFetch(loc);
     }
 
