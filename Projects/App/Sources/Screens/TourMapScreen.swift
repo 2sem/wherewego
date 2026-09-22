@@ -40,8 +40,8 @@ struct TourMapScreen: View {
 
     // Current camera span (degrees latitude/longitude delta, used equally
     // for both — see recenterAndFetch), remembered across launches via
-    // WWGDefaults.LastMapSpan. No range control drives this anymore; it's
-    // purely "wherever the user last left the zoom level".
+    // WWGDefaults.LastMapSpan. Tracks the last settled user zoom (updated in
+    // handleMapSettled); no range control drives this anymore.
     @State private var mapSpan: Double = 0.05
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
@@ -735,9 +735,13 @@ struct TourMapScreen: View {
 
     private func recenterAndFetch(_ loc: CLLocationCoordinate2D) {
         viewModel.location = loc;
+        // Clamp to the zoom-in hint cutoff so recentering never lands more
+        // zoomed out than that — landing past it would immediately trigger
+        // the "zoom in" hint instead of showing results.
+        let span = min(mapSpan, spanForRadius(zoomInHintRadiusMeters));
         mapCameraPosition = .region(MKCoordinateRegion(
             center: loc,
-            span: MKCoordinateSpan(latitudeDelta: mapSpan, longitudeDelta: mapSpan)
+            span: MKCoordinateSpan(latitudeDelta: span, longitudeDelta: span)
         ));
         viewModel.fetchList();
     }
@@ -833,6 +837,7 @@ struct TourMapScreen: View {
         // real, deliberate camera position, just not always one that needs
         // a network call.
         WWGDefaults.LastMapSpan = region.span.latitudeDelta;
+        mapSpan = region.span.latitudeDelta;
 
         let visibleRadius = halfDiagonalMeters(of: region);
 
