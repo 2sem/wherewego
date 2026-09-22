@@ -182,15 +182,10 @@ struct TourInfoScreen: View {
                     ForEach(allGalleryImages) { tourImage in
                         ZStack {
                             NavigationLink(value: TourNavDestination.imageViewer(tourImage.url)) {
-                                AsyncImage(url: tourImage.url) { phase in
-                                    switch phase {
-                                    case .success(let image):
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                    case .failure, .empty:
-                                        CategoryPlaceholderView(type: resolvedInfo?.type)
-                                    @unknown default:
-                                        CategoryPlaceholderView(type: resolvedInfo?.type)
-                                    }
+                                AsyncImage(url: tourImage.url) { image in
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } placeholder: {
+                                    CategoryPlaceholderView(type: resolvedInfo?.type)
                                 }
                                 .frame(width: geometry.size.width, height: geometry.size.height)
                                 .clipped()
@@ -255,15 +250,10 @@ struct TourInfoScreen: View {
                 ZStack(alignment: .bottomLeading) {
                     if let imgUrl = resolvedInfo?.image {
                         NavigationLink(value: TourNavDestination.imageViewer(imgUrl)) {
-                            AsyncImage(url: imgUrl) { phase in
-                                switch phase {
-                                case .success(let image):
-                                    image.resizable().aspectRatio(contentMode: .fill)
-                                case .failure, .empty:
-                                    CategoryPlaceholderView(type: resolvedInfo?.type)
-                                @unknown default:
-                                    CategoryPlaceholderView(type: resolvedInfo?.type)
-                                }
+                            AsyncImage(url: imgUrl) { image in
+                                image.resizable().aspectRatio(contentMode: .fill)
+                            } placeholder: {
+                                CategoryPlaceholderView(type: resolvedInfo?.type)
                             }
                             .frame(width: geometry.size.width, height: geometry.size.height)
                             .clipped()

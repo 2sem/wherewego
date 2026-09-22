@@ -36,23 +36,12 @@ struct TourCellView: View {
     // and when there's no thumbnail URL at all — no more falling back to the old
     // `WWGImages.noImage` asset.
     private var thumbnail: some View {
-        ZStack {
-            if let url = info.thumbnail {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    case .empty, .failure:
-                        CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
-                    @unknown default:
-                        CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
-                    }
-                }
-            } else {
-                CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
-            }
+        AsyncImage(url: info.thumbnail) { image in
+            image
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+        } placeholder: {
+            CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 140)
