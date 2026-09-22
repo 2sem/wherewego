@@ -243,6 +243,9 @@ struct TourMapScreen: View {
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
             }
+            .onMapCameraChange(frequency: .continuous) { _ in
+                handleMapMoving();
+            }
             .onMapCameraChange(frequency: .onEnd) { context in
                 handleMapSettled(context.region);
             }
@@ -801,6 +804,22 @@ struct TourMapScreen: View {
     /// deselecting moves the camera back over already-covered ground, so
     /// this coverage check is what keeps those from re-fetching without
     /// needing a separate "was this programmatic" flag.
+    /// Cancels the pending viewport fetch and clears any stale "nothing to
+    /// see here" hint the instant the camera starts moving again, rather
+    /// than waiting for it to settle — so a hint computed for the position
+    /// being left doesn't linger through the drag/zoom that's about to
+    /// invalidate it. Guarded so this never writes @State on every frame,
+    /// only when there's actually something pending or visible to clear.
+    private func handleMapMoving() {
+        if viewportFetchTask != nil {
+            viewportFetchTask?.cancel();
+            viewportFetchTask = nil;
+        }
+        if showZoomInHint {
+            showZoomInHint = false;
+        }
+    }
+
     private func handleMapSettled(_ region: MKCoordinateRegion) {
         guard isLocationResolved else { return };
         guard selectedTour == nil else { return };
