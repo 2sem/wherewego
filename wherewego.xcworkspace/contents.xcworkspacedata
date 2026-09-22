@@ -14,4 +14,29 @@
          location = "group:ThirdParty/ThirdParty.xcodeproj">
       </FileRef>
    </Group>
+   <Group
+      location = "container:"
+      name = "Dependencies">
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/Firebase/Firebase.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/GoogleAdsOnDeviceConversion/GoogleAdsOnDeviceConversion.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/GoogleAppMeasurement/GoogleAppMeasurement.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/GoogleDataTransport/GoogleDataTransport.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/GoogleUtilities/GoogleUtilities.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/Promises/Promises.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/nanopb/nanopb.xcodeproj">
+      </FileRef>
+   </Group>
 </Workspace>

@@ -3,7 +3,6 @@ import ProjectDescription
 let project = Project(
     name: "DynamicThirdParty",
     packages: [.package(id: "SDWebImage.SDWebImage", from: "5.21.7"),
-               .package(id: "firebase.firebase-ios-sdk", "12.18.0"..<"12.19.0"),
     ],
     targets: [
         .target(
@@ -13,10 +12,6 @@ let project = Project(
             bundleId: "com.y2k.wherewego.thirdparty.dynamic",
             deploymentTargets: .iOS("18.0"),
             dependencies: [.package(product: "SDWebImage", type: .runtime),
-                           .package(product: "FirebaseCrashlytics", type: .runtime),
-                           .package(product: "FirebaseAnalytics", type: .runtime),
-                           .package(product: "FirebaseMessaging", type: .runtime),
-                           .package(product: "FirebaseRemoteConfig", type: .runtime)
             ]
         ),
     ]
