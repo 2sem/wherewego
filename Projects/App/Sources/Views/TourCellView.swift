@@ -10,12 +10,7 @@ struct TourCellView: View {
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            // Background image via SDWebImage for caching
-            SDWebImageSwiftUIView(url: info.thumbnail, placeholder: WWGImages.noImage)
-                .frame(maxWidth: .infinity)
-                .frame(height: 140)
-                .clipped()
-                .overlay(Color.black.opacity(0.3))
+            thumbnail
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(info.title ?? "")
@@ -34,5 +29,25 @@ struct TourCellView: View {
         }
         .listRowInsets(EdgeInsets())
         .listRowSeparator(.hidden)
+    }
+
+    // Same category-colored gradient + icon placeholder as the detail screen, layered
+    // behind the thumbnail. The image view is transparent until SDWebImage loads it (and
+    // stays transparent on failure), so the placeholder shows through while loading/on
+    // failure — no more falling back to the old `WWGImages.noImage` asset.
+    private var thumbnail: some View {
+        ZStack {
+            CategoryPlaceholderView(type: info.type, showIcon: true, iconSize: 48)
+
+            if info.thumbnail != nil {
+                SDWebImageSwiftUIView(url: info.thumbnail, placeholder: nil)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 140)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 140)
+        .clipped()
+        .overlay(Color.black.opacity(0.3))
     }
 }
