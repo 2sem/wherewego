@@ -22,7 +22,7 @@ Projects/
       Extensions/    # Swift extensions
       Resources/     # Strings, assets, plists
     Tests/
-  ThirdParty/        # Static SPM deps (GoogleMaps, KakaoSDK, MBProgressHUD, etc.)
+  ThirdParty/        # Static SPM deps (KakaoSDK, LSExtensions, StringLogger)
 Tuist/Package.swift  # Firebase (Tuist-integrated), linked by App via .external
 ```
 
