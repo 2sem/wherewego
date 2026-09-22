@@ -20,7 +20,7 @@ extension KGDataTourInfo{
                                                            "destTitle":self.title!,
                                                            "destAddress":"\(self.primaryAddr ?? "") \(self.detailAddr ?? "")",
                                                            "destPhoneNo":self.tel ?? " ",
-                                                           "destDistance":(self.distance ?? 0).description,
+                                                           "destDistance":(self.distance(from: location) ?? 0).description,
                                                            "destImageUrl":self.image?.absoluteString ?? " ",
                                                            "destContentId":(self.id ?? 0).description,
                                                            "destContentTypeId":self.type.rawValue.description,

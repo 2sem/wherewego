@@ -176,8 +176,10 @@ struct TourMapScreen: View {
     private var mapView: some View {
         ZStack(alignment: .leading) {
             Map(position: $mapCameraPosition) {
-                // User location
-                if let userLoc = viewModel.location {
+                // User location — always the actual GPS fix, never the search
+                // center (which may be a dragged/deep-linked point far from
+                // where the user actually is).
+                if let userLoc = locationManager.currentLocation {
                     Annotation("Here", coordinate: userLoc) {
                         Circle()
                             .fill(.blue)
@@ -366,8 +368,9 @@ struct TourMapScreen: View {
                     }
                 }
 
-                // Distance
-                if let distance = tour.distance {
+                // Distance — client-side from GPS, falling back to the API's
+                // dist (measured from the search center) when GPS is nil.
+                if let distance = tour.distance(from: locationManager.currentLocation) {
                     HStack(spacing: 4) {
                         Image(systemName: "location.fill")
                             .font(.system(size: 12))
@@ -607,7 +610,9 @@ struct TourMapScreen: View {
     }
 
     private func navigateToDetail(info: KGDataTourInfo) {
-        navPath.append(.tourInfo(info, viewModel.location));
+        // Route/share source: GPS is home base, falling back to the search
+        // center only when GPS is unavailable (denied/restricted/no fix yet).
+        navPath.append(.tourInfo(info, locationManager.currentLocation ?? viewModel.location));
     }
 
     /// Shifts the center coordinate downward so the place appears visually

@@ -347,3 +347,19 @@ class KGDataTourInfo : KGDataTourObject {
         return "id[\(self.id?.description ?? "")] title[\(self.title ?? "")] addr[\(self.primaryAddr ?? "")] detailAddr[\(self.detailAddr ?? "")] type[\(self.type)] created[\(self.createdTime?.description ?? "")] distance[\(self.distance?.description ?? "")] image[\(self.image?.description ?? "")] thumbnail[\(self.thumbnail?.description ?? "")] long[\(self.longitude?.description ?? "")] lat[\(self.latitude?.description ?? "")] lastModified[\(self.lastMofidied?.description ?? "")] hitCount[\(self.hitCount?.description ?? "")]";
     }
 }
+
+extension KGDataTourInfo {
+    /// Distance from `source`, computed client-side via CLLocation so it always
+    /// matches whatever point is actually driving the UI (GPS "here", when
+    /// available). `self.distance` (the API's `dist` field) is measured from the
+    /// *search* center, not the user, so it's only used as a fallback when
+    /// `source` is nil (e.g. GPS unavailable).
+    func distance(from source: CLLocationCoordinate2D?) -> Int? {
+        if let source = source, let dest = self.location {
+            let sourceLoc = CLLocation(latitude: source.latitude, longitude: source.longitude);
+            let destLoc = CLLocation(latitude: dest.latitude, longitude: dest.longitude);
+            return Int(sourceLoc.distance(from: destLoc).rounded());
+        }
+        return self.distance;
+    }
+}
