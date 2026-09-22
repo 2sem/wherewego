@@ -24,6 +24,7 @@ class WWGDefaults{
         static let LastOpeningAdPrepared = "LastOpeningAdPrepared";
 
         static let Range = "Range";
+        static let LastMapSpan = "LastMapSpan";
 
         static let LaunchCount = "LaunchCount";
 
@@ -90,6 +91,22 @@ class WWGDefaults{
         
         set(value){
             Defaults.set(value, forKey: Keys.Range);
+        }
+    }
+
+    /// Last camera span (degrees latitude delta) the map screen settled on —
+    /// nil until the first real settle, so callers can tell "never set" from
+    /// "explicitly zero" and fall back accordingly (e.g. to a span derived
+    /// from the legacy `Range` value).
+    static var LastMapSpan : Double?{
+        get{
+            let value = Defaults.double(forKey: Keys.LastMapSpan);
+            return value > 0 ? value : nil;
+        }
+
+        set(value){
+            guard let value = value else { return; }
+            Defaults.set(value, forKey: Keys.LastMapSpan);
         }
     }
     
