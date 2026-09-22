@@ -61,22 +61,14 @@ let project = Project(
                             inputPaths: ["$(SRCROOT)/Resources/InfoPlist/skNetworks.plist"],
                             outputPaths: []),
                       .post(script: """
-                    SOURCE_PACKAGES_ROOT="${SOURCE_PACKAGES_DIR_PATH:-${BUILD_DIR%/Build/*}/SourcePackages}"
-                    CRASHLYTICS_RUN_SCRIPT=""
+                    # Firebase is now a Tuist-integrated dependency (Tuist/Package.swift),
+                    # so its checkout lives under Tuist/.build, not Xcode's own
+                    # SourcePackages directory. Path is relative to $(SRCROOT)
+                    # (Projects/App).
+                    CRASHLYTICS_RUN_SCRIPT="${SRCROOT}/../../Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run"
 
-                    for candidate in \
-                      "$SOURCE_PACKAGES_ROOT/checkouts/firebase-ios-sdk/Crashlytics/run" \
-                      "$SOURCE_PACKAGES_ROOT/registry/downloads/firebase/firebase-ios-sdk/Crashlytics/run" \
-                      "$SOURCE_PACKAGES_ROOT"/registry/downloads/firebase/firebase-ios-sdk/*/Crashlytics/run
-                    do
-                      if [ -f "$candidate" ]; then
-                        CRASHLYTICS_RUN_SCRIPT="$candidate"
-                        break
-                      fi
-                    done
-
-                    if [ -z "$CRASHLYTICS_RUN_SCRIPT" ]; then
-                      echo "error: Firebase Crashlytics run script not found under $SOURCE_PACKAGES_ROOT"
+                    if [ ! -f "$CRASHLYTICS_RUN_SCRIPT" ]; then
+                      echo "error: Firebase Crashlytics run script not found at $CRASHLYTICS_RUN_SCRIPT - run 'tuist install' first"
                       exit 1
                     fi
 
@@ -88,20 +80,42 @@ let project = Project(
                                          "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}/Contents/Info.plist",
                                          "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/GoogleService-Info.plist",
                                          "$(TARGET_BUILD_DIR)/$(EXECUTABLE_PATH)"],
+                            basedOnDependencyAnalysis: false,
                             runForInstallBuildsOnly: true)],
             dependencies: [
                 .Projects.ThirdParty,
                 .Projects.DynamicThirdParty,
-                .package(product: "GADManager", type: .runtime)
+                .package(product: "GADManager", type: .runtime),
+                // Firebase is consumed by App directly (not via DynamicThirdParty):
+                // Tuist's SPM integration doesn't reliably propagate the binary
+                // XCFrameworks Firebase pulls in (GoogleAppMeasurement, nanopb, ...)
+                // through an intermediate dynamic wrapper framework, which shows up
+                // as undefined symbols at the *app* target's link/archive step even
+                // though the wrapper itself builds fine.
+                .external(name: "FirebaseCrashlytics"),
+                .external(name: "FirebaseAnalytics"),
+                .external(name: "FirebaseMessaging"),
+                .external(name: "FirebaseRemoteConfig"),
             ],
-            settings: .settings(configurations: [
-                .debug(
-                    name: "Debug",
-                    xcconfig: "Configs/app.debug.xcconfig"),
-                .release(
-                    name: "Release",
-                    xcconfig: "Configs/app.release.xcconfig")
-            ])
+            settings: .settings(
+                base: [
+                    // The Crashlytics "run" tool lives under Tuist/.build/checkouts,
+                    // outside $(SRCROOT), and reads files (GoogleService-Info.plist,
+                    // dSYMs, its own sibling binary) that User Script Sandboxing
+                    // would otherwise block regardless of the phase's declared
+                    // Input Files. Disabling sandboxing for this target only (not
+                    // project-wide) is the reliable fix.
+                    "ENABLE_USER_SCRIPT_SANDBOXING": "NO",
+                ],
+                configurations: [
+                    .debug(
+                        name: "Debug",
+                        xcconfig: "Configs/app.debug.xcconfig"),
+                    .release(
+                        name: "Release",
+                        xcconfig: "Configs/app.release.xcconfig")
+                ]
+            )
         ),
     ], resourceSynthesizers: []
 )
