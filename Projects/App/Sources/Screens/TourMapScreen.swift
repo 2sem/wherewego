@@ -173,6 +173,13 @@ struct TourMapScreen: View {
 
     // MARK: - Map View
 
+    // Markers filtered to items with a stable, non-nil id — `ForEach(..., id:
+    // \.id)` needs that for stable SwiftUI identity (a nil id would collide
+    // with any other nil-id item).
+    private var mapMarkers: [KGDataTourInfo] {
+        viewModel.infos.filter { $0.id != nil };
+    }
+
     private var mapView: some View {
         ZStack(alignment: .leading) {
             Map(position: $mapCameraPosition) {
@@ -198,8 +205,10 @@ struct TourMapScreen: View {
                         .stroke(Color.blue.opacity(0.5), lineWidth: 2)
                 }
 
-                // Tour markers
-                ForEach(Array(viewModel.infos.enumerated()), id: \.offset) { (index, info) in
+                // Tour markers — identity keyed on the place's own contentid
+                // (not array offset), so a list change only rebuilds the
+                // markers that actually changed instead of every marker.
+                ForEach(mapMarkers, id: \.id) { info in
                     if let title = info.title, let location = info.location {
                         let isSelected = selectedTour?.id == info.id;
                         Annotation(title, coordinate: location) {
@@ -237,7 +246,11 @@ struct TourMapScreen: View {
     }
 
     private func markerView(for info: KGDataTourInfo, isSelected: Bool) -> some View {
-        ZStack {
+        // `type` re-parses info's field dictionary on every access; with up
+        // to a few hundred markers on screen, read it once per marker rather
+        // than twice (color + icon).
+        let type = info.type;
+        return ZStack {
             // Outer ring for selected marker
             if isSelected {
                 Circle()
@@ -248,12 +261,12 @@ struct TourMapScreen: View {
 
             // Background circle
             Circle()
-                .fill(markerColor(for: info.type))
+                .fill(markerColor(for: type))
                 .frame(width: isSelected ? 40 : 32, height: isSelected ? 40 : 32)
                 .shadow(color: .black.opacity(0.3), radius: 3)
 
             // Icon
-            Image(systemName: markerIcon(for: info.type))
+            Image(systemName: markerIcon(for: type))
                 .font(.system(size: isSelected ? 20 : 16, weight: .semibold))
                 .foregroundStyle(.white)
         }

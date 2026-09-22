@@ -158,9 +158,30 @@ class TourListViewModel {
 
         KGDataTourManager.shared.requestList(request: next) { [weak self] (page, items, total, error) in
             DispatchQueue.main.async {
-                self?.handleSubsequentPage(items: items, total: total, generation: gen, storeKey: storeKey, requestRadius: requestRadius, continueChain: false);
+                self?.handleSinglePage(items: items, total: total, generation: gen, storeKey: storeKey, requestRadius: requestRadius);
             }
         };
+    }
+
+    /// Single-page publish used by fetchNextPage's manual "load more" tap:
+    /// each call is its own user-visible update, so it publishes immediately.
+    private func handleSinglePage(items: [KGDataTourInfo], total: Int, generation gen: Int, storeKey: PlaceStoreKey, requestRadius: Int) {
+        var store = placeStores[storeKey] ?? PlaceStore();
+        store.merge(items);
+        let complete = infos.count + items.count >= total;
+        store.recordCoverage(radius: requestRadius, complete: complete);
+        placeStores[storeKey] = store;
+
+        guard gen == generation else {
+            print("[TourListVM] page (gen \(gen)) superseded by gen \(generation) — merged into store only");
+            return;
+        };
+
+        infos.append(contentsOf: items);
+        totalCount     = total;
+        isFetchingNext = false;
+        if complete { lastRequest = nil; }
+        print("[TourListVM] page loaded — items: \(items.count), infos: \(infos.count)/\(totalCount), hasMorePages: \(hasMorePages)");
     }
 
     func fetchAllPages() {
@@ -170,50 +191,59 @@ class TourListViewModel {
             return;
         };
         isFetchingNext = true;
-        lastRequest = next;
         let gen = lastRequestGeneration;
         let storeKey = PlaceStoreKey(location: next.location, type: next.type);
         let requestRadius = Int(next.radius);
-        print("[TourListVM] fetching page \(next.page)... (gen \(gen))");
+        // Publish once when the whole chain completes (see
+        // handleChainedPage), not per page — SwiftUI re-diffs every map
+        // marker on each `infos` mutation, so appending 100 items at a time
+        // across N pages meant N full marker rebuilds instead of one.
+        fetchChainedPage(next, generation: gen, storeKey: storeKey, requestRadius: requestRadius, accumulated: []);
+    }
 
-        KGDataTourManager.shared.requestList(request: next) { [weak self] (page, items, total, error) in
+    private func fetchChainedPage(_ request: KGDataTourListRequest, generation gen: Int, storeKey: PlaceStoreKey, requestRadius: Int, accumulated: [KGDataTourInfo]) {
+        lastRequest = request;
+        print("[TourListVM] fetching page \(request.page)... (gen \(gen))");
+        KGDataTourManager.shared.requestList(request: request) { [weak self] (page, items, total, error) in
             DispatchQueue.main.async {
-                self?.handleSubsequentPage(items: items, total: total, generation: gen, storeKey: storeKey, requestRadius: requestRadius, continueChain: true);
+                self?.handleChainedPage(items: items, total: total, generation: gen, storeKey: storeKey, requestRadius: requestRadius, accumulated: accumulated);
             }
         };
     }
 
-    private func handleSubsequentPage(items: [KGDataTourInfo], total: Int, generation gen: Int, storeKey: PlaceStoreKey, requestRadius: Int, continueChain: Bool) {
+    private func handleChainedPage(items: [KGDataTourInfo], total: Int, generation gen: Int, storeKey: PlaceStoreKey, requestRadius: Int, accumulated: [KGDataTourInfo]) {
         // Conservative default: only claim what's verifiably been loaded so
-        // far. If this response turns out to complete the chain (checked
-        // below, gated on generation so we're reading this exact chain's own
-        // accumulated state), the claim is upgraded to the full radius.
+        // far. Once the chain completes below (gated on generation, so
+        // we're only reading this exact chain's own accumulated state) the
+        // claim is upgraded to the full radius.
         var store = placeStores[storeKey] ?? PlaceStore();
         store.merge(items);
         store.recordCoverage(radius: requestRadius, complete: false);
         placeStores[storeKey] = store;
 
         guard gen == generation else {
-            print("[TourListVM] page \(items.isEmpty ? -1 : 0) (gen \(gen)) superseded by gen \(generation) — merged into store only");
+            print("[TourListVM] chained page (gen \(gen)) superseded by gen \(generation) — merged into store only");
             return;
         };
 
-        infos.append(contentsOf: items);
-        totalCount     = total;
-        isFetchingNext = false;
-        print("[TourListVM] page loaded — items: \(items.count), infos: \(infos.count)/\(totalCount), hasMorePages: \(hasMorePages)");
+        let newAccumulated = accumulated + items;
+        let loadedSoFar = infos.count + newAccumulated.count;
+        let stillHasMore = total > loadedSoFar;
 
-        if hasMorePages {
-            if continueChain {
-                fetchAllPages();
-            }
+        if stillHasMore, let next = lastRequest?.next {
+            fetchChainedPage(next, generation: gen, storeKey: storeKey, requestRadius: requestRadius, accumulated: newAccumulated);
         } else {
-            // This generation's chain is fully loaded — now it's safe to
-            // claim the full requested radius.
+            // Chain complete — single publish for every page accumulated
+            // since the last one (or ran out of a next page unexpectedly,
+            // in which case we publish what we have rather than losing it).
+            infos.append(contentsOf: newAccumulated);
+            totalCount     = total;
+            isFetchingNext = false;
+            lastRequest    = nil;
             var completedStore = placeStores[storeKey] ?? PlaceStore();
-            completedStore.recordCoverage(radius: requestRadius, complete: true);
+            completedStore.recordCoverage(radius: requestRadius, complete: !stillHasMore);
             placeStores[storeKey] = completedStore;
-            lastRequest = nil;
+            print("[TourListVM] chain complete — infos: \(infos.count)/\(totalCount), hasMorePages: \(hasMorePages)");
         }
     }
 
