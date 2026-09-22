@@ -95,6 +95,13 @@ let project = Project(
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseMessaging"),
                 .external(name: "FirebaseRemoteConfig"),
+                // Kakao SDK (Tuist/Package.swift) - only the products the app
+                // actually imports (init, Kakao Link share + templates), not
+                // the umbrella KakaoSDK product which also pulls in
+                // Auth/User/Cert/Talk/Friend/Navi that WhereWeGo never uses.
+                .external(name: "KakaoSDKCommon"),
+                .external(name: "KakaoSDKShare"),
+                .external(name: "KakaoSDKTemplate"),
             ],
             settings: .settings(
                 base: [

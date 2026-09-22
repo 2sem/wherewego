@@ -11,4 +11,14 @@
          location = "group:ThirdParty/ThirdParty.xcodeproj">
       </FileRef>
    </Group>
+   <Group
+      location = "container:"
+      name = "Dependencies">
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/Alamofire/Alamofire.xcodeproj">
+      </FileRef>
+      <FileRef
+         location = "group:Tuist/.build/tuist-derived/Projects/KakaoOpenSDK/KakaoOpenSDK.xcodeproj">
+      </FileRef>
+   </Group>
 </Workspace>

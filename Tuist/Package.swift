@@ -91,5 +91,8 @@ let package = Package(
         // .package(url: "https://github.com/Alamofire/Alamofire", from: "5.0.0"),
         // You can read more about dependencies here: https://docs.tuist.io/documentation/tuist/dependencies
         .package(url: "https://github.com/firebase/firebase-ios-sdk", .upToNextMinor(from: "12.18.0")),
+        // Resolved through the Tuist Registry (tuist.dev) rather than the GitHub
+        // URL - see Tuist/.swiftpm/configuration/registries.json (from `tuist registry setup`).
+        .package(id: "kakao.kakao-ios-sdk", from: "2.27.3"),
     ]
 )
