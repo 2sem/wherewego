@@ -31,7 +31,7 @@ struct FavoritesScreen: View {
     private var favoritesList: some View {
         List {
             ForEach(favorites, id: \.id) { info in
-                TourCellView(info: info)
+                TourCellView(info: info, currentLocation: currentLocation)
                     .contentShape(Rectangle())
                     .onTapGesture {
                         navigateToDetail(info: info);

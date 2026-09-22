@@ -1,7 +1,12 @@
 import SwiftUI
+import CoreLocation
 
 struct TourCellView: View {
     let info: KGDataTourInfo
+    // GPS location for client-side distance. Defaults to nil so existing call
+    // sites (TourListScreen) keep compiling unchanged and fall back to the
+    // API's `dist` field.
+    var currentLocation: CLLocationCoordinate2D? = nil
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -18,7 +23,7 @@ struct TourCellView: View {
                     .foregroundStyle(.white)
                     .lineLimit(2)
 
-                if let dist = info.distance {
+                if let dist = info.distance(from: currentLocation) {
                     Text(dist.stringForDistance())
                         .font(.system(size: 13))
                         .foregroundStyle(.white.opacity(0.9))
