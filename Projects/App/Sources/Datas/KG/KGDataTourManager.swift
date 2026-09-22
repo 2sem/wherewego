@@ -30,11 +30,16 @@ class KGDataTourManager: NSObject {
             let resultString = String(data: resData ?? Data(), encoding: .utf8);
             guard error == nil else{
                 print("fail response \(error.debugDescription) - \(resultString ?? "") - \(res?.description ?? "")");
+                // Must still call completion — callers (TourListViewModel)
+                // key isLoading/isFetchingNext resets off this callback
+                // firing; skipping it here left those flags stuck true
+                // forever on a network error.
+                completion(0, [], 0, error as NSError?);
                 return;
             }
-            
+
             print("succ response \(error.debugDescription) - \(resultString ?? "") - \(res?.description ?? "")");
-            
+
             do{
                 /*
                  "response":{"header":{"resultCode":"0000",\"resultMsg":"OK"},"body":{"items":{"item":[{...}, {...}, {...}]
@@ -43,7 +48,7 @@ class KGDataTourManager: NSObject {
                 var json = try JSONSerialization.jsonObject(with: resData ?? Data(), options: JSONSerialization.ReadingOptions.allowFragments) as? [String : AnyObject] ?? [:];
                 var response = json["response"] as? [String : AnyObject] ?? [:];
                 let header = KGDataTourResponseHeader(response["header"] as? [String : AnyObject] ?? [:]);
-                
+
                 var body = response["body"] as? [String : AnyObject] ?? [:];
                 var container = body["items"] as? [String : AnyObject] ?? [:];
                 let items = container["item"] as? [[String : AnyObject]] ?? [];
@@ -51,7 +56,7 @@ class KGDataTourManager: NSObject {
                 for item in items{
                     tourInfos.append(KGDataTourInfo(item));
                 }
-                
+
                 // pageNo and totalCount are in body, not header
                 let pageNo = (body["pageNo"] as? NSNumber)?.intValue ?? 0;
                 let totalCount = (body["totalCount"] as? NSNumber)?.intValue ?? 0;
@@ -61,11 +66,11 @@ class KGDataTourManager: NSObject {
                 completion(pageNo, tourInfos, totalCount, nil);
             }catch let error{
                 print("json error - \(error)");
-                completion(0, [], 5, error as NSError);
+                completion(0, [], 0, error as NSError);
             }
         }.resume();
     }
-    
+
     func requestList(locale : Locale = Locale.current, type : KGDataTourInfo.ContentType? = nil, location : CLLocationCoordinate2D, radius : UInt, completion:  @escaping TourListCompletionHandler) -> KGDataTourListRequest?{
         //request
         //numOfRows : max result for a row
