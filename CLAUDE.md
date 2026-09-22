@@ -37,11 +37,11 @@ The workspace (`Workspace.swift`) composes three Tuist projects under `Projects/
 |---|---|---|
 | **App** | `.app` | Main application target. SwiftUI screens, ViewModels, Views, data layer, extensions. |
 | **ThirdParty** | `.staticFramework` | Bundles static SPM deps: GoogleMaps, KakaoSDK, MBProgressHUD, LSExtensions, StringLogger, DownPicker. |
-| **DynamicThirdParty** | `.framework` (dynamic) | Bundles dynamic SPM deps: Firebase (Crashlytics, Analytics, Messaging, RemoteConfig), SDWebImage. |
+| **DynamicThirdParty** | `.framework` (dynamic) | Bundles dynamic SPM deps: SDWebImage. |
 
-App depends on both ThirdParty and DynamicThirdParty as framework dependencies, plus GADManager (Google Ads wrapper) as a direct SPM package.
+App depends on both ThirdParty and DynamicThirdParty as framework dependencies, plus GADManager (Google Ads wrapper) as a direct SPM package, and Firebase (Crashlytics, Analytics, Messaging, RemoteConfig) directly via `.external(name:)`.
 
-Each project has its own `Project.swift` — package declarations live there, not in a shared Package.swift. The workspace-level `Tuist/Package.swift` only sets global SPM product-type overrides.
+Most packages are declared in each project's own `Project.swift` (Xcode-level SPM). The exception is **Firebase**, which is a Tuist-integrated dependency declared in `Tuist/Package.swift` (`.upToNextMinor(from: "12.18.0")`) and consumed by App via `.external(name:)` — not through DynamicThirdParty, since binary XCFrameworks (GoogleAppMeasurement, nanopb, …) don't reliably propagate through an intermediate dynamic wrapper. `Tuist/Package.swift` also sets `PackageSettings`: Firebase source targets as dynamic `.framework`, binary-wrapper targets as `.staticFramework`, Release `dwarf-with-dsym`, and a `FirebaseSessions` force-link of `FirebaseCoreInternal`. Run `tuist install` after changing it; the Crashlytics dSYM script reads `Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run`.
 
 ---
 

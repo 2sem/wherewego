@@ -23,7 +23,7 @@ Projects/
       Resources/     # Strings, assets, plists
     Tests/
   ThirdParty/        # Static SPM deps (GoogleMaps, KakaoSDK, MBProgressHUD, etc.)
-  DynamicThirdParty/ # Dynamic SPM deps (Firebase, SDWebImage)
+  DynamicThirdParty/ # Dynamic SPM deps (SDWebImage); Firebase lives in Tuist/Package.swift, linked by App via .external
 ```
 
 ## Screen Flow
