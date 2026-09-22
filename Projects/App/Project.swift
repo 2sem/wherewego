@@ -84,14 +84,13 @@ let project = Project(
                             runForInstallBuildsOnly: true)],
             dependencies: [
                 .Projects.ThirdParty,
-                .Projects.DynamicThirdParty,
                 .package(product: "GADManager", type: .runtime),
-                // Firebase is consumed by App directly (not via DynamicThirdParty):
-                // Tuist's SPM integration doesn't reliably propagate the binary
-                // XCFrameworks Firebase pulls in (GoogleAppMeasurement, nanopb, ...)
-                // through an intermediate dynamic wrapper framework, which shows up
-                // as undefined symbols at the *app* target's link/archive step even
-                // though the wrapper itself builds fine.
+                // Firebase links directly into App rather than through an intermediate
+                // dynamic wrapper framework: Tuist's SPM integration doesn't reliably
+                // propagate the binary XCFrameworks Firebase pulls in
+                // (GoogleAppMeasurement, nanopb, ...) through such a wrapper, which
+                // shows up as undefined symbols at the *app* target's link/archive
+                // step even though the wrapper itself builds fine.
                 .external(name: "FirebaseCrashlytics"),
                 .external(name: "FirebaseAnalytics"),
                 .external(name: "FirebaseMessaging"),
