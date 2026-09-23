@@ -1,4 +1,4 @@
-.PHONY: init install install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
+.PHONY: init install ins gen install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
 
 # Install mise (if missing) and the tuist version pinned in .mise.toml
 init:
@@ -12,6 +12,9 @@ clean:
 # Resolve Swift package dependencies
 install:
 	mise x -- tuist install
+
+# Alias for install
+ins: install
 
 # Wipe fetched packages and cached binaries, then re-fetch and rebuild the cache
 install-clean: clean install
@@ -31,6 +34,9 @@ test:
 # Generate the Xcode workspace
 generate:
 	mise x -- tuist generate --no-open
+
+# Alias for generate
+gen: generate
 
 # Generate the Xcode workspace
 generate-clean: clean generate
