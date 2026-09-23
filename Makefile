@@ -1,4 +1,4 @@
-.PHONY: init install ins gen install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
+.PHONY: init install ins gen ca install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
 
 # Install mise (if missing) and the tuist version pinned in .mise.toml
 init:
@@ -22,6 +22,9 @@ install-clean: clean install
 # Cache Binaries
 cache:
 	mise x -- tuist cache
+
+# Alias for cache
+ca: cache
 
 # Build the app
 build:
