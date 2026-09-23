@@ -25,6 +25,8 @@ tuist test
 tuist generate
 ```
 
+A root `Makefile` wraps these (`make init`, `make install`, `make generate`, `make build`, `make test`, `make archive-clean`, …) — see its target comments.
+
 `mise` reads `.mise.toml` at the repo root for tool versions. All `tuist` commands must be prefixed with `mise x --` to use the correct version.
 
 ---
