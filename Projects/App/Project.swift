@@ -4,12 +4,6 @@ let project = Project(
     name: "App",
     options: .options(defaultKnownRegions: ["en"],
                      developmentRegion: "en"),
-    packages: [
-        .remote(url: "https://github.com/2sem/GADManager",
-                requirement: .upToNextMajor(from: "1.4.0")),
-//        .remote(url: "https://github.com/firebase/firebase-ios-sdk",
-//                requirement: .upToNextMajor(from: "10.4.0")),
-    ],
     settings: .settings(configurations: [
         .debug(
             name: "Debug",
@@ -82,7 +76,6 @@ let project = Project(
                             basedOnDependencyAnalysis: false,
                             runForInstallBuildsOnly: true)],
             dependencies: [
-                .package(product: "GADManager", type: .runtime),
                 // Firebase links directly into App rather than through an intermediate
                 // dynamic wrapper framework: Tuist's SPM integration doesn't reliably
                 // propagate the binary XCFrameworks Firebase pulls in
@@ -102,6 +95,7 @@ let project = Project(
                 .external(name: "KakaoSDKTemplate"),
                 .external(name: "LSExtensions"),
                 .external(name: "StringLogger"),
+                .external(name: "GADManager"),
             ],
             settings: .settings(
                 base: [

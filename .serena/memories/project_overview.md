@@ -22,7 +22,7 @@ Projects/
       Extensions/    # Swift extensions
       Resources/     # Strings, assets, plists
     Tests/
-Tuist/Package.swift  # Firebase + Kakao SDK + LSExtensions + StringLogger (Tuist-integrated), linked by App via .external
+Tuist/Package.swift  # Firebase + Kakao SDK + LSExtensions + StringLogger + GADManager (Tuist-integrated), linked by App via .external
 ```
 
 ## Screen Flow
