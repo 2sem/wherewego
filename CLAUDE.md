@@ -37,9 +37,9 @@ The workspace (`Workspace.swift`) composes a single Tuist project under `Project
 |---|---|---|
 | **App** | `.app` | Main application target. SwiftUI screens, ViewModels, Views, data layer, extensions. |
 
-App depends on GADManager (Google Ads wrapper) as a direct SPM package, and on Firebase (Crashlytics, Analytics, Messaging, RemoteConfig), Kakao SDK (Common, Share, Template), LSExtensions and StringLogger directly via `.external(name:)`.
+App depends on Firebase (Crashlytics, Analytics, Messaging, RemoteConfig), Kakao SDK (Common, Share, Template), LSExtensions, StringLogger and GADManager (Google Ads wrapper) directly via `.external(name:)`.
 
-GADManager is declared in App's own `Project.swift` (Xcode-level SPM). Everything else is a Tuist-integrated dependency declared in `Tuist/Package.swift`: **Kakao SDK** (registry `kakao.kakao-ios-sdk`, static, resolved via `Tuist/.swiftpm/configuration/registries.json`), **LSExtensions** and **StringLogger** (GitHub URL, exact version) and **Firebase**, Tuist-integrated dependencies declared in `Tuist/Package.swift`. All are consumed by App via `.external(name:)`. Firebase (`.upToNextMinor(from: "12.18.0")`) is linked into App directly — not through an intermediate framework target, since binary XCFrameworks (GoogleAppMeasurement, nanopb, …) don't reliably propagate through an intermediate dynamic wrapper. `Tuist/Package.swift` also sets `PackageSettings`: Firebase source targets as dynamic `.framework`, binary-wrapper targets as `.staticFramework`, Release `dwarf-with-dsym`, and a `FirebaseSessions` force-link of `FirebaseCoreInternal`. Run `tuist install` after changing it; the Crashlytics dSYM script reads `Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run`.
+All packages are Tuist-integrated dependencies declared in `Tuist/Package.swift` (none at the Xcode level in `Project.swift`) and consumed by App via `.external(name:)`: **Firebase**, **Kakao SDK** (registry `kakao.kakao-ios-sdk`, static, resolved via `Tuist/.swiftpm/configuration/registries.json`), and **LSExtensions**, **StringLogger**, **GADManager** (GitHub URL, exact version). Firebase (`.upToNextMinor(from: "12.18.0")`) is linked into App directly — not through an intermediate framework target, since binary XCFrameworks (GoogleAppMeasurement, nanopb, …) don't reliably propagate through an intermediate dynamic wrapper. `Tuist/Package.swift` also sets `PackageSettings`: Firebase source targets as dynamic `.framework`, binary-wrapper targets as `.staticFramework`, Release `dwarf-with-dsym`, and a `FirebaseSessions` force-link of `FirebaseCoreInternal`. Run `tuist install` after changing it; the Crashlytics dSYM script reads `Tuist/.build/checkouts/firebase-ios-sdk/Crashlytics/run`.
 
 ---
 
@@ -122,7 +122,7 @@ Strings localization uses `.strings` files in `Resources/Strings/<lang>.lproj/`.
 
 ### Ad management
 
-Ads are managed through `SwiftUIAdManager` (`ObservableObject`, passed as `@EnvironmentObject`), which wraps `GADManager<GADUnitName>` (SPM package `2sem/GADManager`). Ad unit IDs are declared in `Info.plist` under `GADUnitIdentifiers` and matched by `GADUnitName` raw values (`FullAd`, `Launch`, `BottomBanner`, `RewardAd`).
+Ads are managed through `SwiftUIAdManager` (`ObservableObject`, passed as `@EnvironmentObject`), which wraps `GADManager<GADUnitName>` (`2sem/GADManager`, via `Tuist/Package.swift`). Ad unit IDs are declared in `Info.plist` under `GADUnitIdentifiers` and matched by `GADUnitName` raw values (`FullAd`, `Launch`, `BottomBanner`, `RewardAd`).
 
 - `App.swift` calls `MobileAds.shared.start` on first appear, then `prepare(interstitialUnit:)` and `prepare(openingUnit:)`.
 - Scene-phase `.active` triggers the app-open ad via `show(unit: .launch)`.
