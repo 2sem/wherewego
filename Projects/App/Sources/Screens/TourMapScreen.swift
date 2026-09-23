@@ -43,11 +43,15 @@ struct TourMapScreen: View {
     // MapKit refits that asymmetrically to a portrait screen (~1.4x at
     // Korea's latitude), so every recenter silently zoomed out; keeping both
     // deltas preserves the aspect ratio the map actually settled on instead.
-    // Remembered across launches via WWGDefaults.LastMapSpan (latitudeDelta
-    // only). Tracks the user's live zoom — updated from the
-    // .onMapCameraChange handlers on the map (not handleMapSettled, so it
-    // stays current through a drag/zoom gesture and even before the first
-    // location fix resolves); no range control drives this anymore.
+    // Remembered across launches via WWGDefaults.LastMapSpan /
+    // LastMapSpanLongitude (both deltas — a lat-only square restore hits the
+    // same MapKit refit drift described above). Tracks the user's live zoom
+    // — updated from the .onMapCameraChange handlers on the map (not
+    // handleMapSettled, so it stays current through a drag/zoom gesture),
+    // but only once isLocationResolved: before launch's own camera move has
+    // been applied, the map's initial .automatic country-wide framing would
+    // otherwise clobber the value just restored in onScreenAppear. No range
+    // control drives this anymore.
     @State private var mapSpan: MKCoordinateSpan = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
@@ -271,8 +275,14 @@ struct TourMapScreen: View {
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
                 // Card-selection camera moves (fixed 0.015 span) must not
-                // become the user's remembered zoom.
-                if selectedTour == nil {
+                // become the user's remembered zoom. Also gated on
+                // isLocationResolved — until launch's own camera move has
+                // actually been applied (recenterAndFetch, or a resolved
+                // denied/restricted status), this fires for the map's
+                // initial .automatic country-wide framing, which would
+                // otherwise clobber the zoom just restored in
+                // onScreenAppear before the user ever touched the map.
+                if selectedTour == nil, isLocationResolved {
                     mapSpan = context.region.span;
                 }
             }
@@ -282,8 +292,9 @@ struct TourMapScreen: View {
                 // (not just on settle) so a location-button tap right after
                 // a gesture, before it settles, still uses the live zoom
                 // instead of a stale one. Skip the @State write when nothing
-                // actually changed.
-                if selectedTour == nil,
+                // actually changed. Gated on isLocationResolved for the same
+                // reason as the handler above.
+                if selectedTour == nil, isLocationResolved,
                    mapSpan.latitudeDelta != context.region.span.latitudeDelta
                     || mapSpan.longitudeDelta != context.region.span.longitudeDelta {
                     mapSpan = context.region.span;
@@ -631,8 +642,24 @@ struct TourMapScreen: View {
         locationManager.requestAuthorization();
         locationManager.requestLocation();
 
-        let initialSpan = initialMapSpan();
-        mapSpan = MKCoordinateSpan(latitudeDelta: initialSpan, longitudeDelta: initialSpan);
+        mapSpan = initialMapSpan();
+
+        // Seed the launch camera from CLLocationManager's own cached fix,
+        // read synchronously — skips the country-wide `.automatic` framing
+        // entirely when one is available, landing straight on the restored
+        // zoom around (approximately) where the user actually is. No
+        // animation — this is the map's starting position, not a move.
+        // Not a fetch trigger: fetching stays with the real fix, via
+        // handleLocationChange → recenterAndFetch once it lands (same
+        // mapSpan, so the zoom itself doesn't change — just a small center
+        // shift from cached to fresh coordinate). With no cached fix (fresh
+        // install / first authorization), mapCameraPosition is left at
+        // `.automatic`, same as before; the isLocationResolved gate on the
+        // mapSpan-updating onMapCameraChange handlers still protects
+        // against that framing clobbering the restored mapSpan.
+        if let cached = locationManager.lastKnownLocation {
+            mapCameraPosition = .region(MKCoordinateRegion(center: cached, span: mapSpan));
+        }
 
         // Handle deep link that arrived before screen was ready
         if let id = DeepLinkManager.shared.contentId {
@@ -642,17 +669,34 @@ struct TourMapScreen: View {
     }
 
     /// The camera span to open with, before any real settle has recorded
-    /// one of its own: the remembered last zoom if there is one, otherwise
-    /// derived from the legacy range picker's persisted value (existing
-    /// users land back where their old fixed-radius search used to be),
-    /// falling back to ~3km for a fresh install. Either way it's clamped so
-    /// the very first view is never already past the "zoom in" hint cutoff.
-    private func initialMapSpan() -> Double {
+    /// one of its own: the remembered last zoom if there is one (both
+    /// deltas, via WWGDefaults.LastMapSpan / LastMapSpanLongitude — scaled
+    /// down together, preserving their aspect ratio, if the saved zoom is
+    /// past the "zoom in" hint cutoff), otherwise a square span derived from
+    /// whichever is available next: a legacy latitude-only save (from
+    /// before longitude was persisted), or the legacy range picker's
+    /// persisted value (existing users land back where their old
+    /// fixed-radius search used to be), falling back to ~3km for a fresh
+    /// install. Either way it's clamped so the very first view is never
+    /// already past the "zoom in" hint cutoff.
+    private func initialMapSpan() -> MKCoordinateSpan {
         let hintCutoffSpan = spanForRadius(zoomInHintRadiusMeters);
-        if let saved = WWGDefaults.LastMapSpan {
-            return min(saved, hintCutoffSpan);
+
+        if let savedLat = WWGDefaults.LastMapSpan, let savedLon = WWGDefaults.LastMapSpanLongitude {
+            if savedLat > hintCutoffSpan {
+                let scale = hintCutoffSpan / savedLat;
+                return MKCoordinateSpan(latitudeDelta: savedLat * scale, longitudeDelta: savedLon * scale);
+            }
+            return MKCoordinateSpan(latitudeDelta: savedLat, longitudeDelta: savedLon);
         }
-        return min(spanForRadius(Double(WWGDefaults.Range)), hintCutoffSpan);
+
+        if let savedLat = WWGDefaults.LastMapSpan {
+            let clamped = min(savedLat, hintCutoffSpan);
+            return MKCoordinateSpan(latitudeDelta: clamped, longitudeDelta: clamped);
+        }
+
+        let fallback = min(spanForRadius(Double(WWGDefaults.Range)), hintCutoffSpan);
+        return MKCoordinateSpan(latitudeDelta: fallback, longitudeDelta: fallback);
     }
 
     private func onDetailDismiss() {
@@ -815,7 +859,8 @@ struct TourMapScreen: View {
     /// whose half-diagonal is about `radiusMeters`, evaluated at a fixed
     /// Korea-wide reference latitude. Precision doesn't matter here — it
     /// only seeds the very first camera position before any real settle has
-    /// recorded an actual span via WWGDefaults.LastMapSpan.
+    /// recorded an actual span via WWGDefaults.LastMapSpan /
+    /// LastMapSpanLongitude.
     private func spanForRadius(_ radiusMeters: Double) -> Double {
         let metersPerDegreeLat = 111_320.0;
         let refLatitudeRadians = 37.5 * Double.pi / 180;
@@ -865,8 +910,11 @@ struct TourMapScreen: View {
         // happens below (hint vs. fetch vs. already-covered) — it's still a
         // real, deliberate camera position, just not always one that needs
         // a network call. mapSpan itself is kept live by the
-        // .onMapCameraChange handlers on the map, not here.
+        // .onMapCameraChange handlers on the map, not here. Both deltas are
+        // saved (not just latitude) so a relaunch can restore the exact
+        // aspect ratio instead of a square span MapKit would refit wider.
         WWGDefaults.LastMapSpan = region.span.latitudeDelta;
+        WWGDefaults.LastMapSpanLongitude = region.span.longitudeDelta;
 
         let visibleRadius = halfDiagonalMeters(of: region);
 

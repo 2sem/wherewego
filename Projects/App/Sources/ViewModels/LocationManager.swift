@@ -16,6 +16,17 @@ class LocationManager: NSObject, CLLocationManagerDelegate {
 
     private let clManager = CLLocationManager();
 
+    /// CLLocationManager's own cached last fix, read synchronously — unlike
+    /// `currentLocation`, which only updates asynchronously once
+    /// `didUpdateLocations` actually delivers a fresh fix. Used to seed the
+    /// launch camera immediately (avoiding the country-wide `.automatic`
+    /// framing) without waiting on a real request; never assigned to
+    /// `currentLocation`, which stays reserved for a genuine fresh fix so it
+    /// keeps driving `recenterAndFetch` via `.onChange(of:)` as before.
+    var lastKnownLocation: CLLocationCoordinate2D? {
+        clManager.location?.coordinate;
+    }
+
     override init() {
         super.init();
         clManager.delegate = self;

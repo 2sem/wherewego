@@ -25,6 +25,7 @@ class WWGDefaults{
 
         static let Range = "Range";
         static let LastMapSpan = "LastMapSpan";
+        static let LastMapSpanLongitude = "LastMapSpanLongitude";
 
         static let LaunchCount = "LaunchCount";
 
@@ -109,7 +110,26 @@ class WWGDefaults{
             Defaults.set(value, forKey: Keys.LastMapSpan);
         }
     }
-    
+
+    /// Longitude counterpart to `LastMapSpan` — both deltas are needed to
+    /// restore the exact aspect ratio the map last settled on (a square
+    /// span gets refit asymmetrically by MapKit, drifting the zoom out a
+    /// little more on every relaunch). nil until the first real settle, and
+    /// also nil for a pre-existing save made before this key existed — that
+    /// legacy case falls back to a square span instead of losing the
+    /// remembered zoom entirely.
+    static var LastMapSpanLongitude : Double?{
+        get{
+            let value = Defaults.double(forKey: Keys.LastMapSpanLongitude);
+            return value > 0 ? value : nil;
+        }
+
+        set(value){
+            guard let value = value else { return; }
+            Defaults.set(value, forKey: Keys.LastMapSpanLongitude);
+        }
+    }
+
     static var LastOpeningAdPrepared : Date{
         get{
             let seconds = Defaults.double(forKey: Keys.LastOpeningAdPrepared);
