@@ -1,1 +1,6 @@
-Peningkatan performa internal untuk pengalaman yang lebih stabil dan lancar.
+Menjelajahi Korea kini makin mudah!
+- Simpan tempat favorit dengan ikon hati dan lihat semuanya di Favorit.
+- Geser peta, dan kami tampilkan tempat wisata di area yang sedang kamu lihat.
+- Aplikasi kini dibuka kembali dengan tingkat zoom terakhirmu.
+- Tombol Lokasi Saya kini merespons dengan andal dan mempertahankan zoom-mu.
+- Serta peningkatan stabilitas dan performa.

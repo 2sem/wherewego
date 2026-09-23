@@ -1,1 +1,6 @@
-Interne Verbesserungen für ein stabileres und flüssigeres Erlebnis.
+Korea entdecken ist jetzt noch einfacher!
+- Speichere Lieblingsorte mit dem Herz und finde sie alle unter Favoriten.
+- Bewege die Karte – wir zeigen dir Sehenswürdigkeiten im sichtbaren Bereich.
+- Die App öffnet sich wieder mit deiner zuletzt genutzten Zoomstufe.
+- Die Standort-Taste reagiert zuverlässig und behält deine Zoomstufe bei.
+- Außerdem Verbesserungen bei Stabilität und Leistung.
