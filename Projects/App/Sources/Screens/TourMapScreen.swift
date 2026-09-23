@@ -644,6 +644,23 @@ struct TourMapScreen: View {
 
         mapSpan = initialMapSpan();
 
+        // Seed the launch camera from CLLocationManager's own cached fix,
+        // read synchronously — skips the country-wide `.automatic` framing
+        // entirely when one is available, landing straight on the restored
+        // zoom around (approximately) where the user actually is. No
+        // animation — this is the map's starting position, not a move.
+        // Not a fetch trigger: fetching stays with the real fix, via
+        // handleLocationChange → recenterAndFetch once it lands (same
+        // mapSpan, so the zoom itself doesn't change — just a small center
+        // shift from cached to fresh coordinate). With no cached fix (fresh
+        // install / first authorization), mapCameraPosition is left at
+        // `.automatic`, same as before; the isLocationResolved gate on the
+        // mapSpan-updating onMapCameraChange handlers still protects
+        // against that framing clobbering the restored mapSpan.
+        if let cached = locationManager.lastKnownLocation {
+            mapCameraPosition = .region(MKCoordinateRegion(center: cached, span: mapSpan));
+        }
+
         // Handle deep link that arrived before screen was ready
         if let id = DeepLinkManager.shared.contentId {
             navPath.append(.tourInfoById(id, DeepLinkManager.shared.srcLocation));
