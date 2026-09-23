@@ -1,4 +1,10 @@
-.PHONY: init install ins gen ca install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
+.PHONY: setup init install ins gen ca install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
+
+# First-time bootstrap: tools, decrypted secret plists, packages, workspace
+setup: init
+	@command -v git-secret >/dev/null 2>&1 || brew install git-secret
+	git secret reveal
+	$(MAKE) install generate
 
 # Install mise (if missing) and the tuist version pinned in .mise.toml
 init:
