@@ -1,1 +1,6 @@
-Mejoras internas para una experiencia más estable y fluida.
+¡Explorar Corea ahora es más fácil!
+- Guarda tus lugares favoritos con el corazón y encuéntralos todos en Favoritos.
+- Mueve el mapa y te mostraremos las atracciones de la zona que estás viendo.
+- La app se vuelve a abrir con el nivel de zoom que dejaste.
+- El botón Mi ubicación responde de forma fiable y mantiene tu zoom.
+- Además, mejoras de estabilidad y rendimiento.

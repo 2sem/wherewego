@@ -1,1 +1,6 @@
-Cải thiện hiệu năng nội bộ để mang lại trải nghiệm ổn định và mượt mà hơn.
+Khám phá Hàn Quốc giờ dễ dàng hơn!
+- Nhấn trái tim để lưu địa điểm yêu thích và xem lại tất cả trong Mục yêu thích.
+- Di chuyển bản đồ, chúng tôi sẽ hiển thị điểm tham quan ở khu vực bạn đang xem.
+- Ứng dụng mở lại đúng mức thu phóng bạn để lần trước.
+- Nút Vị trí của tôi phản hồi ổn định và giữ nguyên mức thu phóng.
+- Cùng nhiều cải tiến về độ ổn định và hiệu năng.

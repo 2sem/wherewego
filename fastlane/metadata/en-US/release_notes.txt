@@ -1,1 +1,6 @@
-Improved internal performance for a more stable, smoother experience.
+Exploring Korea just got easier!
+- Tap the heart to save places you love and find them all in Favorites.
+- Move the map and we'll show attractions in the area you're looking at.
+- The app now reopens at the zoom level you left it.
+- The My Location button now responds reliably and keeps your zoom.
+- Plus stability and performance improvements.
