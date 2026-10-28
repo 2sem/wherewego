@@ -435,11 +435,10 @@ struct TourInfoScreen: View {
 
     private var mapSection: some View {
         VStack(spacing: 0) {
-            if let dest = resolvedInfo?.location, let src = currentLocation {
+            if let dest = resolvedInfo?.location {
                 ZStack(alignment: .bottomTrailing) {
                     Map(position: $mapCameraPosition) {
-                        Marker("Here", coordinate: src)
-                            .foregroundStyle(.blue)
+                        UserAnnotation()
                         Marker(resolvedInfo?.title ?? "", coordinate: dest)
                             .foregroundStyle(.red)
                         if !routeCoordinates.isEmpty {
@@ -453,11 +452,19 @@ struct TourInfoScreen: View {
                         MapCompass()
                     }
                     .onChange(of: resolvedInfo?.location) { _, _ in
-                        mapCameraPosition = .region(regionFitting(src, dest));
+                        mapCameraPosition = defaultCameraPosition(dest: dest);
+                    }
+                    .onChange(of: isMapFullScreen) { _, isFull in
+                        // Restore the fit-both default when returning from follow mode
+                        if !isFull {
+                            mapCameraPosition = defaultCameraPosition(dest: dest);
+                        }
                     }
                     .task {
-                        mapCameraPosition = .region(regionFitting(src, dest));
-                        await fetchRoute(from: src, to: dest);
+                        mapCameraPosition = defaultCameraPosition(dest: dest);
+                        if let src = currentLocation {
+                            await fetchRoute(from: src, to: dest);
+                        }
                     }
 
                     // Full screen toggle button
@@ -496,11 +503,10 @@ struct TourInfoScreen: View {
             bannerAdSlot
 
             // Full screen map
-            if let dest = resolvedInfo?.location, let src = currentLocation {
+            if let dest = resolvedInfo?.location {
                 ZStack(alignment: .bottomTrailing) {
                     Map(position: $mapCameraPosition) {
-                        Marker("Here", coordinate: src)
-                            .foregroundStyle(.blue)
+                        UserAnnotation()
                         Marker(resolvedInfo?.title ?? "", coordinate: dest)
                             .foregroundStyle(.red)
                         if !routeCoordinates.isEmpty {
@@ -513,12 +519,10 @@ struct TourInfoScreen: View {
                         MapCompass()
                     }
                     .onAppear {
-                        // Ensure proper zoom level when entering full screen
-                        if !routeCoordinates.isEmpty {
-                            mapCameraPosition = .region(regionFittingRoute(routeCoordinates));
-                        } else {
-                            mapCameraPosition = .region(regionFitting(src, dest));
-                        }
+                        // Full screen starts in follow mode; manual pan stops it and
+                        // MapUserLocationButton resumes it. Falls back to the route/destination
+                        // fit when location is unavailable or denied.
+                        mapCameraPosition = .userLocation(followsHeading: false, fallback: .region(defaultRegion(dest: dest)));
                     }
 
                     // Exit full screen button
@@ -888,10 +892,25 @@ struct TourInfoScreen: View {
         print("[Route] first: (\(routeCoordinates.first?.latitude ?? -1), \(routeCoordinates.first?.longitude ?? -1))");
         print("[Route] last:  (\(routeCoordinates.last?.latitude ?? -1), \(routeCoordinates.last?.longitude ?? -1))");
 
-        // Adjust camera to fit entire route
-        if !routeCoordinates.isEmpty {
+        // Adjust camera to fit entire route (not while following the user in full screen)
+        if !routeCoordinates.isEmpty && !isMapFullScreen {
             mapCameraPosition = .region(regionFittingRoute(routeCoordinates));
         }
+    }
+
+    /// Fit-both region (src + dest, or route when available); destination only without a source.
+    private func defaultRegion(dest: CLLocationCoordinate2D) -> MKCoordinateRegion {
+        if !routeCoordinates.isEmpty {
+            return regionFittingRoute(routeCoordinates);
+        }
+        if let src = currentLocation {
+            return regionFitting(src, dest);
+        }
+        return MKCoordinateRegion(center: dest, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01));
+    }
+
+    private func defaultCameraPosition(dest: CLLocationCoordinate2D) -> MapCameraPosition {
+        return .region(defaultRegion(dest: dest));
     }
 
     private func regionFitting(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> MKCoordinateRegion {
