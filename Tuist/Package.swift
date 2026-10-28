@@ -93,7 +93,7 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk", .upToNextMinor(from: "12.18.0")),
         // Resolved through the Tuist Registry (tuist.dev) rather than the GitHub
         // URL - see Tuist/.swiftpm/configuration/registries.json (from `tuist registry setup`).
-        .package(id: "kakao.kakao-ios-sdk", from: "2.27.3"),
+        .package(id: "kakao.kakao-ios-sdk", from: "2.30.0"),
         // Not published on the Tuist Registry, so resolved by URL.
         .package(url: "https://github.com/2sem/LSExtensions", exact: "0.1.24"),
         .package(url: "https://github.com/2sem/StringLogger", exact: "0.7.1"),
