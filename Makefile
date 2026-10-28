@@ -47,8 +47,8 @@ generate:
 # Alias for generate
 gen: generate
 
-# Generate the Xcode workspace
-generate-clean: clean generate
+# Wipe fetched packages and cached binaries, re-fetch, then generate
+generate-clean: clean install generate
 
 # Generate the Xcode workspace building every package from source (cache profile none)
 generate-no-cache:
