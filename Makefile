@@ -1,4 +1,4 @@
-.PHONY: setup init install ins gen ca install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean
+.PHONY: setup init install ins gen ca install-clean clean cache build test generate generate-clean generate-no-cache generate-open graph archive archive-clean s i c ic b t g gc gn o gr ar go bt rebuild ig
 
 # First-time bootstrap: tools, decrypted secret plists, packages, workspace
 setup: init
@@ -75,3 +75,32 @@ archive:
 # xcframeworks with no dSYMs, so Xcode links prebuilt Firebase frameworks
 # instead of compiling them, and the dSYMs Crashlytics needs are never produced.
 archive-clean: clean install generate-no-cache archive
+
+# --- Short aliases ---
+
+s: setup
+i: install
+c: clean
+ic: install-clean
+b: build
+t: test
+g: generate
+gc: generate-clean
+gn: generate-no-cache
+o: generate-open
+gr: graph
+ar: archive-clean
+
+# --- Combos ---
+
+# Resolve packages, generate the workspace, then build
+go: install generate build
+
+# Build then run tests
+bt: build test
+
+# Full reset: wipe, re-fetch, regenerate, build
+rebuild: clean install generate build
+
+# Resolve packages, then generate the workspace
+ig: install generate
