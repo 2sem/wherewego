@@ -29,12 +29,22 @@ struct TourMapScreen: View {
     @State private var viewportFetchTask: Task<Void, Never>? = nil
     // Quiet browsing: an empty result only pops the modal alert when the
     // user explicitly changed the type filter — a drag/zoom/location fetch
-    // landing empty is a normal, frequent part of exploring a map and gets
-    // a non-modal inline badge instead. Set right before the one fetchList()
+    // landing empty is a normal, frequent part of exploring a map and shows
+    // the panel's inline "No places here" state instead. Set right before the one fetchList()
     // call that should alert, consumed (reset) the next time a fetch
     // resolves either way.
     @State private var expectingAlertOnEmpty = false
-    @State private var showNoPlacesHint = false
+    // Nearby-places panel. `nearby` is rebuilt by refreshNearby() whenever its
+    // inputs change (settled region, fetched infos, selection, GPS) — never
+    // derived inside `body`, since sorting re-parses every place's fields.
+    @State private var nearby = NearbyPlacesResult()
+    @State private var detent: NearbyPanelDetent = .half
+    @State private var favoriteIds: Set<Int> = []
+    // Container size from contentBody, for the panel's detent heights, the
+    // map controls' position and the selection camera offset. The initial
+    // value is a typical-phone guess until the first layout pass reports.
+    @State private var metrics = MapLayoutMetrics(height: UIScreen.main.bounds.height - 150, bottomInset: 34)
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("LaunchCount") private var launchCount: Int = 0
     @EnvironmentObject var adManager: SwiftUIAdManager
 
@@ -53,6 +63,11 @@ struct TourMapScreen: View {
     // otherwise clobber the value just restored in onScreenAppear. No range
     // control drives this anymore.
     @State private var mapSpan: MKCoordinateSpan = MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+
+    private struct MapLayoutMetrics: Equatable {
+        var height: CGFloat
+        var bottomInset: CGFloat
+    }
 
     private var typeOptions: [(String, KGDataTourInfo.ContentType?)] {
         var options: [(String, KGDataTourInfo.ContentType?)] = [("All Tour Informations".localized(), nil)];
@@ -139,36 +154,42 @@ struct TourMapScreen: View {
             if viewModel.infos.isEmpty && viewModel.location != nil {
                 if expectingAlertOnEmpty {
                     showNoDataAlert = true;
-                } else {
-                    showNoPlacesHint = true;
                 }
             } else {
-                showNoPlacesHint = false;
                 // First page loaded — auto-fetch remaining pages
                 viewModel.fetchAllPages();
             }
             expectingAlertOnEmpty = false;
+            refreshNearby();
         }
         .onChange(of: viewModel.infos.count) { _, _ in
-            // If the place behind an open floating card fell out of the
-            // current results (type filter changed, or the search center
-            // moved far enough that it's no longer nearby), drop the stale
-            // selection and its saved camera position rather than leaving
-            // the card open over content that no longer matches, or letting
-            // a later deselect snap back to a position from before the move.
+            // If the selected place fell out of the current results (type
+            // filter changed, or the search center moved far enough that it's
+            // no longer nearby), drop the stale selection and its saved
+            // camera position rather than leaving it pinned in the panel over
+            // content that no longer matches, or letting a later deselect
+            // snap back to a position from before the move.
             if let selected = selectedTour, !viewModel.infos.contains(where: { $0.id == selected.id }) {
                 selectedTour = nil;
                 savedCameraPosition = nil;
             }
+            refreshNearby();
+        }
+        .onChange(of: viewModel.coveredRadius) { _, _ in refreshNearby(); }
+        .onChange(of: navPath.count) { _, _ in
+            // Returning from detail / favorites: hearts may have changed there.
+            reloadFavorites();
         }
         .onChange(of: selectedTour?.id) { _, id in
             if let loc = selectedTour?.location {
-                // Save current position before zooming in
-                savedCameraPosition = mapCameraPosition;
+                // Only the first selection saves the camera, so deselecting
+                // after hopping between places restores the pre-selection view.
+                if savedCameraPosition == nil { savedCameraPosition = mapCameraPosition; }
+                // Pan only — the zoom stays, so neighboring pins remain visible.
                 withAnimation(.easeInOut(duration: 0.5)) {
                     mapCameraPosition = .region(MKCoordinateRegion(
                         center: centeredCoordinate(for: loc),
-                        span: MKCoordinateSpan(latitudeDelta: 0.015, longitudeDelta: 0.015)
+                        span: currentRegion?.span ?? mapSpan
                     ));
                 }
             } else {
@@ -180,6 +201,7 @@ struct TourMapScreen: View {
                     savedCameraPosition = nil;
                 }
             }
+            refreshNearby();
         }
         .onChange(of: DeepLinkManager.shared.contentId) { _, newId in
             handleDeepLink(newId);
@@ -193,35 +215,122 @@ struct TourMapScreen: View {
             mapView
                 .ignoresSafeArea(edges: .bottom)
 
-            if let tour = selectedTour {
-                floatingInfoCard(for: tour)
-                    .padding(.bottom, 60)  // Above banner
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+            mapControls
 
-            if viewModel.hasMorePages {
-                loadingMoreBadge
-                    .padding(.bottom, selectedTour != nil ? 200 : 60)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-
-            if showZoomInHint {
-                zoomInHintBadge
-                    .padding(.bottom, selectedTour != nil ? 200 : 60)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
-
-            if showNoPlacesHint {
-                noPlacesHintBadge
-                    .padding(.bottom, selectedTour != nil ? 200 : 60)
-                    .transition(.opacity.combined(with: .move(edge: .bottom)))
-            }
+            nearbyPanel
+                .padding(.bottom, NearbyPanelLayout.bannerHeight)
 
             bannerAdView
         }
-        .animation(.easeInOut(duration: 0.3), value: viewModel.hasMorePages)
-        .animation(.easeInOut(duration: 0.3), value: showZoomInHint)
-        .animation(.easeInOut(duration: 0.3), value: showNoPlacesHint)
+        .onGeometryChange(for: MapLayoutMetrics.self) { proxy in
+            MapLayoutMetrics(height: proxy.size.height, bottomInset: proxy.safeAreaInsets.bottom)
+        } action: { metrics = $0; }
+    }
+
+    // MARK: - Nearby panel
+
+    private var panelAvailableHeight: CGFloat {
+        max(0, metrics.height - NearbyPanelLayout.bannerHeight);
+    }
+
+    private func panelHeight(for detent: NearbyPanelDetent) -> CGFloat {
+        NearbyPanelLayout.height(for: detent, available: panelAvailableHeight, hasSelection: selectedTour != nil);
+    }
+
+    private var panelAnimation: Animation {
+        NearbyPanelLayout.animation(reduceMotion: reduceMotion);
+    }
+
+    private var nearbyContent: NearbyPanelContent {
+        if showZoomInHint { return .zoomIn; }
+        if !nearby.places.isEmpty { return .list; }
+        if viewModel.isLoading || viewModel.location == nil { return .loading; }
+        return .empty;
+    }
+
+    private var nearbyPanel: some View {
+        NearbyPlacesPanel(
+            places: nearby.places,
+            totalCount: nearby.totalCount,
+            isTruncated: nearby.isTruncated,
+            content: nearbyContent,
+            selectedId: selectedTour?.id,
+            favoriteIds: favoriteIds,
+            // Without a GPS fix the sort origin is the map center, which
+            // isn't a distance the user cares about.
+            showsDistance: locationManager.currentLocation != nil,
+            loadedCount: viewModel.infos.count,
+            pagingTotal: viewModel.totalCount,
+            isPaging: viewModel.hasMorePages,
+            availableHeight: panelAvailableHeight,
+            detent: $detent,
+            onSelect: { selectPlace($0); },
+            onOpenDetails: { navigateToDetail(info: $0); },
+            onToggleFavorite: { toggleFavorite($0); }
+        )
+    }
+
+    /// Zoom + location controls ride the panel's top edge. Zoom +/- hides
+    /// when there is no room for it, everything fades out at the large detent.
+    private var mapControls: some View {
+        let panelTop = panelAvailableHeight - panelHeight(for: detent);
+        let topLimit: CGFloat = 60;
+        let showsZoom = panelTop - 12 - topLimit >= 170;
+        let controlsHeight: CGFloat = showsZoom ? 140 : 44;
+        let top = max(topLimit, panelTop - 12 - controlsHeight);
+
+        return VStack(spacing: 8) {
+            if showsZoom { zoomControls; }
+            locationButton
+        }
+        .padding(.leading, 12)
+        .padding(.top, top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .opacity(detent == .large ? 0 : 1)
+        .allowsHitTesting(detent != .large)
+        .animation(panelAnimation, value: detent)
+        .animation(panelAnimation, value: selectedTour?.id)
+    }
+
+    private func refreshNearby() {
+        let origin = locationManager.currentLocation ?? currentRegion?.center ?? viewModel.location;
+        nearby = NearbyPlacesFilter.make(
+            infos: viewModel.infos,
+            region: currentRegion,
+            selected: selectedTour,
+            origin: origin
+        );
+    }
+
+    private func reloadFavorites() {
+        favoriteIds = Set(WWGDefaults.FavoritePlaces.compactMap { $0.id; });
+    }
+
+    private func toggleFavorite(_ info: KGDataTourInfo) {
+        guard let id = info.id else { return; }
+        if WWGDefaults.toggleFavorite(info) {
+            favoriteIds.insert(id);
+        } else {
+            favoriteIds.remove(id);
+        }
+    }
+
+    /// Pin or row tap: select, bring the panel to half, pan (see the
+    /// selectedTour onChange). Re-selecting the selected place is a no-op.
+    private func selectPlace(_ info: KGDataTourInfo) {
+        guard selectedTour?.id != info.id else { return; }
+        withAnimation(panelAnimation) {
+            selectedTour = info;
+            detent = .half;
+        }
+    }
+
+    /// A user pan/zoom on the map folds a half-open panel away. Driven by
+    /// gestures on the Map, not camera callbacks: those also fire for
+    /// programmatic moves (selection pan, recenter, zoom buttons).
+    private func collapsePanelForMapGesture() {
+        guard detent == .half else { return; }
+        withAnimation(panelAnimation) { detent = .collapsed; }
     }
 
     // MARK: - Map View
@@ -234,8 +343,7 @@ struct TourMapScreen: View {
     }
 
     private var mapView: some View {
-        ZStack(alignment: .leading) {
-            Map(position: $mapCameraPosition) {
+        Map(position: $mapCameraPosition) {
                 // User location — always the actual GPS fix, never the search
                 // center (which may be a dragged/deep-linked point far from
                 // where the user actually is).
@@ -260,9 +368,7 @@ struct TourMapScreen: View {
                         Annotation(title, coordinate: location) {
                             markerView(for: info, isSelected: isSelected)
                                 .onTapGesture {
-                                    withAnimation {
-                                        selectedTour = info;
-                                    }
+                                    selectPlace(info);
                                 }
                         }
                     }
@@ -274,8 +380,9 @@ struct TourMapScreen: View {
             .onMapCameraChange { context in
                 currentRegion = context.region;
                 requestedSpan = context.region.span.latitudeDelta;
-                // Card-selection camera moves (fixed 0.015 span) must not
-                // become the user's remembered zoom. Also gated on
+                refreshNearby();
+                // Selection pans must not become the user's remembered zoom.
+                // Also gated on
                 // isLocationResolved — until launch's own camera move has
                 // actually been applied (recenterAndFetch, or a resolved
                 // denied/restricted status), this fires for the map's
@@ -308,15 +415,14 @@ struct TourMapScreen: View {
                     selectedTour = nil;
                 }
             }
-
-            // Zoom + location controls on the left side
-            VStack(spacing: 8) {
-                zoomControls
-                locationButton
-            }
-            .padding(.leading, 12)
-            .padding(.top, 60)
-        }
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 24)
+                    .onChanged { _ in collapsePanelForMapGesture(); }
+            )
+            .simultaneousGesture(
+                MagnifyGesture(minimumScaleDelta: 0.05)
+                    .onChanged { _ in collapsePanelForMapGesture(); }
+            )
     }
 
     private func markerView(for info: KGDataTourInfo, isSelected: Bool) -> some View {
@@ -365,120 +471,11 @@ struct TourMapScreen: View {
     }
 
     private func markerIcon(for type: KGDataTourInfo.ContentType) -> String {
-        switch type {
-        case .Tour, .Tour_Foreign:           return "camera.fill"              // 관광지
-        case .Culture, .Culture_Foreign:     return "building.columns.fill"    // 문화시설
-        case .Event, .Event_Foreign:         return "party.popper.fill"        // 행사/공연/축제
-        case .Course:                        return "map.fill"                 // 여행코스
-        case .Leports, .Leports_Foreign:     return "figure.run"               // 레포츠
-        case .Hotel, .Hotel_Foreign:         return "bed.double.fill"          // 숙박
-        case .Shopping, .Shopping_Foreign:   return "cart.fill"                // 쇼핑
-        case .Food, .Food_Foreign:           return "fork.knife"               // 음식점
-        case .Travel, .Travel_Foreign:       return "airplane"                 // 여행
-        }
+        type.markerIconName;
     }
 
     private func markerColor(for type: KGDataTourInfo.ContentType) -> Color {
-        switch type {
-        case .Tour, .Tour_Foreign:           return Color("TourMarkerColor")       // 관광지
-        case .Culture, .Culture_Foreign:     return Color("CultureMarkerColor")    // 문화시설
-        case .Event, .Event_Foreign:         return Color("EventMarkerColor")      // 행사/공연/축제
-        case .Course:                        return Color("CourseMarkerColor")     // 여행코스
-        case .Leports, .Leports_Foreign:     return Color("LeportsMarkerColor")    // 레포츠
-        case .Hotel, .Hotel_Foreign:         return Color("HotelMarkerColor")      // 숙박
-        case .Shopping, .Shopping_Foreign:   return Color("ShoppingMarkerColor")   // 쇼핑
-        case .Food, .Food_Foreign:           return Color("FoodMarkerColor")       // 음식점
-        case .Travel, .Travel_Foreign:       return Color("TravelMarkerColor")     // 여행
-        }
-    }
-
-    private func floatingInfoCard(for tour: KGDataTourInfo) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Thumbnail
-            if let imgUrl = tour.thumbnail {
-                AsyncImage(url: imgUrl) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.gray.opacity(0.3)
-                }
-                .frame(width: 100, height: 120)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
-
-            // Info
-            VStack(alignment: .leading, spacing: 6) {
-                // Type badge
-                HStack(spacing: 4) {
-                    Image(systemName: markerIcon(for: tour.type))
-                        .font(.system(size: 12))
-                        .foregroundStyle(.white)
-
-                    Text(tour.type.stringValue.localized())
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white)
-                }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(markerColor(for: tour.type))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-
-                // Title
-                Text(tour.title ?? "")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .lineLimit(2)
-
-                // Address
-                if let addr = tour.primaryAddr, !addr.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "mappin.circle.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                        Text(addr)
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    }
-                }
-
-                // Phone
-                if let tel = tour.tel, !tel.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "phone.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.secondary)
-                        Text(tel)
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                // Distance — client-side from GPS, falling back to the API's
-                // dist (measured from the search center) when GPS is nil.
-                if let distance = tour.distance(from: locationManager.currentLocation) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "location.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(.blue)
-                        Text(distance.stringForDistance())
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.blue)
-                    }
-                }
-            }
-
-            Spacer()
-        }
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.15), radius: 10, y: 5)
-        .padding(.horizontal)
-        .onTapGesture {
-            navigateToDetail(info: tour);
-        }
+        type.markerColor;
     }
 
     private var zoomControls: some View {
@@ -526,45 +523,6 @@ struct TourMapScreen: View {
         .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
         .accessibilityLabel("My Location".localized())
         .accessibilityHint("Centers the map on your current location".localized())
-    }
-
-    private var loadingMoreBadge: some View {
-        HStack(spacing: 6) {
-            ProgressView()
-                .scaleEffect(0.8)
-            Text("\(viewModel.infos.count) / \(viewModel.totalCount)")
-                .font(.system(size: 13, weight: .medium))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(.ultraThinMaterial, in: Capsule())
-        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
-    }
-
-    private var zoomInHintBadge: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "arrow.up.left.and.arrow.down.right")
-                .font(.system(size: 12, weight: .semibold))
-            Text("Zoom in to see places".localized())
-                .font(.system(size: 13, weight: .medium))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(.ultraThinMaterial, in: Capsule())
-        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
-    }
-
-    private var noPlacesHintBadge: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "mappin.slash")
-                .font(.system(size: 12, weight: .semibold))
-            Text("No places here".localized())
-                .font(.system(size: 13, weight: .medium))
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .background(.ultraThinMaterial, in: Capsule())
-        .shadow(color: .black.opacity(0.15), radius: 6, y: 2)
     }
 
     private var bannerAdView: some View {
@@ -643,6 +601,7 @@ struct TourMapScreen: View {
         locationManager.requestLocation();
 
         mapSpan = initialMapSpan();
+        reloadFavorites();
 
         // Seed the launch camera from CLLocationManager's own cached fix,
         // read synchronously — skips the country-wide `.automatic` framing
@@ -714,26 +673,22 @@ struct TourMapScreen: View {
         navPath.append(.tourInfo(info, locationManager.currentLocation ?? viewModel.location));
     }
 
-    /// Shifts the center coordinate downward so the place appears visually
-    /// centered in the map area above the floating info card.
+    /// Shifts the camera center below `loc` so the place lands in the middle
+    /// of the map area visible above the panel, at the current zoom. Uses the
+    /// panel's height for the current detent (selection has already moved it
+    /// to half by the time this runs).
     private func centeredCoordinate(for loc: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
-        let span: Double = 0.015;
-        let screenHeight = UIScreen.main.bounds.height;
+        let mapHeight = metrics.height + metrics.bottomInset;
+        guard mapHeight > 0 else { return loc; }
 
-        // Approximate height of: card (~160pt) + bottom padding (60pt) + banner (50pt)
-        let cardClearance: CGFloat = 270;
-        let visibleHeight = screenHeight - cardClearance;
+        let latitudeDelta = currentRegion?.span.latitudeDelta ?? mapSpan.latitudeDelta;
+        let panelTop = panelAvailableHeight - panelHeight(for: detent);
 
-        // How far the visible center is below the map center, in points
-        let offsetPoints = (screenHeight - visibleHeight) / 2;
+        // How far the middle of the uncovered map sits above the map center.
+        let offsetPoints = mapHeight / 2 - panelTop / 2;
+        let latOffset = Double(offsetPoints / mapHeight) * latitudeDelta;
 
-        // Convert points to degrees
-        let latOffset = Double(offsetPoints / screenHeight) * span;
-
-        return CLLocationCoordinate2D(
-            latitude: loc.latitude - latOffset,
-            longitude: loc.longitude
-        );
+        return CLLocationCoordinate2D(latitude: loc.latitude - latOffset, longitude: loc.longitude);
     }
 
     private func zoomIn() {
@@ -796,6 +751,7 @@ struct TourMapScreen: View {
 
     private func handleLocationChange(_ newLoc: CLLocationCoordinate2D?) {
         guard let loc = newLoc else { return };
+        refreshNearby();
         recenterAndFetch(loc);
     }
 
@@ -875,8 +831,8 @@ struct TourMapScreen: View {
     /// technically allow it up to 20km.
     private let zoomInHintRadiusMeters: Double = 10000;
 
-    /// Cancels the pending viewport fetch and clears any stale "nothing to
-    /// see here" hint the instant the camera starts moving again, rather
+    /// Cancels the pending viewport fetch and clears any stale "zoom in"
+    /// hint the instant the camera starts moving again, rather
     /// than waiting for it to settle — so a hint computed for the position
     /// being left doesn't linger through the drag/zoom that's about to
     /// invalidate it. Guarded so this never writes @State on every frame,
@@ -888,9 +844,6 @@ struct TourMapScreen: View {
         }
         if showZoomInHint {
             showZoomInHint = false;
-        }
-        if showNoPlacesHint {
-            showNoPlacesHint = false;
         }
     }
 
