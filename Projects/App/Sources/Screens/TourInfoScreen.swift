@@ -438,13 +438,14 @@ struct TourInfoScreen: View {
             if let dest = resolvedInfo?.location {
                 ZStack(alignment: .bottomTrailing) {
                     Map(position: $mapCameraPosition) {
-                        UserAnnotation()
-                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
-                            .foregroundStyle(.red)
                         if !routeCoordinates.isEmpty {
                             MapPolyline(coordinates: routeCoordinates)
                                 .stroke(Color("PathColor"), lineWidth: 5)
                         }
+                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                            .foregroundStyle(.red)
+                        // Draw the user dot above the destination pin so it stays visible when they overlap
+                        UserAnnotation()
                     }
                     .frame(height: UIScreen.main.bounds.height * 0.35)
                     .mapControls {
@@ -506,13 +507,14 @@ struct TourInfoScreen: View {
             if let dest = resolvedInfo?.location {
                 ZStack(alignment: .bottomTrailing) {
                     Map(position: $mapCameraPosition) {
-                        UserAnnotation()
-                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
-                            .foregroundStyle(.red)
                         if !routeCoordinates.isEmpty {
                             MapPolyline(coordinates: routeCoordinates)
                                 .stroke(Color("PathColor"), lineWidth: 5)
                         }
+                        Marker(resolvedInfo?.title ?? "", coordinate: dest)
+                            .foregroundStyle(.red)
+                        // Draw the user dot above the destination pin so it stays visible when they overlap
+                        UserAnnotation()
                     }
                     .mapControls {
                         MapUserLocationButton()
