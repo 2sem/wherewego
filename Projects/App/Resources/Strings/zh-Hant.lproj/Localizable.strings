@@ -67,3 +67,15 @@
 "Less" = "收起";
 "Zoom in to see places" = "放大地圖查看周邊地點";
 "No places here" = "這裡沒有地點";
+"Nearby places" = "周邊地點";
+"No places here..." = "這裡沒有地點…";
+"Zoom in to see more" = "放大地圖查看更多";
+"Open details" = "查看詳細資訊";
+"Add to favorites" = "加入收藏";
+"Remove from favorites" = "從收藏中刪除";
+"Expand" = "展開";
+"Collapse" = "收起";
+"Collapsed" = "已收起";
+"Half" = "半展開";
+"Expanded" = "已展開";
+"Opens details" = "開啟詳細資訊";

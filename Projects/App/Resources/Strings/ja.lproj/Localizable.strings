@@ -67,3 +67,15 @@
 "Less" = "折りたたむ";
 "Zoom in to see places" = "ズームインすると場所が表示されます";
 "No places here" = "この付近には場所がありません";
+"Nearby places" = "周辺の場所";
+"No places here..." = "この付近には場所がありません…";
+"Zoom in to see more" = "ズームインするとさらに表示されます";
+"Open details" = "詳細を見る";
+"Add to favorites" = "お気に入りに追加";
+"Remove from favorites" = "お気に入りから削除";
+"Expand" = "展開";
+"Collapse" = "折りたたむ";
+"Collapsed" = "折りたたみ";
+"Half" = "半分";
+"Expanded" = "展開済み";
+"Opens details" = "詳細画面を開きます";

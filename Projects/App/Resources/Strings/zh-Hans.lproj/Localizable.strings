@@ -67,3 +67,15 @@
 "Less" = "收起";
 "Zoom in to see places" = "放大地图查看周边地点";
 "No places here" = "这里没有地点";
+"Nearby places" = "周边地点";
+"No places here..." = "这里没有地点…";
+"Zoom in to see more" = "放大地图查看更多";
+"Open details" = "查看详情";
+"Add to favorites" = "添加到收藏";
+"Remove from favorites" = "从收藏中删除";
+"Expand" = "展开";
+"Collapse" = "收起";
+"Collapsed" = "已收起";
+"Half" = "半展开";
+"Expanded" = "已展开";
+"Opens details" = "打开详情";
