@@ -117,5 +117,15 @@ let project = Project(
                 ]
             )
         ),
+        .target(
+            name: "AppTests",
+            destinations: [.iPhone, .iPad],
+            product: .unitTests,
+            bundleId: "com.y2k.wherewego.tests",
+            deploymentTargets: .iOS("18.0"),
+            infoPlist: .default,
+            sources: ["Tests/**"],
+            dependencies: [.target(name: "App")]
+        ),
     ], resourceSynthesizers: []
 )
