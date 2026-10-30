@@ -232,12 +232,18 @@ struct NearbyPlacesPanel: View {
                     }
                 }
             }
-            .onChange(of: selectedId) { _, id in
-                guard let id = id else { return };
-                withAnimation(NearbyPanelLayout.animation(reduceMotion: reduceMotion)) {
-                    proxy.scrollTo(id, anchor: .top);
-                }
-            }
+            // `selectedId` changes a render before `places` re-sorts the selection
+            // to the top, so also watch the first row: scroll once the selected
+            // place has actually become the first row.
+            .onChange(of: selectedId) { _, _ in scrollToSelected(proxy); }
+            .onChange(of: places.first?.id) { _, _ in scrollToSelected(proxy); }
+        }
+    }
+
+    private func scrollToSelected(_ proxy: ScrollViewProxy) {
+        guard let id = selectedId, places.first?.id == id else { return };
+        withAnimation(NearbyPanelLayout.animation(reduceMotion: reduceMotion)) {
+            proxy.scrollTo(id, anchor: .top);
         }
     }
 
