@@ -12,7 +12,8 @@ struct NearbyPlace: Identifiable {
 }
 
 struct NearbyPlacesResult {
-    /// The selected place first (when there is one), then the rest by distance.
+    /// By distance. The selected place keeps its distance slot (even when outside
+    /// the region) so the list order never jumps when selecting.
     var places: [NearbyPlace] = [];
     /// Places inside the region plus the selected place when it is outside —
     /// before the row cap is applied.
@@ -41,38 +42,49 @@ enum NearbyPlacesFilter {
         var candidates: [NearbyPlace] = [];
         var seen = Set<Int>();
         for info in infos {
-            guard let id = info.id, id != selectedId, !seen.contains(id) else { continue; }
+            guard let id = info.id, !seen.contains(id) else { continue; }
             guard let coord = info.location else { continue; }
-            if let region = region, !contains(region, coord) { continue; }
+            if id != selectedId, let region = region, !contains(region, coord) { continue; }
             seen.insert(id);
             candidates.append(NearbyPlace(id: id, info: info, distance: info.distance(from: origin)));
         }
 
-        candidates.sort { a, b in
-            switch (a.distance, b.distance) {
-            case let (x?, y?): return x != y ? x < y : a.id < b.id;
-            case (_?, nil):    return true;
-            case (nil, _?):    return false;
-            case (nil, nil):   return a.id < b.id;
-            }
-        };
+        candidates.sort(by: isBefore);
+
+        var selectedPlace: NearbyPlace?;
+        if let selected = selected, let id = selectedId, !seen.contains(id) {
+            selectedPlace = NearbyPlace(id: id, info: selected, distance: selected.distance(from: origin));
+            seen.insert(id);
+        }
 
         var result = NearbyPlacesResult();
         let truncated = candidates.count > limit;
-        if truncated { candidates.removeSubrange(limit...); }
-
-        var rows: [NearbyPlace] = [];
-        var total = seen.count;
-        if let selected = selected, let id = selectedId {
-            rows.append(NearbyPlace(id: id, info: selected, distance: selected.distance(from: origin)));
-            total += 1;
+        if truncated {
+            let dropped = candidates[limit...].first { $0.id == selectedId };
+            candidates.removeSubrange(limit...);
+            if let dropped = dropped { candidates.append(dropped); }
         }
-        rows.append(contentsOf: candidates);
+
+        var rows = candidates;
+        if let extra = selectedPlace {
+            let index = rows.firstIndex { Self.isBefore(extra, $0) } ?? rows.count;
+            rows.insert(extra, at: index);
+        }
+        let total = seen.count;
 
         result.places = rows;
         result.totalCount = total;
         result.isTruncated = truncated;
         return result;
+    }
+
+    private static func isBefore(_ a: NearbyPlace, _ b: NearbyPlace) -> Bool {
+        switch (a.distance, b.distance) {
+        case let (x?, y?): return x != y ? x < y : a.id < b.id;
+        case (_?, nil):    return true;
+        case (nil, _?):    return false;
+        case (nil, nil):   return a.id < b.id;
+        }
     }
 
     /// Plain lat/lon box test — the visible map area is far smaller than any
