@@ -95,7 +95,7 @@ struct NearbyPlacesPanel: View {
             if showsList {
                 Divider()
                 listContent
-            } else if let selected = places.first, selected.id == selectedId {
+            } else if let selected = places.first(where: { $0.id == selectedId }) {
                 compactSelectedRow(selected)
             }
         }
@@ -232,18 +232,19 @@ struct NearbyPlacesPanel: View {
                     }
                 }
             }
-            // `selectedId` changes a render before `places` re-sorts the selection
-            // to the top, so also watch the first row: scroll once the selected
-            // place has actually become the first row.
-            .onChange(of: selectedId) { _, _ in scrollToSelected(proxy); }
-            .onChange(of: places.first?.id) { _, _ in scrollToSelected(proxy); }
+            // The list keeps its order, so just bring the selection into view
+            // (nil anchor = minimal scroll; a visible row doesn't move).
+            .onChange(of: selectedId) { _, _ in scrollToSelected(proxy, animated: true); }
+            .onAppear { scrollToSelected(proxy, animated: false); }
         }
     }
 
-    private func scrollToSelected(_ proxy: ScrollViewProxy) {
-        guard let id = selectedId, places.first?.id == id else { return };
-        withAnimation(NearbyPanelLayout.animation(reduceMotion: reduceMotion)) {
-            proxy.scrollTo(id, anchor: .top);
+    private func scrollToSelected(_ proxy: ScrollViewProxy, animated: Bool) {
+        guard let id = selectedId, places.contains(where: { $0.id == id }) else { return };
+        if animated {
+            withAnimation(NearbyPanelLayout.animation(reduceMotion: reduceMotion)) { proxy.scrollTo(id); }
+        } else {
+            proxy.scrollTo(id);
         }
     }
 

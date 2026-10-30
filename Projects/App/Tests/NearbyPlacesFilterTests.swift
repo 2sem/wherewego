@@ -52,11 +52,11 @@ final class NearbyPlacesFilterTests: XCTestCase {
         XCTAssertEqual(result.places.map(\.id), [4, 9]);
     }
 
-    func test_selectedIsPinnedFirstEvenWhenOutsideRegion() {
+    func test_selectedOutsideRegionKeepsDistanceSlot() {
         let inside = place(1, lat: 37.501, lon: 127.0);
         let selected = place(2, lat: 37.9, lon: 127.0);
         let result = NearbyPlacesFilter.make(infos: [inside, selected], region: region, selected: selected, origin: center);
-        XCTAssertEqual(result.places.map(\.id), [2, 1]);
+        XCTAssertEqual(result.places.map(\.id), [1, 2]);
         XCTAssertEqual(result.totalCount, 2);
     }
 
@@ -64,7 +64,7 @@ final class NearbyPlacesFilterTests: XCTestCase {
         let selected = place(1, lat: 37.505, lon: 127.0);
         let other = place(2, lat: 37.501, lon: 127.0);
         let result = NearbyPlacesFilter.make(infos: [other, selected], region: region, selected: selected, origin: center);
-        XCTAssertEqual(result.places.map(\.id), [1, 2]);
+        XCTAssertEqual(result.places.map(\.id), [2, 1]);
         XCTAssertEqual(result.totalCount, 2);
     }
 
@@ -72,7 +72,7 @@ final class NearbyPlacesFilterTests: XCTestCase {
         let infos = (1...10).map { place($0, lat: 37.5 + Double($0) * 0.0005, lon: 127.0) };
         let selected = place(99, lat: 37.9, lon: 127.0);
         let result = NearbyPlacesFilter.make(infos: infos, region: region, selected: selected, origin: center, limit: 3);
-        XCTAssertEqual(result.places.map(\.id), [99, 1, 2, 3]);
+        XCTAssertEqual(result.places.map(\.id), [1, 2, 3, 99]);
         XCTAssertTrue(result.isTruncated);
         XCTAssertEqual(result.totalCount, 11);
     }
