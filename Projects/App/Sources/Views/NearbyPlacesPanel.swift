@@ -396,25 +396,7 @@ private struct NearbyPlaceRow: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityAddTraits(.isButton)
                 heartButton
-            }
-            if isSelected {
-                HStack {
-                    Spacer()
-                    Button(action: onOpenDetails) {
-                        HStack(spacing: 4) {
-                            Text("Open details".localized())
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.bold))
-                        }
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .frame(minHeight: 40)
-                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 10))
-                    }
-                    .padding(.trailing, 8)
-                    .padding(.bottom, 12)
-                }
+                if isSelected { detailsButton; }
             }
         }
         .padding(.leading, isSelected ? 19 : 16)
@@ -451,6 +433,18 @@ private struct NearbyPlaceRow: View {
         }
         .padding(.vertical, 8)
         .frame(minHeight: 72)
+    }
+
+    private var detailsButton: some View {
+        Button(action: onOpenDetails) {
+            Image(systemName: "chevron.right")
+                .font(.system(size: 15, weight: .bold))
+                .foregroundStyle(Color.blue)
+                .frame(width: 36, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open details".localized())
     }
 
     private var heartButton: some View {
