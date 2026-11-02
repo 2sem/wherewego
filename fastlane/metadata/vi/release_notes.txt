@@ -1,6 +1,6 @@
 Khám phá Hàn Quốc giờ dễ dàng hơn!
-- Nhấn trái tim để lưu địa điểm yêu thích và xem lại tất cả trong Mục yêu thích.
-- Di chuyển bản đồ, chúng tôi sẽ hiển thị điểm tham quan ở khu vực bạn đang xem.
-- Ứng dụng mở lại đúng mức thu phóng bạn để lần trước.
-- Nút Vị trí của tôi phản hồi ổn định và giữ nguyên mức thu phóng.
+- Bảng mới dưới bản đồ liệt kê địa điểm gần bạn theo khoảng cách. Chạm vào một địa điểm để đến ngay.
+- Bản đồ chi tiết hiển thị vị trí trực tiếp của bạn và có thể theo dõi khi bạn di chuyển.
+- Chấm vị trí của bạn nay hiển thị rõ phía trên điểm đánh dấu đích đến.
+- Văn bản màn hình mới có sẵn bằng 9 ngôn ngữ.
 - Cùng nhiều cải tiến về độ ổn định và hiệu năng.

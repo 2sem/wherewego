@@ -1,6 +1,6 @@
 Explorer la Corée devient encore plus simple !
-- Enregistrez vos lieux préférés d'un cœur et retrouvez-les dans Favoris.
-- Déplacez la carte : nous affichons les sites de la zone que vous regardez.
-- L'app se rouvre au niveau de zoom où vous l'avez laissée.
-- Le bouton Ma position réagit de façon fiable et conserve votre zoom.
+- Un nouveau panneau sous la carte liste les lieux proches par distance. Touchez-en un pour y aller.
+- La carte de détail affiche votre position en direct et peut vous suivre.
+- Votre point de position s'affiche désormais bien au-dessus du repère de destination.
+- Les nouveaux textes d'écran sont disponibles en 9 langues.
 - Et aussi des améliorations de stabilité et de performances.

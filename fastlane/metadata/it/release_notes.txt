@@ -1,6 +1,6 @@
 Esplorare la Corea ora è ancora più facile!
-- Salva i luoghi che ami con il cuore e ritrovali tutti nei Preferiti.
-- Sposta la mappa e ti mostreremo le attrazioni nella zona che stai guardando.
-- L'app si riapre con lo zoom che avevi lasciato.
-- Il pulsante La mia posizione risponde in modo affidabile e mantiene lo zoom.
+- Un nuovo pannello sotto la mappa elenca i luoghi vicini per distanza. Tocca un luogo per andarci subito.
+- La mappa di dettaglio mostra la tua posizione in tempo reale e può seguirti.
+- Il punto della tua posizione ora appare ben sopra il segnaposto di destinazione.
+- I nuovi testi delle schermate sono disponibili in 9 lingue.
 - Inoltre, miglioramenti di stabilità e prestazioni.
