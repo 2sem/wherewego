@@ -1,6 +1,6 @@
 Exploring Korea just got easier!
-- Tap the heart to save places you love and find them all in Favorites.
-- Move the map and we'll show attractions in the area you're looking at.
-- The app now reopens at the zoom level you left it.
-- The My Location button now responds reliably and keeps your zoom.
+- A new panel under the map lists nearby places by distance. Tap one to jump to it.
+- The detail map shows your live location and can follow you as you move.
+- Your location dot now stays clearly above the destination marker.
+- New screen text is available in 9 languages.
 - Plus stability and performance improvements.

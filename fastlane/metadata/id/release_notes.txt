@@ -1,6 +1,6 @@
 Menjelajahi Korea kini makin mudah!
-- Simpan tempat favorit dengan ikon hati dan lihat semuanya di Favorit.
-- Geser peta, dan kami tampilkan tempat wisata di area yang sedang kamu lihat.
-- Aplikasi kini dibuka kembali dengan tingkat zoom terakhirmu.
-- Tombol Lokasi Saya kini merespons dengan andal dan mempertahankan zoom-mu.
+- Panel baru di bawah peta menampilkan tempat terdekat berdasarkan jarak. Ketuk salah satu untuk langsung menuju ke sana.
+- Peta detail menampilkan lokasi langsungmu dan bisa mengikutimu saat bergerak.
+- Titik lokasimu kini tampil jelas di atas penanda tujuan.
+- Teks layar baru tersedia dalam 9 bahasa.
 - Serta peningkatan stabilitas dan performa.

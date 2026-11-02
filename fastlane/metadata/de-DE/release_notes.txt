@@ -1,6 +1,6 @@
 Korea entdecken ist jetzt noch einfacher!
-- Speichere Lieblingsorte mit dem Herz und finde sie alle unter Favoriten.
-- Bewege die Karte – wir zeigen dir Sehenswürdigkeiten im sichtbaren Bereich.
-- Die App öffnet sich wieder mit deiner zuletzt genutzten Zoomstufe.
-- Die Standort-Taste reagiert zuverlässig und behält deine Zoomstufe bei.
+- Ein neues Panel unter der Karte listet Orte in der Nähe nach Entfernung. Tippe einen an, um direkt dorthin zu springen.
+- Die Detailkarte zeigt deinen Live-Standort und kann dir folgen.
+- Dein Standortpunkt liegt jetzt deutlich über der Zielmarkierung.
+- Neue Bildschirmtexte gibt es in 9 Sprachen.
 - Außerdem Verbesserungen bei Stabilität und Leistung.

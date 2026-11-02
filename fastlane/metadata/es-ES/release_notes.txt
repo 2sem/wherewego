@@ -1,6 +1,6 @@
 ¡Explorar Corea ahora es más fácil!
-- Guarda tus lugares favoritos con el corazón y encuéntralos todos en Favoritos.
-- Mueve el mapa y te mostraremos las atracciones de la zona que estás viendo.
-- La app se vuelve a abrir con el nivel de zoom que dejaste.
-- El botón Mi ubicación responde de forma fiable y mantiene tu zoom.
+- Un nuevo panel bajo el mapa lista los lugares cercanos por distancia. Toca uno para ir a él.
+- El mapa de detalle muestra tu ubicación en tiempo real y puede seguirte.
+- Tu punto de ubicación se ve ahora claramente sobre el marcador de destino.
+- Los nuevos textos de pantalla están disponibles en 9 idiomas.
 - Además, mejoras de estabilidad y rendimiento.
